@@ -1,0 +1,28 @@
+20200909 ------------------------
+Other tokenizers give different results
+An example of the difference. As an example, 
+tokenizer1 = BertTokenizer.from_pretrained('bert-base-uncased')
+tokenizer2 = nltk.tokenize.TweetTokenizer()
+
+# making different strings
+str1 = 'hello how r u'
+str2 = 'wtf is this :('
+
+# tokenizing the strings
+tokenizer1.tokenize(str1)
+>>>['hello', 'how', 'r', 'u']
+tokenizer2.tokenize(str1)
+>>>['hello', 'how', 'r', 'u']
+tokenizer1.tokenize(str2)
+>>>['w', '##tf', 'is', 'this', ':', '(']
+tokenizer2.tokenize(str2)
+>>>['wtf', 'is', 'this', ':(']
+
+if you use a different tokenizer than bert's,
+when converting the result into token_ids, the 
+tokenizer will spit out UNK tokens especially
+for slang like LOL and emoticons.
+
+20200910 ------------------------
+
+20200911 ------------------------
