@@ -98,6 +98,7 @@ def process_first_posts(entries):
             errors = errors + 1
         if firstpost['body'] == '':
             firstpost['body'] = '[empty]'
+        eachthread['length'] = len(posts)
     return errors
     
 def convert_all_labels(entries):
@@ -212,7 +213,8 @@ def store_as_sdqc_format(entries, directory, filename):
     tsvfile = open(directory+filename, 'w')
     tsvfile.write("index\t#1 Label\t#2 String\t#2 String\n")
     counter = 1
-    
+    #TODO save the length of the original threads
+    #TODO modify the semeval code to do the same
     for eachthread in entries:
         posts_list = []
         label_list = []
