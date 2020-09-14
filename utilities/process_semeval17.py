@@ -45,7 +45,7 @@ def format_rumor(directory):
     fin = open(rumor_train_file, 'r', encoding='utf-8', newline='\n', errors='ignore')
     lines = fin.readlines()
     with open(directory+"stance_train.tsv", 'w') as train_fh:
-        train_fh.write("index\t#1 Label\t#2 String\t#2 String\n")
+        train_fh.write("index\t#1 Label\t#2 Count\t#3 String\n")
         count = 0
         for i in range(len(lines)):
             count += 1
@@ -56,12 +56,12 @@ def format_rumor(directory):
             label_list = input_dict["label"]
             str_label_lst = [str(p) for p in label_list]
             label = ','.join(str_label_lst)
-            train_fh.write("%s\t%s\t%s\n" % (count, label, s1))
+            train_fh.write("%s\t%s\t%s\t%s\n" % (count, label, len(label), s1))
 
     fin = open(rumor_dev_file, 'r', encoding='utf-8', newline='\n', errors='ignore')
     lines = fin.readlines()
     with open(directory+"stance_dev.tsv", 'w') as train_fh:
-        train_fh.write("index\t#1 Label\t#2 String\t#2 String\n")
+        train_fh.write("index\t#1 Label\t#2 Count\t#3 String\n")
         count = 0
         for i in range(len(lines)):
             count += 1
@@ -72,12 +72,12 @@ def format_rumor(directory):
             label_list = input_dict["label"]
             str_label_lst = [str(p) for p in label_list]
             label = ','.join(str_label_lst)
-            train_fh.write("%s\t%s\t%s\n" % (count, label, s1))
+            train_fh.write("%s\t%s\t%s\t%s\n" % (count, label, len(label), s1))
 
     fin = open(rumor_test_file, 'r', encoding='utf-8', newline='\n', errors='ignore')
     lines = fin.readlines()
     with open(directory+"stance_test.tsv", 'w') as test_fh:
-        test_fh.write("index\t#1 Label\t#2 String\t#2 String\n")
+        test_fh.write("index\t#1 Label\t#2 Count\t#3 String\n")
         count = 0
         for i in range(len(lines)):
             count += 1
@@ -88,7 +88,7 @@ def format_rumor(directory):
             label_list = input_dict["label"]
             str_label_lst = [str(p) for p in label_list]
             label = ','.join(str_label_lst)
-            test_fh.write("%s\t%s\t%s\n" % (count, label, s1))
+            test_fh.write("%s\t%s\t%s\t%s\n" % (count, label, len(label), s1))
     print("\tCompleted!")
 
 def plot_thread_depths():
@@ -151,6 +151,6 @@ def plot_thread_depths():
     plt.tight_layout()
 
 if __name__ == '__main__':
-    #DIRECTORY = './../data/semeval17/'
-    #format_rumor(DIRECTORY)
-    plot_thread_depths()
+    DIRECTORY = './../data/semeval17/'
+    format_rumor(DIRECTORY)
+    #plot_thread_depths()

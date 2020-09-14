@@ -182,6 +182,9 @@ def delete_deeper_levels(entries):
     for eachthread in entries:
         posts = eachthread['posts']
         firstpost_id = posts[0]['id']
+        
+        # store num of posts before cleaning
+        eachthread['orig_count'] = len(posts)
         counter = 0
         while counter < len(posts):
             post = posts[counter]
@@ -211,15 +214,14 @@ def clean_posts(entries):
             
 def store_as_sdqc_format(entries, directory, filename):
     tsvfile = open(directory+filename, 'w')
-    tsvfile.write("index\t#1 Label\t#2 String\t#2 String\n")
-    counter = 1
-    #TODO save the length of the original threads
-    #TODO modify the semeval code to do the same
+    tsvfile.write("index\t#1 Label\t#2 Count\t#3 String\n")
+    count = 1
     for eachthread in entries:
         posts_list = []
         label_list = []
         
         posts = eachthread['posts']
+        orig_count = eachthread['orig_count']
         for eachpost in posts:
             posts_list.append(eachpost['body'])
             strlabel = eachpost['majority_type']
@@ -228,8 +230,8 @@ def store_as_sdqc_format(entries, directory, filename):
         
         s1 = ' ||||| '.join(posts_list)
         label = ','.join(label_list)
-        tsvfile.write("%s\t%s\t%s\n" % (counter, label, s1))
-        counter = counter + 1    
+        tsvfile.write("%s\t%s\t%s\t%s\n" % (count, label, orig_count, s1))
+        count = count + 1
     
     tsvfile.close()
     

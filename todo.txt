@@ -1,8 +1,8 @@
 ----- todo -----
-merge coarse_discourse dataset with semeval17
 modify hierarchical transformer model using huggingface
 
 ----- done -----
 install tweet tokenizer
 try out tweet tokenizer
 compare difference to bert tokenizer
+merge coarse_discourse dataset with semeval17
