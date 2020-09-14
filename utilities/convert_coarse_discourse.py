@@ -17,9 +17,9 @@ question        ==> query
 answer          ==> comment
 announcement    ==> comment
 agreement       ==> support
-appreciation    ==> comment?support
+appreciation    ==> comment
 disagreement    ==> deny
--ve reaction    ==> deny? comment?
+-ve reaction    ==> deny
 elaboration     ==> comment
 humor           ==> comment
 other           ==> comment

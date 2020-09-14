@@ -1,4 +1,5 @@
 ----- todo -----
+tokenize only first 4 posts
 modify hierarchical transformer model using huggingface
 
 ----- done -----

@@ -55,8 +55,9 @@ def format_rumor(directory):
             s1 = remove_urls(s1)
             label_list = input_dict["label"]
             str_label_lst = [str(p) for p in label_list]
+            num_post = len(str_label_lst)
             label = ','.join(str_label_lst)
-            train_fh.write("%s\t%s\t%s\t%s\n" % (count, label, len(label), s1))
+            train_fh.write("%s\t%s\t%s\t%s\n" % (count, label, num_post, s1))
 
     fin = open(rumor_dev_file, 'r', encoding='utf-8', newline='\n', errors='ignore')
     lines = fin.readlines()
@@ -71,8 +72,9 @@ def format_rumor(directory):
             s1 = remove_urls(s1)
             label_list = input_dict["label"]
             str_label_lst = [str(p) for p in label_list]
+            num_post = len(str_label_lst)
             label = ','.join(str_label_lst)
-            train_fh.write("%s\t%s\t%s\t%s\n" % (count, label, len(label), s1))
+            train_fh.write("%s\t%s\t%s\t%s\n" % (count, label, num_post, s1))
 
     fin = open(rumor_test_file, 'r', encoding='utf-8', newline='\n', errors='ignore')
     lines = fin.readlines()
@@ -87,8 +89,9 @@ def format_rumor(directory):
             s1 = remove_urls(s1)
             label_list = input_dict["label"]
             str_label_lst = [str(p) for p in label_list]
+            num_post = len(str_label_lst)
             label = ','.join(str_label_lst)
-            test_fh.write("%s\t%s\t%s\t%s\n" % (count, label, len(label), s1))
+            test_fh.write("%s\t%s\t%s\t%s\n" % (count, label, num_post, s1))
     print("\tCompleted!")
 
 def plot_thread_depths():
