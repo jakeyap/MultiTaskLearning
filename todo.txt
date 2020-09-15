@@ -1,9 +1,10 @@
 ----- todo -----
-tokenize only first 4 posts
 modify hierarchical transformer model using huggingface
+get the modified version to work
 
 ----- done -----
 install tweet tokenizer
 try out tweet tokenizer
 compare difference to bert tokenizer
 merge coarse_discourse dataset with semeval17
+tokenize only first 4 posts

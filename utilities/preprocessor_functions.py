@@ -40,3 +40,11 @@ def remove_spaces(string_in):
     re_object = re.compile('\s')
     string_out = re_object.sub(repl=' ', string=string_in)
     return string_out
+
+def post_isempty(string_in):
+    re_object = re.compile('\s*')
+    stringout = re_object.sub(repl='',string=string_in)
+    if  stringout == '':
+        return True
+    else:
+        return False

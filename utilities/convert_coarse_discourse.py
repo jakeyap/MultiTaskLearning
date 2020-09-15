@@ -31,7 +31,7 @@ import json
 import numpy as np
 import scipy.stats
 import matplotlib.pyplot as plt
-from preprocessor_functions import remove_urls, remove_spaces
+from preprocessor_functions import remove_urls, remove_spaces, post_isempty
 
 def extract_jsonfile(directory, filename):
     entries = []    
@@ -96,7 +96,7 @@ def process_first_posts(entries):
         if 'body' not in firstpost.keys():
             firstpost['body'] = '[empty]'
             errors = errors + 1
-        if firstpost['body'] == '':
+        if firstpost['body'].replace(' ', '') == '':
             firstpost['body'] = '[empty]'
         eachthread['length'] = len(posts)
     return errors
@@ -211,6 +211,9 @@ def clean_posts(entries):
                 text = post['body']
                 text = remove_urls(text)
                 post['body'] = remove_spaces(text)
+            
+            if post_isempty(post['body']):
+                post['body'] = '[empty]'
             
 def store_as_sdqc_format(entries, directory, filename):
     tsvfile = open(directory+filename, 'w')
