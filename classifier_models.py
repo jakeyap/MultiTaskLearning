@@ -58,7 +58,7 @@ class my_ModelA0(BertPreTrainedModel):
         #self.init_weights()
 
     def forward(self, input_ids, token_type_ids, attention_masks, 
-                attention_mask, task=None, stance_labels=None):
+                attention_mask, task, stance_labels=None):
 
         sequence_output1, _ = self.bert(input_ids[1], token_type_ids[1], attention_masks[1], output_all_encoded_layers=False)
         sequence_output2, _ = self.bert(input_ids[2], token_type_ids[2], attention_masks[2], output_all_encoded_layers=False)
@@ -79,7 +79,7 @@ class my_ModelA0(BertPreTrainedModel):
             dtype=next(self.parameters()).dtype)  # fp16 compatibility
         extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
 
-        if task is None: #for length prediction task
+        if task is 'length': #for length prediction task
             add_length_bert_encoder = self.add_length_bert_attention(sequence_output, extended_attention_mask)
             add_length_bert_text_output_layer = add_length_bert_encoder[-1]
             final_length_text_output = self.length_pooler(add_length_bert_text_output_layer)
@@ -88,7 +88,7 @@ class my_ModelA0(BertPreTrainedModel):
             length_logits = self.length_classifier(length_pooled_output)
             return length_logits
 
-        else:   # for stance classification task
+        elif task is 'stance':   # for stance classification task
             add_stance_bert_encoder = self.add_stance_bert_attention(sequence_output, extended_attention_mask)
             final_stance_text_output = add_stance_bert_encoder[-1]
 
@@ -105,6 +105,9 @@ class my_ModelA0(BertPreTrainedModel):
                 return loss
             else:
                 return stance_logits
+        else:
+            print('task must be stance or length')
+            raise Exception
 
 class BertEncoderOneLayer(torch.nn.Module):
     # copied from BertEncoder class in transformers pkg

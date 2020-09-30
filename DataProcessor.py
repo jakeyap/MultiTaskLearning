@@ -11,7 +11,7 @@ from transformers import BertTokenizer
 import pandas as pd
 import csv
 import time
-from torch.utils.data import TensorDataset, DataLoader
+from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 
 
 default_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
@@ -283,9 +283,14 @@ def dataframe_2_dataloader(dataframe,
                             attention_masks,
                             orig_length,
                             stance_labels)
+    if (randomize):
+        sampler = RandomSampler(dataset)
+    else:
+        sampler = SequentialSampler(dataset)
     dataloader = DataLoader(dataset,
-                            batch_size=batchsize,
-                            shuffle=randomize)
+                            sampler=sampler,
+                            batch_size=batchsize)
+    
     return dataloader
 
 if __name__ == '__main__':

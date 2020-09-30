@@ -16,6 +16,9 @@ import DataProcessor
 from classifier_models import my_ModelA0
 
 from sklearn.metrics import precision_recall_fscore_support
+import logging, sys
+import datetime
+import time
 
 '''======== FILE NAMES FOR LOGGING ========'''
 FROM_SCRATCH = True
@@ -37,8 +40,29 @@ PRINT_PICTURE = False
 directory = './data/combined/'
 filename = 'encoded_combined_test.pkl'
 
+
+timestamp = time.time()
+timestamp = str(timestamp)
+
+# for storing logs into a file
+file_handler = logging.FileHandler(filename='./log_files/'+timestamp+'_log.log')
+# for printing onto terminal
+stdout_handler = logging.StreamHandler(sys.stdout)
+
+# for storing training / dev / test losses
+lossfile = open('./log_files/'+timestamp+'_losses.log','w')
+
+handlers = [file_handler, stdout_handler]
+logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
+                    datefmt = '%m/%d/%Y %H:%M:%S',
+                    handlers=handlers,
+                    level = logging.INFO)
+logger = logging.getLogger(__name__)
+
+
 gpu = torch.device("cuda")
 n_gpu = torch.cuda.device_count()
+
 if FROM_SCRATCH:
     #config = BertConfig.from_pretrained('bert-base-uncased')
     #config.num_labels = 2
@@ -52,28 +76,35 @@ if FROM_SCRATCH:
     
     # Move model into GPU
     model.to(gpu)
+    if n_gpu > 1:
+        model = torch.nn.DataParallel(model)
+    
     # Define the optimizer. Use SGD
     optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
                           momentum=MOMENTUM)
 
 # Load some data
 dataframe = DataProcessor.load_df_from_pkl(directory+filename)
-dataloader = DataProcessor.dataframe_2_dataloader(dataframe,batchsize=4,randomize=False,DEBUG=False)
-# Feed into the model and see if it is working correctly
 
-# batch_idx, minibatch = next(enumerate(dataloader))
+dataloader = DataProcessor.dataframe_2_dataloader(dataframe,
+                                                  batchsize=4,
+                                                  randomize=True,
+                                                  DEBUG=False)
+# Feed into the model and see if it is working correctly
+'''
+batch_idx, minibatch = next(enumerate(dataloader))
+'''
+counter = 0
 for batch_idx, minibatch in enumerate(dataloader):
+    posts_index = minibatch[0]
     encoded_comments = minibatch[1]
-    token_type_ids = minibatch[1]
-    attention_masks = minibatch[1]
-    orig_length = minibatch[1]
-    stance_labels = minibatch[1]
-    dataset = TensorDataset(posts_index,
-                        encoded_comments,
-                        token_type_ids,
-                        attention_masks,
-                        orig_length,
-                        stance_labels)
+    token_type_ids = minibatch[2]
+    attention_masks = minibatch[3]
+    orig_length = minibatch[4]
+    stance_labels = minibatch[5]
     
-'''
-'''
+    #posts_index = posts_index.to(gpu)
+    #model()
+    logger.info('mini batch id %d', counter)
+    logger.info(batch_idx)
+    counter = counter + 1
