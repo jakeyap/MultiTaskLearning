@@ -37,7 +37,7 @@ class BertStancePooler(nn.Module):
 
     
 class my_ModelA0(BertPreTrainedModel):
-    def __init__(self, config, stance_num_labels=4, length_num_labels=2, max_post_num=4, max_post_length=64):
+    def __init__(self, config, stance_num_labels=4, length_num_labels=2, max_post_num=4, max_post_length=256):
         super(my_ModelA0, self).__init__(config)
         self.length_num_labels = length_num_labels
         self.stance_num_labels = stance_num_labels
@@ -58,12 +58,12 @@ class my_ModelA0(BertPreTrainedModel):
         #self.init_weights()
 
     def forward(self, input_ids, token_type_ids, attention_masks, 
-                attention_mask, task, stance_labels=None):
-
-        sequence_output1, _ = self.bert(input_ids[1], token_type_ids[1], attention_masks[1], output_all_encoded_layers=False)
-        sequence_output2, _ = self.bert(input_ids[2], token_type_ids[2], attention_masks[2], output_all_encoded_layers=False)
-        sequence_output3, _ = self.bert(input_ids[3], token_type_ids[3], attention_masks[3], output_all_encoded_layers=False)
-        sequence_output4, _ = self.bert(input_ids[4], token_type_ids[4], attention_masks[4], output_all_encoded_layers=False)
+                task, stance_labels=None):
+        idx = self.max_post_length
+        sequence_output1, _ = self.bert(input_ids[:,0:idx], token_type_ids[:,0:idx], attention_masks[:,0:idx])
+        sequence_output2, _ = self.bert(input_ids[:,idx:2*idx], token_type_ids[:,idx:2*idx], attention_masks[:,idx:2*idx])
+        sequence_output3, _ = self.bert(input_ids[:,2*idx:3*idx], token_type_ids[:,2*idx:3*idx], attention_masks[:,2*idx:3*idx])
+        sequence_output4, _ = self.bert(input_ids[:,3*idx:4*idx], token_type_ids[:,3*idx:4*idx], attention_masks[:,3*idx:4*idx])
         
         attention_mask = []
         for eachmask in attention_masks:

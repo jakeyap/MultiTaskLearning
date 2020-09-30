@@ -102,9 +102,15 @@ for batch_idx, minibatch in enumerate(dataloader):
     attention_masks = minibatch[3]
     orig_length = minibatch[4]
     stance_labels = minibatch[5]
-    
+    #TODO reached here
     #posts_index = posts_index.to(gpu)
-    #model()
+    stance_pred = model(input_ids = encoded_comments,
+                  token_type_ids = token_type_ids, 
+                  attention_masks = attention_masks, 
+                  task='stance')
+    '''
+    '''
     logger.info('mini batch id %d', counter)
-    logger.info(batch_idx)
+    logger.info(posts_index)
     counter = counter + 1
+    break
