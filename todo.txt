@@ -1,6 +1,7 @@
 ----- todo -----
 modify hierarchical transformer model using huggingface
 get the modified version to work
+stuck at the loss function. debug where it is going wrong
 
 ----- done -----
 install tweet tokenizer

@@ -13,6 +13,7 @@ from torch.utils.data import TensorDataset, DataLoader, RandomSampler, Sequentia
 from torch.utils.data.distributed import DistributedSampler
 
 import DataProcessor
+import multitask_helper_functions as helper
 from classifier_models import my_ModelA0
 
 from sklearn.metrics import precision_recall_fscore_support
@@ -67,7 +68,7 @@ if FROM_SCRATCH:
     #config = BertConfig.from_pretrained('bert-base-uncased')
     #config.num_labels = 2
     model = my_ModelA0.from_pretrained('bert-base-uncased',
-                                       stance_num_labels=4,
+                                       stance_num_labels=5,
                                        length_num_labels=2,
                                        max_post_num=MAX_POST_PER_THREAD, 
                                        max_post_length=MAX_POST_LENGTH)
@@ -83,11 +84,15 @@ if FROM_SCRATCH:
     optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
                           momentum=MOMENTUM)
 
-# Load some data
+loss_function = torch.nn.CrossEntropyLoss(reduction='sum')
+
+
+
+# Load the test and training data
 dataframe = DataProcessor.load_df_from_pkl(directory+filename)
 
 dataloader = DataProcessor.dataframe_2_dataloader(dataframe,
-                                                  batchsize=4,
+                                                  batchsize=2,
                                                   randomize=True,
                                                   DEBUG=False)
 # Feed into the model and see if it is working correctly
@@ -102,12 +107,22 @@ for batch_idx, minibatch in enumerate(dataloader):
     attention_masks = minibatch[3]
     orig_length = minibatch[4]
     stance_labels = minibatch[5]
-    #TODO reached here
-    #posts_index = posts_index.to(gpu)
+    
+    encoded_comments = encoded_comments.to(gpu)
+    token_type_ids = token_type_ids.to(gpu)
+    attention_masks = attention_masks.to(gpu)
+    orig_length = orig_length.to(gpu)
+    stance_labels = stance_labels.to(gpu)
+    model.train()
     stance_pred = model(input_ids = encoded_comments,
-                  token_type_ids = token_type_ids, 
-                  attention_masks = attention_masks, 
-                  task='stance')
+                        token_type_ids = token_type_ids, 
+                        attention_masks = attention_masks, 
+                        task='stance')
+    stance_loss = helper.stance_loss(predicted_labels = stance_pred,
+                                     actual_labels = stance_labels, 
+                                     loss_fn = loss_function)
+    stance_loss.backwards()
+    #TODO reached here
     '''
     '''
     logger.info('mini batch id %d', counter)
