@@ -1,7 +1,11 @@
 ----- todo -----
 modify hierarchical transformer model using huggingface
-get the modified version to work
-stuck at the loss function. debug where it is going wrong
+    implement the length prediction loss
+    implement test function
+    implement check 1 test run
+    get the modified version to work
+    implement multi gpu
+to get the pkl files up on the remote pc, run the DataProcessor main function.
 
 ----- done -----
 install tweet tokenizer
@@ -9,3 +13,4 @@ try out tweet tokenizer
 compare difference to bert tokenizer
 merge coarse_discourse dataset with semeval17
 tokenize only first 4 posts
+stuck at the loss function. debug where it is going wrong

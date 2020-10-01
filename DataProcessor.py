@@ -304,8 +304,9 @@ if __name__ == '__main__':
     time1 = time.time()
     for each_filename in filenames:
         print('Encoding dataset: ' + each_filename)
-        tsv_filename = DIRECTORY + each_filename + '.tsv'
-        pkl_filename = DIRECTORY + 'encoded_' + each_filename + '.pkl'
+        suffix = '_' + str(MAX_POST_PER_THREAD) + '_' +str(MAX_POST_LENGTH)
+        tsv_filename = DIRECTORY + each_filename +'.tsv'
+        pkl_filename = DIRECTORY + 'encoded_' + each_filename + suffix +'.pkl'
         dataframe = get_dataset(tsv_filename)
         dataframe = tokenize_encode_dataframe(dataframe, MAX_POST_LENGTH, MAX_POST_PER_THREAD)
         save_df_2_pkl(dataframe, pkl_filename)

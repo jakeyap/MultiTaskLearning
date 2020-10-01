@@ -20,18 +20,19 @@ from sklearn.metrics import precision_recall_fscore_support
 import logging, sys
 import datetime
 import time
+import matplotlib.pyplot as plt
 
 '''======== FILE NAMES FOR LOGGING ========'''
 FROM_SCRATCH = True
 '''======== HYPERPARAMETERS START ========'''
 NUM_TO_PROCESS = 100000
-BATCH_SIZE_TRAIN = 40
+BATCH_SIZE_TRAIN = 3
 BATCH_SIZE_TEST = 40
 LOG_INTERVAL = 10
 
-N_EPOCHS = 80
-LEARNING_RATE = 0.001
-MOMENTUM = 0.5
+N_EPOCHS = 20
+LEARNING_RATE = 0.0001
+MOMENTUM = 0.25
 
 MAX_POST_LENGTH = 256
 MAX_POST_PER_THREAD = 4
@@ -39,7 +40,9 @@ MAX_POST_PER_THREAD = 4
 PRINT_PICTURE = False
 '''======== HYPERPARAMETERS END ========'''
 directory = './data/combined/'
-filename = 'encoded_combined_test.pkl'
+test_filename = 'encoded_shuffled_test.pkl'
+train_filename = 'encoded_shuffled_train.pkl'
+dev_filename = 'encoded_shuffled_dev.pkl'
 
 
 timestamp = time.time()
@@ -83,49 +86,81 @@ if FROM_SCRATCH:
     # Define the optimizer. Use SGD
     optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
                           momentum=MOMENTUM)
+    #optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-loss_function = torch.nn.CrossEntropyLoss(reduction='sum')
+# ignore 0 labels - no post
+# do averaging on the losses
+loss_function = torch.nn.CrossEntropyLoss(reduction='mean', ignore_index=0)
 
 
 
 # Load the test and training data
-dataframe = DataProcessor.load_df_from_pkl(directory+filename)
+test_dataframe = DataProcessor.load_df_from_pkl(directory + test_filename)
+dev_dataframe = DataProcessor.load_df_from_pkl(directory + dev_filename)
+train_dataframe = DataProcessor.load_df_from_pkl(directory + train_filename)
 
-dataloader = DataProcessor.dataframe_2_dataloader(dataframe,
-                                                  batchsize=2,
-                                                  randomize=True,
-                                                  DEBUG=False)
+train_dataloader = DataProcessor.dataframe_2_dataloader(train_dataframe,
+                                                        batchsize=BATCH_SIZE_TRAIN,
+                                                        randomize=True,
+                                                        DEBUG=False)
+test_dataloader = DataProcessor.dataframe_2_dataloader(test_dataframe,
+                                                       batchsize=BATCH_SIZE_TRAIN,
+                                                       randomize=False,
+                                                       DEBUG=False)
+dev_dataloader = DataProcessor.dataframe_2_dataloader(dev_dataframe,
+                                                      batchsize=BATCH_SIZE_TRAIN,
+                                                      randomize=False,
+                                                      DEBUG=False)
+
 # Feed into the model and see if it is working correctly
 '''
 batch_idx, minibatch = next(enumerate(dataloader))
 '''
-counter = 0
-for batch_idx, minibatch in enumerate(dataloader):
-    posts_index = minibatch[0]
-    encoded_comments = minibatch[1]
-    token_type_ids = minibatch[2]
-    attention_masks = minibatch[3]
-    orig_length = minibatch[4]
-    stance_labels = minibatch[5]
-    
-    encoded_comments = encoded_comments.to(gpu)
-    token_type_ids = token_type_ids.to(gpu)
-    attention_masks = attention_masks.to(gpu)
-    orig_length = orig_length.to(gpu)
-    stance_labels = stance_labels.to(gpu)
+
+def train(epochs):
+    # Set network into training mode to enable dropout
     model.train()
-    stance_pred = model(input_ids = encoded_comments,
-                        token_type_ids = token_type_ids, 
-                        attention_masks = attention_masks, 
-                        task='stance')
-    stance_loss = helper.stance_loss(predicted_labels = stance_pred,
-                                     actual_labels = stance_labels, 
-                                     loss_fn = loss_function)
-    stance_loss.backwards()
-    #TODO reached here
-    '''
-    '''
-    logger.info('mini batch id %d', counter)
-    logger.info(posts_index)
-    counter = counter + 1
-    break
+    
+    losses = []
+    counter = 0
+    
+    while counter < N_EPOCHS:
+        logger.info('EPOCH: %d', counter)
+        for batch_idx, minibatch in enumerate(train_dataloader):
+            posts_index = minibatch[0]
+            encoded_comments = minibatch[1]
+            token_type_ids = minibatch[2]
+            attention_masks = minibatch[3]
+            orig_length = minibatch[4]
+            stance_labels = minibatch[5]
+            
+            encoded_comments = encoded_comments.to(gpu)
+            token_type_ids = token_type_ids.to(gpu)
+            attention_masks = attention_masks.to(gpu)
+            orig_length = orig_length.to(gpu)
+            stance_labels = stance_labels.to(gpu)
+            
+            stance_pred = model(input_ids = encoded_comments,
+                                token_type_ids = token_type_ids, 
+                                attention_masks = attention_masks, 
+                                task='stance')
+            stance_loss = helper.stance_loss(predicted_labels = stance_pred,
+                                             actual_labels = stance_labels, 
+                                             loss_fn = loss_function)
+            stance_loss.backward()
+            optimizer.step()
+            loss = stance_loss.item()
+            losses.append(loss)
+            
+            logger.info('loss: %1.3f', loss)
+        counter = counter + 1
+
+    return losses
+
+if __name__ == '__main__':
+    start_time = time.time()
+    losses = train(N_EPOCHS)
+    time_end = time.time()
+    time_taken = time_end - start_time  
+    print('Time elapsed: %6.2fs' % time_taken)
+    plt.plot(losses)

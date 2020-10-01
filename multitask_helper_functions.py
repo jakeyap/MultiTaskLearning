@@ -12,7 +12,8 @@ def stance_loss(predicted_labels, actual_labels, loss_fn):
     for positions labelled -1. 
     
     Just add 1 to all the predicted labels and actual labels and calculate 
-    anyway. 
+    anyway. Ignore 0s at the loss function
+    
     The old class numbers are 
     -1= no post    0 = deny
     1 = support    2 = query
@@ -38,5 +39,15 @@ def stance_loss(predicted_labels, actual_labels, loss_fn):
     loss.
 
     '''
+    num_labels = predicted_labels.shape[-1]
+    # cast it into shape=(N,C) tensor where N=minibatch, C=num of classes
+    logits = predicted_labels.view(-1, num_labels) 
     
-    return loss_fn(predicted_labels + 1, actual_labels + 1)
+    # cast it into shape=(N,)
+    labels = actual_labels.view(-1)
+    # convert into long datatype
+    labels = labels.long()
+    
+    # set the loss function to ignore 0 labels
+    loss_fn.ignore_index = 0
+    return loss_fn(logits + 1, labels + 1)

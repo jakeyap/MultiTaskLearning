@@ -22,7 +22,6 @@ class BertStancePooler(nn.Module):
     def forward(self, hidden_states, max_post_length, max_post_num):
         # We "pool" the model by simply taking the hidden state corresponding
         # to the first token.
-        print(len(hidden_states))
         first_token_tensor = hidden_states[:, 0].unsqueeze(1)
         
         # for extracting encoded CLS tokens from each of the encoded posts
@@ -62,17 +61,9 @@ class my_ModelA0(BertPreTrainedModel):
                 task, stance_labels=None):
         idx = self.max_post_length
         sequence_output1, _ = self.bert(input_ids[:,0*idx:1*idx], token_type_ids[:,0*idx:1*idx], attention_masks[:,0*idx:1*idx])
-        print('seq_output1 shape ', end='')
-        print(sequence_output1.size())
         sequence_output2, _ = self.bert(input_ids[:,1*idx:2*idx], token_type_ids[:,1*idx:2*idx], attention_masks[:,1*idx:2*idx])
         sequence_output3, _ = self.bert(input_ids[:,2*idx:3*idx], token_type_ids[:,2*idx:3*idx], attention_masks[:,2*idx:3*idx])
         sequence_output4, _ = self.bert(input_ids[:,3*idx:4*idx], token_type_ids[:,3*idx:4*idx], attention_masks[:,3*idx:4*idx])
-        '''
-        attention_mask = []
-        for eachmask in attention_masks:
-            attention_mask.extend(eachmask)
-        attention_mask = torch.tensor(attention_mask)
-        '''
         
         tmp_sequence = torch.cat((sequence_output1, sequence_output2), dim=1)
         tmp_sequence = torch.cat((tmp_sequence, sequence_output3), dim=1)
@@ -102,8 +93,6 @@ class my_ModelA0(BertPreTrainedModel):
             final_stance_text_output = add_stance_bert_encoder[-1]
             # data is formatted as a tensor inside a tuple
             final_stance_text_output = final_stance_text_output [0]
-            print(final_stance_text_output)
-            print(final_stance_text_output.shape)
             label_logit_output = self.stance_pooler(final_stance_text_output, 
                                                     self.max_post_length, 
                                                     self.max_post_num)
