@@ -1,7 +1,6 @@
 ----- todo -----
 modify hierarchical transformer model using huggingface
     implement the length prediction loss
-    implement test function
     implement check 1 test run
     get the modified version to work
     implement multi gpu
@@ -14,3 +13,4 @@ compare difference to bert tokenizer
 merge coarse_discourse dataset with semeval17
 tokenize only first 4 posts
 stuck at the loss function. debug where it is going wrong
+implement test function

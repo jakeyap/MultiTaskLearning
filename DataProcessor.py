@@ -295,7 +295,7 @@ def dataframe_2_dataloader(dataframe,
 
 if __name__ == '__main__':
     MAX_POST_PER_THREAD = 4
-    MAX_POST_LENGTH = 256
+    MAX_POST_LENGTH = 512
     DIRECTORY = './data/combined/'
     
     filenames = ['shuffled_dev', 'shuffled_test', 'shuffled_train', 
