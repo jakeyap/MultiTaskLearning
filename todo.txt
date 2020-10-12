@@ -1,9 +1,11 @@
 ----- todo -----
 modify hierarchical transformer model using huggingface
-    implement the length prediction loss
-    implement check 1 test run
-    get the modified version to work
+    check accuracy measurement
+    implement model storing on best results
+    implement logic to do single task training on either task
+    run 1 epoch of full training to time the model
     implement multi gpu
+    write readme doc
 to get the pkl files up on the remote pc, run the DataProcessor main function.
 
 ----- done -----
@@ -14,3 +16,8 @@ merge coarse_discourse dataset with semeval17
 tokenize only first 4 posts
 stuck at the loss function. debug where it is going wrong
 implement test function
+implement check 1 test run
+implement the length prediction loss
+get the modified version to work
+set up msi laptop as server at home
+check f1 scoring

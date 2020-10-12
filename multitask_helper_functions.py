@@ -17,8 +17,8 @@ def rescale_labels(labels):
     1 = support    2 = query
     3 = comment
     
-    When the labels enter the functions in this, calculator
-    the -1 will screw up some of the library functions 
+    When the labels enter the functions in this file,
+    the -1 labels will mess up some of the functions 
     Added 1 to all of them to take care of this bug
     0 = no post    1 = deny
     2 = support    3 = query
@@ -148,11 +148,108 @@ def logit_2_class_stance(pred_logits):
     pred_labels = pred_labels.long()
     return pred_labels.reshape(-1)
 
-def accuracy(pred_labels, labels):
-    return torch.sum(pred_labels == labels)
+def accuracy(pred_labels, true_labels):
+    '''
+    Returns the accuracy of some predictions 
 
-def macro_f1(pred_labels, y_true):
-    precision, recall, f1score, support = f1_help(y_true, 
-                                                  pred_labels, 
-                                                  average='macro')
-    return precision, recall, f1score, support 
+    Parameters
+    ----------
+    pred_labels : 1D tensor, shape=(N,)
+        predicted labels
+    true_labels : 1D tensor, shape=(N,)
+        ground truth labels.
+
+    Returns
+    -------
+    accuracy : float
+        [True Pos + True Neg] / [Total].
+
+    '''
+    count = true_labels.shape[0]
+    num_correct = torch.sum(pred_labels == true_labels).item()
+    return num_correct / count
+
+def length_f1(pred_lengths, true_lengths):
+    '''
+    Calculates the F1 score of the length prediction task
+
+    Parameters
+    ----------
+    pred_lengths : tensor
+        labels with dimensions [n,] where each element is 
+            0 if it is short in length
+            1 if it is long in length
+    true_lengths : tensor
+        labels with dimensions [n,] where each element is 
+            0 if it is short in length
+            1 if it is long in length
+
+    Returns
+    -------
+    precisions : tuple of floats, size=2
+        Self explanatory
+    recalls : tuple of floats, size=2
+        Self explanatory
+    f1scores : tuple of floats, size=2
+        Self explanatory
+    supports : tuple of floats, size=2
+        How many samples
+
+    '''
+    precisions, recalls, f1scores, supports = f1_help(true_lengths, 
+                                                      pred_lengths,
+                                                      average=None,
+                                                      labels=[0,1])
+    f1_score_macro = sum(f1scores) / len(f1scores)
+    return precisions, recalls, f1scores, supports, f1_score_macro
+
+def length_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro):
+    string = 'Labels \t\tPrecision\tRecall\t\tF1 score\tSupport\n'
+    string +='Short  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
+    string +='Long   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
+    string +='\n'
+    string +='F1-macro\t%1.4f' % f1_scores_macro
+    return string
+
+def stance_f1(pred_lengths, true_lengths):
+    '''
+    Calculates the f1 scores for each label category
+
+    Parameters
+    ----------
+    pred_lengths : 1D tensor with shape (N,)
+        binary predicted lengths. 0=short, 1=long
+    true_lengths : 1D tensor with shape (N,)
+        binary true lengths. 0=short, 1=long
+
+    Returns
+    -------
+    precisions : tuple of floats, length=5
+        precision score broken down by category
+    recalls : tuple of floats, length=5
+        recall score broken down by category
+    f1scores : tuple of floats, length=5
+        f1 score broken down by category
+    supports : tuple of int, length=5
+        number of actual samples by category
+    f1_score_macro : float
+        Macro averaged F1 score
+
+    '''
+    precisions, recalls, f1scores, supports = f1_help(true_lengths, 
+                                                      pred_lengths, 
+                                                      average=None,
+                                                      labels=[0,1,2,3,4])
+    f1_score_macro = sum(f1scores) / len(f1scores)
+    return precisions, recalls, f1scores, supports, f1_score_macro
+
+def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro):
+    string = 'Labels \t\tPrecision\tRecall\t\tF1 score\tSupport\n'
+    string +='Empty  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
+    string +='Deny   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
+    string +='Support\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
+    string +='Query  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[3],recalls[3],f1scores[3],supports[3])
+    string +='Comment\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[4],recalls[4],f1scores[4],supports[4])
+    string +='\n'
+    string +='F1-macro\t%1.4f' % f1_scores_macro
+    return string
