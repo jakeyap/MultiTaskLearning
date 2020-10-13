@@ -60,9 +60,9 @@ def main():
 '''======== FILE NAMES FOR LOGGING ========'''
 FROM_SCRATCH = True
 '''======== HYPERPARAMETERS START ========'''
-BATCH_SIZE_TRAIN = 2
-BATCH_SIZE_TEST = 2
-LOG_INTERVAL = 1
+BATCH_SIZE_TRAIN = 16
+#BATCH_SIZE_TEST = 2
+LOG_INTERVAL = 10
 
 N_EPOCHS = 20
 LEARNING_RATE = 0.001
@@ -78,10 +78,11 @@ test_filename = 'encoded_shuffled_test_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_PO
 train_filename = 'encoded_shuffled_train_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
 dev_filename = 'encoded_shuffled_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
 
-
+'''
 test_filename = 'encoded_combined_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
 train_filename = 'encoded_combined_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
 dev_filename = 'encoded_combined_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
+'''
 
 timestamp = time.time()
 timestamp = str(timestamp)[5:]
