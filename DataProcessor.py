@@ -12,6 +12,9 @@ import pandas as pd
 import csv
 import time
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 default_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
@@ -161,9 +164,9 @@ def tokenize_encode_thread(thread, max_post_length, max_post_per_thread):
     return encoded_posts, token_type_ids, attention_masks
 
 def tokenize_encode_dataframe(dataframe, max_post_length, max_post_per_thread):
-    print('Tokenizing & encoding started.')
-    print('\tPosts per thread: %d' % max_post_per_thread)
-    print('\tMax tokens per post: %d' % max_post_length)
+    logging.info('Tokenizing & encoding started.')
+    logging.info('\tPosts per thread: %d' % max_post_per_thread)
+    logging.info('\tMax tokens per post: %d' % max_post_length)
     
     list_of_encoded_comments = []
     list_of_token_type_ids = []
@@ -221,13 +224,13 @@ def convert_label_list_2_tensor(labels_list, max_post_per_thread):
         counter = counter + 1
     return labels_tensor
 
-def save_df_2_pkl(dataframe, filename):
-    print('saving to pickle file ' + filename)
+def save_2_pkl(dataframe, filename):
+    logging.info('saving to pickle file ' + filename)
     torch.save(dataframe, filename)
     #dataframe.to_pickle(filename)
 
-def load_df_from_pkl(filename):
-    print('loading from pickle file')
+def load_from_pkl(filename):
+    logging.info('loading from pickle file')
     return torch.load(filename)
     #return pd.read_pickle(filename)
 
@@ -303,13 +306,13 @@ if __name__ == '__main__':
     
     time1 = time.time()
     for each_filename in filenames:
-        print('Encoding dataset: ' + each_filename)
+        logging.info('Encoding dataset: ' + each_filename)
         suffix = '_' + str(MAX_POST_PER_THREAD) + '_' +str(MAX_POST_LENGTH)
         tsv_filename = DIRECTORY + each_filename +'.tsv'
         pkl_filename = DIRECTORY + 'encoded_' + each_filename + suffix +'.pkl'
         dataframe = get_dataset(tsv_filename)
         dataframe = tokenize_encode_dataframe(dataframe, MAX_POST_LENGTH, MAX_POST_PER_THREAD)
-        save_df_2_pkl(dataframe, pkl_filename)
+        save_2_pkl(dataframe, pkl_filename)
     time2 = time.time()
     time_taken = int(time2-time1)
     print('time taken: %ds' % time_taken)

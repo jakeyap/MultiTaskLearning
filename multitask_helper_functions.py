@@ -8,6 +8,10 @@ Created on Thu Oct  1 16:56:32 2020
 import torch
 from sklearn.metrics import precision_recall_fscore_support as f1_help
 
+import logging
+logger = logging.getLogger('__main__')
+
+
 def rescale_labels(labels):
     '''
     Given a set of stance labels, shift all of them up by 1.
@@ -38,7 +42,7 @@ def rescale_labels(labels):
 
 def length_loss(pred_logits, true_labels, loss_fn, divide=9):
     '''
-    Given a set of length labels, calculate the binary cross entropy loss
+    Given a set of length labels and logits, calculate the binary cross entropy loss
 
     Parameters
     ----------
@@ -48,7 +52,7 @@ def length_loss(pred_logits, true_labels, loss_fn, divide=9):
             2: 2 logits because we frame length prediction as binary classification
     
     true_labels : tensor
-        original thread lengths with dimenstions [n, A] where
+        original thread lengths with dimensions [n, A] where
             n: minibatch size
             A: number of posts in original thread
         
@@ -63,25 +67,23 @@ def length_loss(pred_logits, true_labels, loss_fn, divide=9):
     loss, a scalar or vector. depending on loss's setting. 
     '''
     
-    binary_labels = (true_labels >= divide) # convert to binary labels. shape=(n,1)
+    binary_labels = (true_labels>=divide)*1 # convert to binary labels. shape=(n,1)
     binary_labels = binary_labels.view(-1)  # cast it into shape=(N,)
     binary_labels = binary_labels.long()    # convert into long datatype
-    
     return loss_fn(pred_logits, binary_labels)
 
 def stance_loss(pred_logits, true_labels, loss_fn):
     '''
-    Given a set of class labels, calculate the cross entropy loss
+    Given a set of class labels and logits, calculate the cross entropy loss
 
     Parameters
     ----------
-    pred_logits: tensor
-        raw logits from with dimensions [n, A, B] where
-            n: minibatch size
-            A: number of posts in 1 thread
-            B: number of classes
+    pred_logits: logit tensor with dimensions [n, A, B] where
+        n: minibatch size
+        A: number of posts in 1 thread
+        B: number of classes
     
-    true_labels : tensor
+    true_labels : tensor with dimensions [n,1]
         actual stance labels where
             -1= no post    0 = deny
             1 = support    2 = query
@@ -95,7 +97,7 @@ def stance_loss(pred_logits, true_labels, loss_fn):
     loss, a scalar or vector. depending on loss's setting. 
     '''
     num_labels = pred_logits.shape[-1]
-    # cast it into shape=(N,C) tensor where N=minibatch, C=num of classes
+    # cast it into shape=(NxA,C) tensor where N=minibatch, C=num of classes
     logits = pred_logits.view(-1, num_labels) 
     
     labels = true_labels.view(-1)       # cast it into shape=(N,)
@@ -169,7 +171,7 @@ def accuracy(pred_labels, true_labels):
     num_correct = torch.sum(pred_labels == true_labels).item()
     return num_correct / count
 
-def length_f1(pred_lengths, true_lengths):
+def length_f1(pred_lengths, true_lengths, divide=9):
     '''
     Calculates the F1 score of the length prediction task
 
@@ -183,7 +185,10 @@ def length_f1(pred_lengths, true_lengths):
         labels with dimensions [n,] where each element is 
             0 if it is short in length
             1 if it is long in length
-
+    divide : integer, default is 9
+        Number to split thread lengths into a binary classification problem
+        Number <= divide is class 0, >divide is class 1
+    
     Returns
     -------
     precisions : tuple of floats, size=2
@@ -196,7 +201,8 @@ def length_f1(pred_lengths, true_lengths):
         How many samples
 
     '''
-    precisions, recalls, f1scores, supports = f1_help(true_lengths, 
+    binarylabels = (true_lengths >= divide) * 1                     # convert lengths to binary labels
+    precisions, recalls, f1scores, supports = f1_help(binarylabels, # calculate loss based on binary labels
                                                       pred_lengths,
                                                       average=None,
                                                       labels=[0,1])
@@ -211,7 +217,7 @@ def length_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro):
     string +='F1-macro\t%1.4f' % f1_scores_macro
     return string
 
-def stance_f1(pred_lengths, true_lengths):
+def stance_f1(pred_stance, true_stance):
     '''
     Calculates the f1 scores for each label category
 
@@ -236,8 +242,8 @@ def stance_f1(pred_lengths, true_lengths):
         Macro averaged F1 score
 
     '''
-    precisions, recalls, f1scores, supports = f1_help(true_lengths, 
-                                                      pred_lengths, 
+    precisions, recalls, f1scores, supports = f1_help(true_stance, 
+                                                      pred_stance, 
                                                       average=None,
                                                       labels=[0,1,2,3,4])
     f1_score_macro = sum(f1scores) / len(f1scores)
