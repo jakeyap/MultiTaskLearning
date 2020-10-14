@@ -103,7 +103,7 @@ def stance_loss(pred_logits, true_labels, loss_fn):
     labels = true_labels.view(-1)       # cast it into shape=(N,)
     labels = labels.long()              # convert into long datatype
     new_labels = rescale_labels(labels) # rescale labels to take care of -1s
-    loss_fn.ignore_index = 0            # set the loss function to ignore 0 labels
+    #loss_fn.ignore_index = 0            # set the loss function to ignore 0 labels
     return loss_fn(logits, new_labels)
 
 def logit_2_class_length(pred_logits):
@@ -150,14 +150,34 @@ def logit_2_class_stance(pred_logits):
     pred_labels = pred_labels.long()
     return pred_labels.reshape(-1)
 
-def accuracy(pred_labels, true_labels):
+def accuracy_length(pred_labels, true_labels):
     '''
-    Returns the accuracy of some predictions 
+    Returns the accuracy of stance predictions 
 
     Parameters
     ----------
     pred_labels : 1D tensor, shape=(N,)
-        predicted labels
+        predicted labels.
+    true_labels : TYPE
+        ground truth labels.
+
+    Returns
+    -------
+    accuracy : float
+        [True Pos + True Neg] / [Total].
+    '''
+    count = true_labels.shape[0]
+    num_correct = torch.sum(pred_labels == true_labels).item()
+    return num_correct / count
+
+def accuracy_stance(pred_labels, true_labels):
+    '''
+    Returns the accuracy of stance predictions 
+
+    Parameters
+    ----------
+    pred_labels : 1D tensor, shape=(N,)
+        predicted labels.
     true_labels : 1D tensor, shape=(N,)
         ground truth labels.
 
@@ -165,10 +185,11 @@ def accuracy(pred_labels, true_labels):
     -------
     accuracy : float
         [True Pos + True Neg] / [Total].
-
     '''
     count = true_labels.shape[0]
-    num_correct = torch.sum(pred_labels == true_labels).item()
+    # rescale labels to take care of -1s
+    new_labels = rescale_labels(true_labels) 
+    num_correct = torch.sum(pred_labels == new_labels).item()
     return num_correct / count
 
 def length_f1(pred_lengths, true_lengths, divide=9):
@@ -210,6 +231,23 @@ def length_f1(pred_lengths, true_lengths, divide=9):
     return precisions, recalls, f1scores, supports, f1_score_macro
 
 def length_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro):
+    '''
+    For printing the f1 score for length prediction task
+
+    Parameters
+    ----------
+    precisions : tuple of length 2
+    recalls : tuple of length 2
+    f1scores : tuple of length 2
+    supports : tuple of length 2
+    f1_scores_macro : tuple of length 2
+
+    Returns
+    -------
+    string : string
+        for printing the f1 score nicely.
+
+    '''
     string = 'Labels \t\tPrecision\tRecall\t\tF1 score\tSupport\n'
     string +='Short  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
     string +='Long   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
@@ -242,7 +280,9 @@ def stance_f1(pred_stance, true_stance):
         Macro averaged F1 score
 
     '''
-    precisions, recalls, f1scores, supports = f1_help(true_stance, 
+    # remember to rescale the stance labels to take care of -1s
+    new_stance = rescale_labels(true_stance)
+    precisions, recalls, f1scores, supports = f1_help(new_stance, 
                                                       pred_stance, 
                                                       average=None,
                                                       labels=[0,1,2,3,4])
@@ -250,6 +290,23 @@ def stance_f1(pred_stance, true_stance):
     return precisions, recalls, f1scores, supports, f1_score_macro
 
 def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro):
+    '''
+    For printing the f1 score for stance prediction task
+
+    Parameters
+    ----------
+    precisions : tuple of length 2
+    recalls : tuple of length 2
+    f1scores : tuple of length 2
+    supports : tuple of length 2
+    f1_scores_macro : tuple of length 2
+
+    Returns
+    -------
+    string : string
+        for printing the f1 score nicely.
+
+    '''
     string = 'Labels \t\tPrecision\tRecall\t\tF1 score\tSupport\n'
     string +='Empty  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
     string +='Deny   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
