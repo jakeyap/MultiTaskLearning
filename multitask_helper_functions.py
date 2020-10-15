@@ -52,16 +52,16 @@ def length_loss(pred_logits, true_labels, loss_fn, divide=9):
             2: 2 logits because we frame length prediction as binary classification
     
     true_labels : tensor
-        original thread lengths with dimensions [n, A] where
+        original thread lengths with dimensions [n, 1] where
             n: minibatch size
-            A: number of posts in original thread
+            each element is the number of posts in original thread
         
     loss_fn: loss function
         Takes in 2 tensors and calculates cross entropy loss
     
     divide : integer, default is 9
         Number to split thread lengths into a binary classification problem
-        Number <= divide is class 0, >divide is class 1
+        Number < divide is class 0, >= divide is class 1
     Returns
     -------
     loss, a scalar or vector. depending on loss's setting. 
@@ -203,12 +203,11 @@ def length_f1(pred_lengths, true_lengths, divide=9):
             0 if it is short in length
             1 if it is long in length
     true_lengths : tensor
-        labels with dimensions [n,] where each element is 
-            0 if it is short in length
-            1 if it is long in length
+        labels with dimensions [n,1]. 
+            Each element is the length of the original thread
     divide : integer, default is 9
         Number to split thread lengths into a binary classification problem
-        Number <= divide is class 0, >divide is class 1
+        Number < divide is class 0, >=divide is class 1
     
     Returns
     -------
