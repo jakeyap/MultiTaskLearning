@@ -52,16 +52,16 @@ def length_loss(pred_logits, true_labels, loss_fn, divide=9):
             2: 2 logits because we frame length prediction as binary classification
     
     true_labels : tensor
-        original thread lengths with dimensions [n, 1] where
+        original thread lengths with dimensions [n, A] where
             n: minibatch size
-            each element is the number of posts in original thread
+            A: number of posts in original thread
         
     loss_fn: loss function
         Takes in 2 tensors and calculates cross entropy loss
     
     divide : integer, default is 9
         Number to split thread lengths into a binary classification problem
-        Number < divide is class 0, >= divide is class 1
+        Number <= divide is class 0, >divide is class 1
     Returns
     -------
     loss, a scalar or vector. depending on loss's setting. 
@@ -150,7 +150,7 @@ def logit_2_class_stance(pred_logits):
     pred_labels = pred_labels.long()
     return pred_labels.reshape(-1)
 
-def accuracy_length(pred_labels, true_labels):
+def accuracy_length(pred_labels, true_labels, divide=9):
     '''
     Returns the accuracy of stance predictions 
 
@@ -158,16 +158,21 @@ def accuracy_length(pred_labels, true_labels):
     ----------
     pred_labels : 1D tensor, shape=(N,)
         predicted labels.
-    true_labels : TYPE
+    true_labels : 1D tensor, shape=(N,)
         ground truth labels.
+    divide : integer, default is 9
+        Number to split thread lengths into a binary classification problem
+        Number <= divide is class 0, >divide is class 1
 
     Returns
     -------
     accuracy : float
         [True Pos + True Neg] / [Total].
     '''
+    # convert lengths to binary labels
+    binarylabels = (true_labels >= divide) * 1
     count = true_labels.shape[0]
-    num_correct = torch.sum(pred_labels == true_labels).item()
+    num_correct = torch.sum(pred_labels == binarylabels).item()
     return num_correct / count
 
 def accuracy_stance(pred_labels, true_labels):
@@ -203,11 +208,12 @@ def length_f1(pred_lengths, true_lengths, divide=9):
             0 if it is short in length
             1 if it is long in length
     true_lengths : tensor
-        labels with dimensions [n,1]. 
-            Each element is the length of the original thread
+        labels with dimensions [n,] where each element is 
+            0 if it is short in length
+            1 if it is long in length
     divide : integer, default is 9
         Number to split thread lengths into a binary classification problem
-        Number < divide is class 0, >=divide is class 1
+        Number <= divide is class 0, >divide is class 1
     
     Returns
     -------
@@ -219,7 +225,7 @@ def length_f1(pred_lengths, true_lengths, divide=9):
         Self explanatory
     supports : tuple of floats, size=2
         How many samples
-
+    accuracy : float
     '''
     binarylabels = (true_lengths >= divide) * 1                     # convert lengths to binary labels
     precisions, recalls, f1scores, supports = f1_help(binarylabels, # calculate loss based on binary labels
@@ -277,7 +283,6 @@ def stance_f1(pred_stance, true_stance):
         number of actual samples by category
     f1_score_macro : float
         Macro averaged F1 score
-
     '''
     # remember to rescale the stance labels to take care of -1s
     new_stance = rescale_labels(true_stance)

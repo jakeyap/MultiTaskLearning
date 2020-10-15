@@ -21,22 +21,22 @@ import matplotlib.pyplot as plt
 
 '''======== FILE NAMES FOR LOGGING ========'''
 FROM_SCRATCH = True
-'''======== DEFAULT HYPERPARAMETERS ========'''
-BATCH_SIZE_TRAIN = 2
-LOG_INTERVAL = 1
-N_EPOCHS = 1
-LEARNING_RATE = 0.0005
-MOMENTUM = 0.25
-MAX_POST_LENGTH = 256
-MAX_POST_PER_THREAD = 4
-THREAD_LENGTH_DIVIDER = 9 # for dividing thread lengths into binary buckets
-'''======== HYPERPARAMETERS END ========'''
+
 
 def main():
+    '''======== DEFAULT HYPERPARAMETERS ========'''
+    BATCH_SIZE_TRAIN = 2
+    LOG_INTERVAL = 1
+    N_EPOCHS = 1
+    LEARNING_RATE = 0.0005
+    MOMENTUM = 0.25
+    MAX_POST_LENGTH = 256
+    MAX_POST_PER_THREAD = 4
+    THREAD_LENGTH_DIVIDER = 9 # for dividing thread lengths into binary buckets
+    '''======== HYPERPARAMETERS END ========'''
+    
+    # Grab the non default hyperparameters from input arguments
     parser = argparse.ArgumentParser()
-    global BATCH_SIZE_TRAIN, LOG_INTERVAL, N_EPOCHS, LEARNING_RATE, MOMENTUM
-    global MAX_POST_LENGTH, MAX_POST_PER_THREAD, THREAD_LENGTH_DIVIDER
-    # Grab the hyperparameters
     parser.add_argument("--BATCH_SIZE_TRAIN",   default=BATCH_SIZE_TRAIN,
                         type=int,               help="Minibatch size for training.")
     parser.add_argument("--LOG_INTERVAL",   default=LOG_INTERVAL,
@@ -95,7 +95,7 @@ def main():
     
     # for storing training / dev / test losses
     lossfile = './log_files/losses_'+suffix+timestamp+'.bin'
-    plotfile = './log_files/plot_'+suffix+timestamp+'.png'
+    plotfile = './log_files/plot_ModelA0_'+suffix+timestamp+'.png'
     
     handlers = [file_handler, stdout_handler]
     logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -123,11 +123,14 @@ def main():
             model = torch.nn.DataParallel(model)
         
         # Define the optimizers. Use SGD
-        stance_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
-                                     momentum=MOMENTUM)
-        length_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
-                                     momentum=MOMENTUM)
-        #optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+        #logger.info('Using SGD')
+        #stance_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
+        #                             momentum=MOMENTUM)
+        #length_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
+        #                             momentum=MOMENTUM)
+        logger.info('Using Adam')
+        stance_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+        length_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     else:
         logger.info('Load from saved model not implemented yet')
         
@@ -158,15 +161,18 @@ def main():
     train_dataloader = DataProcessor.dataframe_2_dataloader(train_dataframe,
                                                             batchsize=BATCH_SIZE_TRAIN,
                                                             randomize=True,
-                                                            DEBUG=False)
+                                                            DEBUG=False,
+                                                            num_workers=5)
     test_dataloader = DataProcessor.dataframe_2_dataloader(test_dataframe,
                                                            batchsize=BATCH_SIZE_TRAIN,
                                                            randomize=False,
-                                                           DEBUG=False)
+                                                           DEBUG=False,
+                                                           num_workers=5)
     dev_dataloader = DataProcessor.dataframe_2_dataloader(dev_dataframe,
                                                           batchsize=BATCH_SIZE_TRAIN,
                                                           randomize=False,
-                                                          DEBUG=False)
+                                                          DEBUG=False,
+                                                          num_workers=5)
     
     def train(epochs):    
         best_f1_score = 0   # For tracking best model on dev set so far
@@ -277,9 +283,6 @@ def main():
         elif mode=='dev':
             dataloader = dev_dataloader
         
-        length_losses = []  # for tracking minibatch losses
-        stance_losses = []  # for tracking minibatch losses
-        
         with torch.no_grad():
             for batch_idx, minibatch in enumerate(dataloader):
                 if batch_idx % LOG_INTERVAL == 0:
@@ -349,6 +352,12 @@ def main():
                                               length_true,
                                               THREAD_LENGTH_DIVIDER)
             
+            stance_accuracy = helper.accuracy_stance(stance_pred,           # calculate prediction accuracies
+                                                     stance_true)
+            length_accuracy = helper.accuracy_length(length_pred,           # calculate prediction accuracies
+                                                     length_true,
+                                                     THREAD_LENGTH_DIVIDER)
+            
             stance_msg = helper.stance_f1_msg(stance_metrics[0],            # Get the strings to display for f1 scores
                                               stance_metrics[1],
                                               stance_metrics[2],
@@ -365,7 +374,9 @@ def main():
             
             if display:
                 logger.info('\n'+stance_msg)
+                logger.info('Stance Accuracy: %1.4f' % stance_accuracy)
                 logger.info('\n'+length_msg)
+                logger.info('Length Accuracy: %1.4f' % length_accuracy)
         
         return stance_pred, stance_true, length_pred, length_true, \
                 stance_loss.item(), length_loss.item(), \
@@ -383,16 +394,15 @@ def main():
                    model_savefile)
         return 
     
-    # Feed into the model and see if it is working correctly
-    '''
+    ''' 
+    # for debugging purposes
     batch_idx, minibatch = next(enumerate(train_dataloader))
     batch_idx, minibatch = next(enumerate(test_dataloader))
     '''
-    
     start_time = time.time()
     
-    train_losses = train(N_EPOCHS)              
-    torch.save(train_losses, model_savefile)    # save the losses
+    train_losses = train(N_EPOCHS)               
+    torch.save(train_losses, lossfile)  # save the losses
     test_losses = test(mode='test')
     
     train_stance_losses = train_losses[0]

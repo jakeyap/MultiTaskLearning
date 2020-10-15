@@ -1,14 +1,26 @@
------ todo -----
-modify hierarchical transformer model using huggingface
-    check accuracy measurement
-    implement model storing on best results
-    implement logic to do single task training on either task
-    run 1 epoch of full training to time the model
-    implement multi gpu
-    write readme doc
-to get the pkl files up on the remote pc, run the DataProcessor main function.
+===================== EXP NOTES =====================
 
------ done -----
+--------------- Experiments Completed ---------------
+exp1: SGD,epochs=10,lr=0.0005, moment=0.125, GPU=6, minibatch=24. Bug saving model/loss. Only have logs (6h)
+exp2: SGD,epochs=10,lr=0.0005, moment=0.250, GPU=6, minibatch=24. Bug saving model/loss. Only have logs (6h)
+exp3: SGD,epochs=10,lr=0.0005, moment=0.500, GPU=6, minibatch=24. Bug saving model/loss. Only have logs (6h)
+
+-------------- Experiments in progress --------------
+exp4: Adam,epochs=20,lr=0.0001, GPU=5, minibatch=25. (5h)
+
+---------------- Experiments planned ----------------
+
+
+===================== TASKS TODO ====================
+try adam optimizer
+try weighing the cost function to penalize the negative class
+implement logic to do single task training on either task
+write readme doc
+
+
+
+
+===================== TASKS DONE ====================
 install tweet tokenizer
 try out tweet tokenizer
 compare difference to bert tokenizer
@@ -20,4 +32,13 @@ implement check 1 test run
 implement the length prediction loss
 get the modified version to work
 set up msi laptop as server at home
-check f1 scoring
+set up things on nus server
+implement multi gpu
+check f1 scoring bugs
+to get the pkl files up on the remote pc, run the DataProcessor main function.
+run 1 epoch of full training to time the model
+implement model storing on best results
+check accuracy measurement
+modify hierarchical transformer model using huggingface
+implement num workers on dataloading
+log the steps in the previous work

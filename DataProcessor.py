@@ -225,11 +225,36 @@ def convert_label_list_2_tensor(labels_list, max_post_per_thread):
     return labels_tensor
 
 def save_2_pkl(dataframe, filename):
+    '''
+    save data into a pytorch pickle file
+
+    Parameters
+    ----------
+    dataframe : Any data to be stored, originally intended for pandas DF
+    filename : string that is the path+filename to store it
+    
+    Returns
+    -------
+    None.
+
+    '''
     logging.info('saving to pickle file ' + filename)
     torch.save(dataframe, filename)
     #dataframe.to_pickle(filename)
 
 def load_from_pkl(filename):
+    '''
+    loads data from a pytorch pickle file
+
+    Parameters
+    ----------
+    filename : string that is the path+filename to load from
+
+    Returns
+    -------
+    object that was stored inside the file
+
+    '''
     logging.info('loading from pickle file')
     return torch.load(filename)
     #return pd.read_pickle(filename)
@@ -237,28 +262,35 @@ def load_from_pkl(filename):
 def dataframe_2_dataloader(dataframe, 
                            batchsize=64,
                            randomize=False,
-                           DEBUG=True):
-    
+                           DEBUG=False,
+                           num_workers=0):
     '''
-    Each dataframe has the following columns 
-    {
-        orig_length
-        labels_list
-        text
-        encoded_comments
-        token_type_ids
-        attention_masks
-    }
     
-    Each dataloader is packed into the following tuple
-    {   
-         index in original data,
-         tensor of encoded_comments, 
-         tensor of token_typed_ids,
-         tensor of attention_masks,
-         original true length label
-         tensor of true stance labels
-    }
+
+    Parameters
+    ----------
+    dataframe : pandas dataframe with these columns 
+        {orig_length,
+        labels_list,
+        text,
+        encoded_comments,
+        token_type_ids,
+        attention_masks}
+    batchsize : int, minibatch size inside dataloaders. Defaults to 64.
+    randomize : boolean flag to shuffle data or not. Defaults to False.
+    DEBUG : boolean flag for debugging purposes. Defaults to False. Unused
+    num_workers : int, number of cores for loading data. Defaults to 0.
+
+    Returns
+    -------
+    dataloader : pytorch dataloader type
+        Each dataloader is packed into the following tuple
+            {index in original data,
+            tensor of encoded_comments, 
+            tensor of token_typed_ids,
+            tensor of attention_masks,
+            original true length label
+            tensor of true stance labels}
     '''
     posts_index     = dataframe.index.values
     posts_index     = posts_index.reshape((-1,1))
@@ -292,7 +324,8 @@ def dataframe_2_dataloader(dataframe,
         sampler = SequentialSampler(dataset)
     dataloader = DataLoader(dataset,
                             sampler=sampler,
-                            batch_size=batchsize)
+                            batch_size=batchsize,
+                            num_workers=num_workers)
     
     return dataloader
 
