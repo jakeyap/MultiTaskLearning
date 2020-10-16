@@ -153,6 +153,49 @@ def plot_thread_depths():
     plt.xlabel('Label')
     plt.tight_layout()
 
+def count_labels():
+    rumor_train_file = "./../data/semeval17/stance_train.json"
+    rumor_dev_file = "./../data/semeval17/stance_dev.json"
+    rumor_test_file = "./../data/semeval17/stance_test.json"
+    
+    fin1 = open(rumor_train_file, 'r', encoding='utf-8', newline='\n', errors='ignore')
+    lines1 = fin1.readlines()
+    fin2 = open(rumor_dev_file, 'r', encoding='utf-8', newline='\n', errors='ignore')
+    lines2 = fin1.readlines()
+    fin3 = open(rumor_test_file, 'r', encoding='utf-8', newline='\n', errors='ignore')
+    lines3 = fin1.readlines()
+    labels = []
+    
+    for i in range(len(lines1)):
+        input_dict = json.loads(lines1[i])
+        thread_labels = input_dict["label"]
+        thread_labels = [int(each) for each in thread_labels]
+        labels.extend(thread_labels)
+    for i in range(len(lines2)):
+        input_dict = json.loads(lines2[i])
+        thread_labels = input_dict["label"]
+        thread_labels = [int(each) for each in thread_labels]
+        labels.extend(thread_labels)
+    for i in range(len(lines3)):
+        input_dict = json.loads(lines3[i])
+        thread_labels = input_dict["label"]
+        thread_labels = [int(each) for each in thread_labels]
+        labels.extend(thread_labels)
+        
+    fig, ax = plt.subplots()
+    label_list = ['deny','support','query','comment']
+    horz = [-0.5, 0.5,1.5,2.5,3.5]
+    ax = plt.gca()
+    ax.hist(labels,bins=horz, edgecolor='black')
+    ax.grid(True)
+    ax.set_title('Label Density')
+    ax.set_ylabel('Counts')
+    ax.set_xlabel('Depth')
+    ax.set_xticks([0, 1,2,3])
+    ax.set_xticklabels(label_list,size=8, rotation=90)
+    fig.tight_layout()
+    
+    
 if __name__ == '__main__':
     DIRECTORY = './../data/semeval17/'
     format_rumor(DIRECTORY)
