@@ -53,11 +53,20 @@ def main():
                         help="Max number of posts per thread to look at")
     parser.add_argument("--THREAD_LENGTH_DIVIDER",   default=THREAD_LENGTH_DIVIDER,
                         type=int,           help="Number to divide lengths into binary classes")
+    parser.add_argument("--OPTIMIZER",      default='SGD',
+                        help="SGD (Default) or ADAM.")
+    
+    parser.add_argument("--WEIGHTED_STANCE",action='store_true',
+                        help="Whether to weigh DENY and QUERY higher")
     
     parser.add_argument("--do_train",       action='store_true',
-                        help="Whether to run training.")
+                        help="Whether to run training. Not implemented yet")
     parser.add_argument("--do_eval",        action='store_true',
-                        help="Whether to run eval on the dev set.")
+                        help="Whether to run eval on the dev set. Not implemented yet")
+    parser.add_argument("--DEBUG",          action='store_true',
+                        help="Debug flag")
+    parser.add_argument("--NAME",          default='',
+                        help="For naming log files")
 
     args = parser.parse_args()
     BATCH_SIZE_TRAIN = args.BATCH_SIZE_TRAIN
@@ -68,34 +77,30 @@ def main():
     MAX_POST_LENGTH = args.MAX_POST_LENGTH
     MAX_POST_PER_THREAD = args.MAX_POST_PER_THREAD
     THREAD_LENGTH_DIVIDER = args.THREAD_LENGTH_DIVIDER
-
-    directory = './data/combined/'
-    test_filename = 'encoded_shuffled_test_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
-    train_filename = 'encoded_shuffled_train_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
-    dev_filename = 'encoded_shuffled_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
-    
-    '''
-    test_filename = 'encoded_combined_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
-    train_filename = 'encoded_combined_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
-    dev_filename = 'encoded_combined_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
-    '''
+    OPTIMIZER = args.OPTIMIZER
+    WEIGHTED_STANCE = args.WEIGHTED_STANCE
+    DEBUG = args.DEBUG
+    NAME = args.NAME
     
     timestamp = time.time()
-    timestamp = str(timestamp)[5:]
+    if NAME=='':
+        expname = str(timestamp)[5:]
+    else:
+        expname = NAME
     
     suffix = "%d_%d_%d_%d_" % (BATCH_SIZE_TRAIN, N_EPOCHS, MAX_POST_PER_THREAD, MAX_POST_LENGTH)
     suffix = suffix + str(LEARNING_RATE) + "_"
     
-    model_savefile = './saved_models/ModelA0_'+suffix+timestamp+'.bin'
+    model_savefile = './saved_models/ModelA0_'+suffix+expname+'.bin'
     
     # for storing logs into a file
-    file_handler = logging.FileHandler(filename='./log_files/ModelA0_'+suffix+timestamp+'.log')
+    file_handler = logging.FileHandler(filename='./log_files/ModelA0_'+suffix+expname+'.log')
     # for printing onto terminal
     stdout_handler = logging.StreamHandler(sys.stdout)
     
     # for storing training / dev / test losses
-    lossfile = './log_files/losses_'+suffix+timestamp+'.bin'
-    plotfile = './log_files/plot_ModelA0_'+suffix+timestamp+'.png'
+    lossfile = './log_files/losses_'+suffix+expname+'.bin'
+    plotfile = './log_files/plot_ModelA0_'+suffix+expname+'.png'
     
     handlers = [file_handler, stdout_handler]
     logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -103,6 +108,17 @@ def main():
                         handlers=handlers,
                         level = logging.INFO)
     logger = logging.getLogger(__name__)
+    
+    directory = './data/combined/'
+    test_filename = 'encoded_shuffled_test_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
+    train_filename = 'encoded_shuffled_train_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
+    dev_filename = 'encoded_shuffled_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
+    
+    if DEBUG:
+        logger.info('Debugging with a very small dev set')
+        test_filename = 'encoded_combined_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
+        train_filename = 'encoded_combined_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
+        dev_filename = 'encoded_combined_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
     
     gpu = torch.device("cuda")
     n_gpu = torch.cuda.device_count()
@@ -122,22 +138,29 @@ def main():
         if n_gpu > 1:
             model = torch.nn.DataParallel(model)
         
-        # Define the optimizers. Use SGD
-        #logger.info('Using SGD')
-        #stance_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
-        #                             momentum=MOMENTUM)
-        #length_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
-        #                             momentum=MOMENTUM)
-        logger.info('Using Adam')
-        stance_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-        length_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+        # Define the optimizers. 
+        if OPTIMIZER=='SGD':            # Use SGD
+            logger.info('Using SGD')
+            stance_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
+                                         momentum=MOMENTUM)
+            length_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
+                                         momentum=MOMENTUM)
+        elif OPTIMIZER=='ADAM':         # Use ADAM
+            logger.info('Using Adam')
+            stance_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+            length_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+        else:
+            logger.info('Exiting. No such optimizer '+OPTIMIZER)
+            raise Exception()
     else:
         logger.info('Load from saved model not implemented yet')
         
-    # ignore 0 labels - no post
-    # do averaging on the losses
-    #stance_loss_fn = torch.nn.CrossEntropyLoss(reduction='mean', ignore_index=0)
-    stance_loss_fn = torch.nn.CrossEntropyLoss(reduction='mean')
+    # Set up loss functions. Use averaging to calculate a value
+    if WEIGHTED_STANCE:
+        weights = torch.tensor([1.0, 10.0, 1.0, 5.0, 1.0]).to(gpu)
+        stance_loss_fn = torch.nn.CrossEntropyLoss(weight=weights, reduction='mean')
+    else:
+        stance_loss_fn = torch.nn.CrossEntropyLoss(reduction='mean')
     length_loss_fn = torch.nn.CrossEntropyLoss(reduction='mean')
     
     logger.info('\n===== Hyperparameters ======')
@@ -148,8 +171,13 @@ def main():
     logger.info('MAX_POST_PER_THREAD: %d' % MAX_POST_PER_THREAD)
     logger.info('THREAD_LENGTH_DIVIDER: %d' % THREAD_LENGTH_DIVIDER)
     
+    logger.info('\n===== Other settings ======')
+    logger.info('OPTIMIZER: ' + OPTIMIZER)
+    logger.info('WEIGHTED STANCE LOSS' if WEIGHTED_STANCE else 'FLAT STANCE LOSS')
+    
+    
     # Load the test and training data
-    logger.info('\n===== Loading data ======')
+    logger.info('\n====== Loading data ========')
     logger.info('Opening training data: ' + train_filename)
     logger.info('Opening dev data: ' + dev_filename)
     logger.info('Opening test data: ' + test_filename)
@@ -331,8 +359,8 @@ def main():
             length_logits_arr = length_logits_arr[1:,:]     # shape was (n+1,2)
             length_labels_arr = length_labels_arr[1:,:]     # shape was (n+1,1)
             
-            stance_loss = helper.stance_loss(pred_logits=stance_logits_arr, # calculate the dev set stance loss
-                                             true_labels=stance_labels_arr, 
+            stance_loss = helper.stance_loss(stance_logits_arr.to(gpu),     # calculate the dev set stance loss
+                                             stance_labels_arr.to(gpu),     # move to GPU, cauz loss weights are in GPU
                                              loss_fn=stance_loss_fn)
             
             length_loss = helper.length_loss(pred_logits=length_logits_arr, # calculate the dev set length loss

@@ -235,7 +235,7 @@ I haven't tried to compare against them yet.
     * Train the network for stance only
     * Train the network for length prediction only
     * Remove middle attention network, straight into MLPs
-3. Use a other models for comparison
+3. Use other models for comparison
     * BOW regression?
 
 ## **References**

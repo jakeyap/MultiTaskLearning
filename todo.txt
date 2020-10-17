@@ -1,23 +1,31 @@
 ===================== EXP NOTES =====================
 
 --------------- Experiments Completed ---------------
-exp1: SGD,epochs=10,lr=0.0005, moment=0.125, GPU=6, minibatch=24. Bug saving model/loss. Only have logs (6h)
-exp2: SGD,epochs=10,lr=0.0005, moment=0.250, GPU=6, minibatch=24. Bug saving model/loss. Only have logs (6h)
-exp3: SGD,epochs=10,lr=0.0005, moment=0.500, GPU=6, minibatch=24. Bug saving model/loss. Only have logs (6h)
+exp1: SGD,epochs=20,lr=0.0005, moment=0.125, GPU=6, minibatch=24. Bug saving model/loss. Only have logs (6h) length acc=68%, stance f1=0.691
+exp2: SGD,epochs=20,lr=0.0005, moment=0.250, GPU=6, minibatch=24. Bug saving model/loss. Only have logs (6h) length acc=67%, stance f1=0.666
+exp3: SGD,epochs=20,lr=0.0005, moment=0.500, GPU=6, minibatch=24. Bug saving model/loss. Only have logs (6h) length acc=67%, stance f1=0.706
+exp4: Adam,epochs=10,lr=0.00005, GPU=5, minibatch=25. (5h) 
+exp5: Adam,epochs=10,lr=0.00010, GPU=5, minibatch=25. (5h)
+exp6: Adam,epochs=10,lr=0.00020, GPU=5, minibatch=25. (5h) fail to learn
 
 -------------- Experiments in progress --------------
-exp4: Adam,epochs=20,lr=0.0001, GPU=5, minibatch=25. (5h)
+exp7: Adam,epochs=20,lr=0.00001, GPU=5, minibatch=25. weighted stance loss(?h)
+exp8: Adam,epochs=20,lr=0.00002, GPU=5, minibatch=25. weighted stance loss(?h)
+exp9: Adam,epochs=20,lr=0.00005, GPU=5, minibatch=25. weighted stance loss(?h)
+exp10: Adam,epochs=20,lr=0.00010, GPU=5, minibatch=25. weighted stance loss(?h) 
+exp11: Adam,epochs=20,lr=0.00020, GPU=5, minibatch=25. weighted stance loss(?h)
 
 ---------------- Experiments planned ----------------
 
 
+
 ===================== TASKS TODO ====================
-try adam optimizer
-try weighing the cost function to penalize the negative class
 implement logic to do single task training on either task
-write readme doc
-
-
+try bert large
+try without masking URLs and hashtags
+hmm how to include the SRQ tweet-pair dataset?
+implement single datapoint test 
+eval - printing
 
 
 ===================== TASKS DONE ====================
@@ -42,3 +50,6 @@ check accuracy measurement
 modify hierarchical transformer model using huggingface
 implement num workers on dataloading
 log the steps in the previous work
+write readme doc
+try adam optimizer
+try weighing the cost function to penalize the negative class
