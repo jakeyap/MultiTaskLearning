@@ -8,7 +8,7 @@ Created on Mon Sep 14 17:58:20 2020
 
 import torch
 import matplotlib.pyplot as plt
-
+'''
 train_filename = 'encoded_shuffled_train_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
 train_dataframe = DataProcessor.load_df_from_pkl(directory + train_filename)
 
@@ -23,3 +23,5 @@ plt.title('Conversation lengths in training set. Median is %d' % median.item())
 plt.grid(True)
 plt.tight_layout()
 plt.yscale('log')
+'''
+print('hello world')

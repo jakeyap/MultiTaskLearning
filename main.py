@@ -13,7 +13,7 @@ from torch.utils.data.distributed import DistributedSampler
 
 import DataProcessor
 import multitask_helper_functions as helper
-from classifier_models import my_ModelA0
+from classifier_models import my_ModelA0, my_ModelBn
 
 import logging, sys, argparse
 import time
@@ -65,6 +65,8 @@ def main():
                         help="Whether to run eval on the dev set. Not implemented yet")
     parser.add_argument("--DEBUG",          action='store_true',
                         help="Debug flag")
+    parser.add_argument("--MODELNAME",          default='ModelA0',
+                        help="For choosing model")
     parser.add_argument("--NAME",          default='',
                         help="For naming log files")
 
@@ -81,26 +83,26 @@ def main():
     WEIGHTED_STANCE = args.WEIGHTED_STANCE
     DEBUG = args.DEBUG
     NAME = args.NAME
-    
+    MODELNAME = args.MODELNAME
     timestamp = time.time()
     if NAME=='':
         expname = str(timestamp)[5:]
     else:
         expname = NAME
     
-    suffix = "%d_%d_%d_%d_" % (BATCH_SIZE_TRAIN, N_EPOCHS, MAX_POST_PER_THREAD, MAX_POST_LENGTH)
+    suffix = "_%d_%d_%d_%d_" % (BATCH_SIZE_TRAIN, N_EPOCHS, MAX_POST_PER_THREAD, MAX_POST_LENGTH)
     suffix = suffix + str(LEARNING_RATE) + "_"
     
-    model_savefile = './saved_models/ModelA0_'+suffix+expname+'.bin'
+    model_savefile = './saved_models/'+MODELNAME+suffix+expname+'.bin'
     
     # for storing logs into a file
-    file_handler = logging.FileHandler(filename='./log_files/ModelA0_'+suffix+expname+'.log')
+    file_handler = logging.FileHandler(filename='./log_files/'+MODELNAME+suffix+expname+'.log')
     # for printing onto terminal
     stdout_handler = logging.StreamHandler(sys.stdout)
     
     # for storing training / dev / test losses
-    lossfile = './log_files/losses_'+suffix+expname+'.bin'
-    plotfile = './log_files/plot_ModelA0_'+suffix+expname+'.png'
+    lossfile = './log_files/losses_'+MODELNAME+suffix+expname+'.bin'
+    plotfile = './log_files/plot_'+MODELNAME+suffix+expname+'.png'
     
     handlers = [file_handler, stdout_handler]
     logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -124,11 +126,26 @@ def main():
     n_gpu = torch.cuda.device_count()
     torch.cuda.empty_cache()
     if FROM_SCRATCH:
-        model = my_ModelA0.from_pretrained('bert-base-uncased',
-                                           stance_num_labels=5,
-                                           length_num_labels=2,
-                                           max_post_num=MAX_POST_PER_THREAD, 
-                                           max_post_length=MAX_POST_LENGTH)
+        if MODELNAME.lower()=='modela0':
+            model = my_ModelA0.from_pretrained('bert-base-uncased',
+                                               stance_num_labels=5,
+                                               length_num_labels=2,
+                                               max_post_num=MAX_POST_PER_THREAD, 
+                                               max_post_length=MAX_POST_LENGTH)
+        elif MODELNAME.lower()[:6]=='modelb':
+            number = int(MODELNAME[6:])
+            model = my_ModelBn.from_pretrained('bert-base-uncased',
+                                               stance_num_labels=5,
+                                               length_num_labels=2,
+                                               max_post_num=MAX_POST_PER_THREAD, 
+                                               max_post_length=MAX_POST_LENGTH,
+                                               num_transformers=number)
+        else:
+            logger.info('Exiting, model not found: ' + MODELNAME)
+            raise Exception()
+        '''
+        
+        '''
         # Resize model vocab
         model.resize_token_embeddings(len(DataProcessor.default_tokenizer))
         
@@ -162,8 +179,8 @@ def main():
     else:
         stance_loss_fn = torch.nn.CrossEntropyLoss(reduction='mean')
     length_loss_fn = torch.nn.CrossEntropyLoss(reduction='mean')
-    
-    logger.info('\n===== Hyperparameters ======')
+    logger.info('======== '+MODELNAME+' =========')
+    logger.info('===== Hyperparameters ======')
     logger.info('BATCH_SIZE_TRAIN: %d' % BATCH_SIZE_TRAIN)
     logger.info('LEARNING_RATE: %1.6f' % LEARNING_RATE)
     logger.info('MOMENTUM: %1.6f' % MOMENTUM)
@@ -171,13 +188,13 @@ def main():
     logger.info('MAX_POST_PER_THREAD: %d' % MAX_POST_PER_THREAD)
     logger.info('THREAD_LENGTH_DIVIDER: %d' % THREAD_LENGTH_DIVIDER)
     
-    logger.info('\n===== Other settings ======')
+    logger.info('===== Other settings ======')
     logger.info('OPTIMIZER: ' + OPTIMIZER)
     logger.info('WEIGHTED STANCE LOSS' if WEIGHTED_STANCE else 'FLAT STANCE LOSS')
     
     
     # Load the test and training data
-    logger.info('\n====== Loading data ========')
+    logger.info('====== Loading data ========')
     logger.info('Opening training data: ' + train_filename)
     logger.info('Opening dev data: ' + dev_filename)
     logger.info('Opening test data: ' + test_filename)
