@@ -8,9 +8,6 @@ Created on Fri Sep 11 17:32:49 2020
 import torch
 import torch.optim as optim
 
-from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
-from torch.utils.data.distributed import DistributedSampler
-
 import DataProcessor
 import multitask_helper_functions as helper
 from classifier_models import my_ModelA0, my_ModelBn
@@ -26,6 +23,7 @@ FROM_SCRATCH = True
 def main():
     '''======== DEFAULT HYPERPARAMETERS ========'''
     BATCH_SIZE_TRAIN = 2
+    BATCH_SIZE_TEST = 2
     LOG_INTERVAL = 1
     N_EPOCHS = 1
     LEARNING_RATE = 0.0005
@@ -34,56 +32,64 @@ def main():
     MAX_POST_PER_THREAD = 4
     THREAD_LENGTH_DIVIDER = 9 # for dividing thread lengths into binary buckets
     '''======== HYPERPARAMETERS END ========'''
-    
-    # Grab the non default hyperparameters from input arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--BATCH_SIZE_TRAIN",   default=BATCH_SIZE_TRAIN,
-                        type=int,               help="Minibatch size for training.")
-    parser.add_argument("--LOG_INTERVAL",   default=LOG_INTERVAL,
-                        type=int,           help="Num of minibatches before printing")
-    parser.add_argument("--N_EPOCHS",       default=N_EPOCHS,
-                        type=int,           help="Num of training epochs")
-    parser.add_argument("--LEARNING_RATE",  default=LEARNING_RATE,
-                        type=float,         help="learning rate for Adam.")
-    parser.add_argument("--MOMENTUM",       default=MOMENTUM,
-                        type=float,         help="momentum term for SGD.")
-    parser.add_argument("--MAX_POST_LENGTH",    default=MAX_POST_LENGTH,    type=int,
-                        help="Max input sequence length after BERT tokenizer")
-    parser.add_argument("--MAX_POST_PER_THREAD",    default=MAX_POST_PER_THREAD,    type=int,
-                        help="Max number of posts per thread to look at")
-    parser.add_argument("--THREAD_LENGTH_DIVIDER",   default=THREAD_LENGTH_DIVIDER,
-                        type=int,           help="Number to divide lengths into binary classes")
-    parser.add_argument("--OPTIMIZER",      default='SGD',
-                        help="SGD (Default) or ADAM.")
-    
-    parser.add_argument("--WEIGHTED_STANCE",action='store_true',
-                        help="Whether to weigh DENY and QUERY higher")
-    
-    parser.add_argument("--do_train",       action='store_true',
-                        help="Whether to run training. Not implemented yet")
-    parser.add_argument("--do_eval",        action='store_true',
-                        help="Whether to run eval on the dev set. Not implemented yet")
-    parser.add_argument("--DEBUG",          action='store_true',
-                        help="Debug flag")
-    parser.add_argument("--MODELNAME",          default='ModelA0',
-                        help="For choosing model")
-    parser.add_argument("--NAME",          default='',
-                        help="For naming log files")
+    if True: # Collapse this for readability
+        # Grab the non default hyperparameters from input arguments
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--BATCH_SIZE_TRAIN",   default=BATCH_SIZE_TRAIN,
+                            type=int,               help="Minibatch size for training.")
+        parser.add_argument("--BATCH_SIZE_TEST",   default=BATCH_SIZE_TEST,
+                            type=int,               help="Minibatch size for training.")
+        parser.add_argument("--LOG_INTERVAL",   default=LOG_INTERVAL,
+                            type=int,           help="Num of minibatches before printing")
+        parser.add_argument("--N_EPOCHS",       default=N_EPOCHS,
+                            type=int,           help="Num of training epochs")
+        parser.add_argument("--LEARNING_RATE",  default=LEARNING_RATE,
+                            type=float,         help="learning rate for Adam.")
+        parser.add_argument("--MOMENTUM",       default=MOMENTUM,
+                            type=float,         help="momentum term for SGD.")
+        parser.add_argument("--MAX_POST_LENGTH",    default=MAX_POST_LENGTH,    type=int,
+                            help="Max input sequence length after BERT tokenizer")
+        parser.add_argument("--MAX_POST_PER_THREAD",    default=MAX_POST_PER_THREAD,    type=int,
+                            help="Max number of posts per thread to look at")
+        parser.add_argument("--THREAD_LENGTH_DIVIDER",   default=THREAD_LENGTH_DIVIDER,
+                            type=int,           help="Number to divide lengths into binary classes")
+        parser.add_argument("--OPTIMIZER",      default='SGD',
+                            help="SGD (Default) or ADAM.")
+        
+        parser.add_argument("--WEIGHTED_STANCE",action='store_true',
+                            help="Whether to weigh DENY and QUERY higher")
+        
+        parser.add_argument("--DO_TRAIN",       action='store_true',
+                            help="Whether to run training. Not implemented yet")
+        parser.add_argument("--DO_TEST",        action='store_true',
+                            help="Whether to run eval on the test set. Not implemented yet")
+        parser.add_argument("--DEBUG",          action='store_true',
+                            help="Debug flag")
+        parser.add_argument("--MODELNAME",          default='ModelA0',
+                            help="For choosing model")
+        parser.add_argument("--NAME",          default='',
+                            help="For naming log files")
 
     args = parser.parse_args()
-    BATCH_SIZE_TRAIN = args.BATCH_SIZE_TRAIN
-    LOG_INTERVAL = args.LOG_INTERVAL
-    N_EPOCHS = args.N_EPOCHS
-    LEARNING_RATE = args.LEARNING_RATE
-    MOMENTUM = args.MOMENTUM
-    MAX_POST_LENGTH = args.MAX_POST_LENGTH
-    MAX_POST_PER_THREAD = args.MAX_POST_PER_THREAD
-    THREAD_LENGTH_DIVIDER = args.THREAD_LENGTH_DIVIDER
-    OPTIMIZER = args.OPTIMIZER
-    WEIGHTED_STANCE = args.WEIGHTED_STANCE
+    BATCH_SIZE_TRAIN = args.BATCH_SIZE_TRAIN            # minibatch size (train)
+    BATCH_SIZE_TEST = args.BATCH_SIZE_TEST              # minibatch size (test)
+    LOG_INTERVAL = args.LOG_INTERVAL                    # how often to print
+    N_EPOCHS = args.N_EPOCHS                            # number of epochs to train
+    LEARNING_RATE = args.LEARNING_RATE                  # learning rate
+    MOMENTUM = args.MOMENTUM                            # momentum for SGD
+    MAX_POST_LENGTH = args.MAX_POST_LENGTH              # num of tokens per post 
+    MAX_POST_PER_THREAD = args.MAX_POST_PER_THREAD      # num of posts to inspect per thread
+    OPTIMIZER = args.OPTIMIZER                          # ADAM, SGD or RMSProp
+    THREAD_LENGTH_DIVIDER = args.THREAD_LENGTH_DIVIDER  # how to split the dataset for binary cls
+    WEIGHTED_STANCE = args.WEIGHTED_STANCE              # Whether to weigh cost functions or flat
+    
+    DO_TRAIN = args.DO_TRAIN                            # Whether to run training
+    DO_TEST = args.DO_TEST                              # Whether to run a test
+    
     DEBUG = args.DEBUG
     NAME = args.NAME
     MODELNAME = args.MODELNAME
+    
     timestamp = time.time()
     if NAME=='':
         expname = str(timestamp)[5:]
@@ -95,8 +101,11 @@ def main():
     
     model_savefile = './saved_models/'+MODELNAME+suffix+expname+'.bin'
     
-    # for storing logs into a file
-    file_handler = logging.FileHandler(filename='./log_files/'+MODELNAME+suffix+expname+'.log')
+    if DO_TRAIN:    # to store training logs into a file
+        logfile_name = './log_files/'+MODELNAME+suffix+expname+'.log'
+    else:           # if just doing testing, save to a different place
+        logfile_name = './log_files/'+MODELNAME+suffix+expname+'.testlog'
+    file_handler = logging.FileHandler(filename=logfile_name)
     # for printing onto terminal
     stdout_handler = logging.StreamHandler(sys.stdout)
     
@@ -125,52 +134,50 @@ def main():
     gpu = torch.device("cuda")
     n_gpu = torch.cuda.device_count()
     torch.cuda.empty_cache()
-    if FROM_SCRATCH:
-        if MODELNAME.lower()=='modela0':
-            model = my_ModelA0.from_pretrained('bert-base-uncased',
-                                               stance_num_labels=5,
-                                               length_num_labels=2,
-                                               max_post_num=MAX_POST_PER_THREAD, 
-                                               max_post_length=MAX_POST_LENGTH)
-        elif MODELNAME.lower()[:6]=='modelb':
-            number = int(MODELNAME[6:])
-            model = my_ModelBn.from_pretrained('bert-base-uncased',
-                                               stance_num_labels=5,
-                                               length_num_labels=2,
-                                               max_post_num=MAX_POST_PER_THREAD, 
-                                               max_post_length=MAX_POST_LENGTH,
-                                               num_transformers=number)
-        else:
-            logger.info('Exiting, model not found: ' + MODELNAME)
-            raise Exception()
-        '''
-        
-        '''
-        # Resize model vocab
-        model.resize_token_embeddings(len(DataProcessor.default_tokenizer))
-        
-        # Move model into GPU
-        model.to(gpu)
-        logger.info('Running on %d GPUs' % n_gpu)
-        if n_gpu > 1:
-            model = torch.nn.DataParallel(model)
-        
-        # Define the optimizers. 
-        if OPTIMIZER=='SGD':            # Use SGD
-            logger.info('Using SGD')
-            stance_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
-                                         momentum=MOMENTUM)
-            length_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
-                                         momentum=MOMENTUM)
-        elif OPTIMIZER=='ADAM':         # Use ADAM
-            logger.info('Using Adam')
-            stance_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-            length_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-        else:
-            logger.info('Exiting. No such optimizer '+OPTIMIZER)
-            raise Exception()
+    
+    if MODELNAME.lower()=='modela0':
+        model = my_ModelA0.from_pretrained('bert-base-uncased',
+                                           stance_num_labels=5,
+                                           length_num_labels=2,
+                                           max_post_num=MAX_POST_PER_THREAD, 
+                                           max_post_length=MAX_POST_LENGTH)
+    elif MODELNAME.lower()[:6]=='modelb':
+        number = int(MODELNAME[6:])
+        model = my_ModelBn.from_pretrained('bert-base-uncased',
+                                           stance_num_labels=5,
+                                           length_num_labels=2,
+                                           max_post_num=MAX_POST_PER_THREAD, 
+                                           max_post_length=MAX_POST_LENGTH,
+                                           num_transformers=number)
     else:
-        logger.info('Load from saved model not implemented yet')
+        logger.info('Exiting, model not found: ' + MODELNAME)
+        raise Exception()
+    '''
+    
+    '''
+    # Resize model vocab
+    model.resize_token_embeddings(len(DataProcessor.default_tokenizer))
+    
+    # Move model into GPU
+    model.to(gpu)
+    logger.info('Running on %d GPUs' % n_gpu)
+    #if n_gpu > 1:
+    model = torch.nn.DataParallel(model)
+    
+    # Define the optimizers. 
+    if OPTIMIZER=='SGD':            # Use SGD
+        logger.info('Using SGD')
+        stance_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
+                                     momentum=MOMENTUM)
+        length_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
+                                     momentum=MOMENTUM)
+    elif OPTIMIZER=='ADAM':         # Use ADAM
+        logger.info('Using Adam')
+        stance_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+        length_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    else:
+        logger.info('Exiting. No such optimizer '+OPTIMIZER)
+        raise Exception()
         
     # Set up loss functions. Use averaging to calculate a value
     if WEIGHTED_STANCE:
@@ -209,7 +216,7 @@ def main():
                                                             DEBUG=False,
                                                             num_workers=5)
     test_dataloader = DataProcessor.dataframe_2_dataloader(test_dataframe,
-                                                           batchsize=BATCH_SIZE_TRAIN,
+                                                           batchsize=BATCH_SIZE_TEST,
                                                            randomize=False,
                                                            DEBUG=False,
                                                            num_workers=5)
@@ -427,7 +434,6 @@ def main():
                 stance_loss.item(), length_loss.item(), \
                 f1_stance_macro, f1_length_macro
     
-    
     def save_model():
         '''
         For saving all the model parameters, optimizer states
@@ -445,10 +451,16 @@ def main():
     batch_idx, minibatch = next(enumerate(test_dataloader))
     '''
     start_time = time.time()
+    if DO_TRAIN:
+        train_losses = train(N_EPOCHS)
+        torch.save(train_losses, lossfile)  # save the losses
+    else:
+        train_losses = torch.load(lossfile) # load losses from archive
     
-    train_losses = train(N_EPOCHS)               
-    torch.save(train_losses, lossfile)  # save the losses
-    test_losses = test(mode='test')
+    temp = torch.load(model_savefile)       # load the best model
+    model_state = temp[0]                   # get the model state
+    model.load_state_dict(model_state)      # stuff state into model
+    test_losses = test(mode='test')         # run a test 
     
     train_stance_losses = train_losses[0]
     train_length_losses = train_losses[1]
