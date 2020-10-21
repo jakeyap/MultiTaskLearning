@@ -1,27 +1,36 @@
 ===================== EXP NOTES =====================
 
 --------------- Experiments Completed ---------------
-exp1: SGD,epochs=20,lr=0.0005, moment=0.125, GPU=6, minibatch=24. Bug saving model/loss. Only have logs (6h) length acc=68%, stance f1=0.691
-exp2: SGD,epochs=20,lr=0.0005, moment=0.250, GPU=6, minibatch=24. Bug saving model/loss. Only have logs (6h) length acc=67%, stance f1=0.666
-exp3: SGD,epochs=20,lr=0.0005, moment=0.500, GPU=6, minibatch=24. Bug saving model/loss. Only have logs (6h) length acc=67%, stance f1=0.706
-exp4: Adam,epochs=10,lr=0.00005, GPU=5, minibatch=25. (5h) 
-exp5: Adam,epochs=10,lr=0.00010, GPU=5, minibatch=25. (5h) 
-exp6: Adam,epochs=10,lr=0.00020, GPU=5, minibatch=25. (5h) FAIL
-exp7: Adam,epochs=20,lr=0.00001, GPU=5, minibatch=25. weighted stance loss(?h) TODO: update results
-exp8: Adam,epochs=20,lr=0.00002, GPU=5, minibatch=25. weighted stance loss(?h) TODO: update results
-exp9: Adam,epochs=20,lr=0.00005, GPU=5, minibatch=25. weighted stance loss(?h) FAIL
-exp10: Adam,epochs=20,lr=0.00010, GPU=5, minibatch=25. weighted stance loss(?h) FAIL
-exp11: Adam,epochs=20,lr=0.00020, GPU=5, minibatch=25. weighted stance loss(?h) FAIL
+ModelA0 (length 2 classes, stance 5 classes)
+exp1: SGD,epochs=20,lr=0.0005, moment=0.125, GPU=6, minibatch=24. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. Only have logs(6h) 
+exp2: SGD,epochs=20,lr=0.0005, moment=0.250, GPU=6, minibatch=24. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. Only have logs(6h) 
+exp3: SGD,epochs=20,lr=0.0005, moment=0.500, GPU=6, minibatch=24. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. Only have logs(6h) 
+exp4: Adam,epochs=10,lr=0.00005, GPU=5, minibatch=25. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (2h30m) 
+exp5: Adam,epochs=10,lr=0.00010, GPU=5, minibatch=25. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (2h30m) 
+exp6: Adam,epochs=10,lr=0.00020, GPU=5, minibatch=25. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (2h30m) FAIL
+exp7: Adam,epochs=20,lr=0.00001, GPU=5, minibatch=25. weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) TODO: update results
+exp8: Adam,epochs=20,lr=0.00002, GPU=5, minibatch=25. weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) TODO: update results
+exp9: Adam,epochs=20,lr=0.00005, GPU=5, minibatch=25. weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) FAIL
+exp10: Adam,epochs=20,lr=0.00010, GPU=5, minibatch=25. weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) FAIL
+exp11: Adam,epochs=20,lr=0.00020, GPU=5, minibatch=25. weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) FAIL
+
+ModelBN (length 2 classes, stance 5 classes) N=hierarchy in transformers
+exp12: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h15m)
+exp13: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB3, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h)
+exp14: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB2, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h45m)
+exp15: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB1, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m)
+exp16: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB4. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h15m)
+exp17: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB3. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h)
+exp18: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB2. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (3h45m)
+exp19: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB1. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (3h30m)
+
 -------------- Experiments in progress --------------
-exp12: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB4, weighted stance loss
-exp13: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB3, weighted stance loss
-exp14: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB2, weighted stance loss
-exp15: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB1, weighted stance loss
+
+
+
 ---------------- Experiments planned ----------------
-exp16: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB4
-exp17: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB3
-exp18: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB2
-exp19: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB1
+
+
 
 ===================== TASKS TODO ====================
 implement logic to do single task training on either task
@@ -30,7 +39,6 @@ try without masking URLs and hashtags
 hmm how to include the SRQ tweet-pair dataset?
 implement single datapoint test 
 eval - printing
-
 
 ===================== TASKS DONE ====================
 install tweet tokenizer

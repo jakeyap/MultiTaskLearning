@@ -99,19 +99,19 @@ def main():
     suffix = "_%d_%d_%d_%d_" % (BATCH_SIZE_TRAIN, N_EPOCHS, MAX_POST_PER_THREAD, MAX_POST_LENGTH)
     suffix = suffix + str(LEARNING_RATE) + "_"
     
-    model_savefile = './saved_models/'+MODELNAME+suffix+expname+'.bin'
+    model_savefile = './saved_models/'+MODELNAME+'_'+expname+'.bin'
     
     if DO_TRAIN:    # to store training logs into a file
-        logfile_name = './log_files/'+MODELNAME+suffix+expname+'.log'
+        logfile_name = './log_files/'+MODELNAME+'_'+expname+'.log'
     else:           # if just doing testing, save to a different place
-        logfile_name = './log_files/'+MODELNAME+suffix+expname+'.testlog'
+        logfile_name = './log_files/'+MODELNAME+'_'+expname+'.testlog'
     file_handler = logging.FileHandler(filename=logfile_name)
     # for printing onto terminal
     stdout_handler = logging.StreamHandler(sys.stdout)
     
     # for storing training / dev / test losses
-    lossfile = './log_files/losses_'+MODELNAME+suffix+expname+'.bin'
-    plotfile = './log_files/plot_'+MODELNAME+suffix+expname+'.png'
+    lossfile = './log_files/losses_'+MODELNAME+'_'+expname+'.bin'
+    plotfile = './log_files/plot_'+MODELNAME+'_'+expname+'.png'
     
     handlers = [file_handler, stdout_handler]
     logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',

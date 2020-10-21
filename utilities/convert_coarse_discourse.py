@@ -252,4 +252,4 @@ if __name__ == '__main__':
     delete_deeper_levels(mod_entries)
     plot_raw_statistics(mod_entries)
     clean_posts(mod_entries)
-    store_as_sdqc_format(mod_entries, FILEDIR, tsvname)
+    #store_as_sdqc_format(mod_entries, FILEDIR, tsvname)
