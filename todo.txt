@@ -36,7 +36,8 @@ exp19: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB1. POST_PER_THREAD=
 implement logic to do single task training on either task
 try bert large
 try without masking URLs and hashtags
-hmm how to include the SRQ tweet-pair dataset?
+try to split into larger buckets
+implement a file to run tests on SRQ only, using older models
 implement single datapoint test 
 eval - printing
 
@@ -65,3 +66,5 @@ log the steps in the previous work
 write readme doc
 try adam optimizer
 try weighing the cost function to penalize the negative class
+formatted SRQ dataset in the same way
+tokenize SRQ dataset

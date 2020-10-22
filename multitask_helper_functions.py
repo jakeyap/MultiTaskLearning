@@ -7,8 +7,11 @@ Created on Thu Oct  1 16:56:32 2020
 """
 import torch
 from sklearn.metrics import precision_recall_fscore_support as f1_help
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
 
 import logging
+
 logger = logging.getLogger('__main__')
 
 
@@ -113,9 +116,9 @@ def logit_2_class_length(pred_logits):
     Parameters
     ----------
     pred_logits: tensor
-        raw logits from with dimensions [n, 2] where
+        raw logits from with dimensions [n, X] where
             n: minibatch size
-            2: number of classes in binary classification
+            X: num classes in length prediction. 2 if binary, could be more classes
     Returns
     -------
     labels : tensor
@@ -320,3 +323,63 @@ def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro):
     string +='\n'
     string +='F1-macro\t%1.4f' % f1_scores_macro
     return string
+
+def plot_confusion_matrix(y_true, y_pred, labels, label_names):
+    '''
+    Generates confusion matrix and plots it.
+    Parameters
+    ----------
+    y_true : linear numpy array of true labels
+    y_pred : linear numpy array of predicted labels
+    labels : list of ints for axes ticks in confusion matrix
+    label_names : list of strings. For labelling axes
+        DESCRIPTION.
+
+    Returns
+    -------
+    matrix0 : 2d numpy array. confusion matrix.
+    '''
+    
+    fig0, ax0 = plt.subplots()
+    # calculate confusion matrix
+    matrix0 = confusion_matrix(y_true, y_pred, labels)
+    
+    label_list_len = len(labels)
+        
+    plt.imshow(matrix0, cmap='gray')
+    
+    # We want to show all ticks...
+    ax0.set_xticks(labels)
+    ax0.set_yticks(labels)
+    
+    # ... and label them with the respective list entries
+    ax0.set_xticklabels(label_names, size=10)
+    ax0.set_yticklabels(label_names, size=10)
+    
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax0.get_xticklabels(), rotation=45, 
+             ha="right",rotation_mode="anchor")
+    
+    # Loop over data dimensions and create text annotations.
+    
+    maxvalue = matrix0.max()                    # find max value of conf matrix
+    minvalue = matrix0.min()                    # find min value of conf matrix
+    midpoint = (maxvalue + minvalue) / 2        # find mid point of conf matrix
+    for i in range(label_list_len):             # loop through all rows in matrix
+        for j in range(label_list_len):         # loop through all cols in matrix
+            number = matrix0[i, j]              # get count for labelling each box
+            if number > midpoint:
+                ax0.text(j, i, str(number),     # for large nums, write in black
+                         ha="center", va="center", 
+                         color="black", size=10)
+            else:
+                ax0.text(j, i, str(number),     # for small nums, write in white
+                         ha="center", va="center", 
+                         color="white", size=10)
+    
+    plt.colorbar(aspect=50)                 # draw color bar
+    plt.title('Confusion matrix', size=15)  # title
+    plt.ylabel('True Label', size=12)       # ylabel
+    plt.xlabel('Predicted label', size=12)  # xlabel
+    plt.tight_layout()
+    return matrix0

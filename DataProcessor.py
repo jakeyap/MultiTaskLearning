@@ -102,7 +102,7 @@ def tokenize_encode_post(post, max_post_length):
     return default_tokenizer.__call__(text=tokens, 
                                       padding='max_length',
                                       truncation=True,
-                                      is_pretokenized=True,
+                                      is_split_into_words=True,
                                       max_length=max_post_length,
                                       return_tensors='pt')
 
@@ -133,7 +133,6 @@ def tokenize_encode_thread(thread, max_post_length, max_post_per_thread):
     #token_type_ids = []
     #attention_masks = []
     counter = 0
-    
     encoded_dict = tokenize_encode_post(thread[counter], max_post_length)
     encoded_posts = encoded_dict['input_ids']
     token_type_ids = encoded_dict['token_type_ids']
@@ -150,13 +149,7 @@ def tokenize_encode_thread(thread, max_post_length, max_post_per_thread):
             token_type_ids = torch.cat((token_type_ids, temp_token_type_ids), dim=1)
             attention_masks = torch.cat((attention_masks, temp_attention_masks), dim=1)
             
-            #encoded_posts.append(encoded_dict['input_ids'])
-            #token_type_ids.append(encoded_dict['token_type_ids'])
-            #attention_masks.append(encoded_dict['attention_mask'])
         except IndexError:
-            #encoded_posts.append(torch.zeros(size=(1, max_post_length),dtype=torch.int64))
-            #token_type_ids.append(torch.zeros(size=(1, max_post_length),dtype=torch.int64))
-            #attention_masks.append(torch.zeros(size=(1, max_post_length),dtype=torch.int64))
             encoded_posts = torch.cat((encoded_posts, torch.zeros(size=(1, max_post_length),dtype=torch.int64)), dim=1)
             token_type_ids = torch.cat((token_type_ids, torch.zeros(size=(1, max_post_length),dtype=torch.int64)), dim=1)
             attention_masks = torch.cat((attention_masks, torch.zeros(size=(1, max_post_length),dtype=torch.int64)), dim=1)
@@ -331,11 +324,12 @@ def dataframe_2_dataloader(dataframe,
 
 if __name__ == '__main__':
     MAX_POST_PER_THREAD = 4
-    MAX_POST_LENGTH = 512
-    DIRECTORY = './data/combined/'
-    
-    filenames = ['shuffled_dev', 'shuffled_test', 'shuffled_train', 
-                 'combined_dev', 'combined_test', 'combined_train']
+    MAX_POST_LENGTH = 256
+    # DIRECTORY = './data/combined/'
+    DIRECTORY = './data/srq/'
+    #filenames = ['shuffled_dev', 'shuffled_test', 'shuffled_train', 
+    #             'combined_dev', 'combined_test', 'combined_train']
+    filenames = ['stance_dataset_processed']
     
     time1 = time.time()
     for each_filename in filenames:
