@@ -263,7 +263,7 @@ def length_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro):
     string +='F1-macro\t%1.4f' % f1_scores_macro
     return string
 
-def stance_f1(pred_stance, true_stance):
+def stance_f1(pred_stance, true_stance, incl_empty=True):
     '''
     Calculates the f1 scores for each label category
 
@@ -273,6 +273,8 @@ def stance_f1(pred_stance, true_stance):
         binary predicted lengths. 0=short, 1=long
     true_lengths : 1D tensor with shape (N,)
         binary true lengths. 0=short, 1=long
+    incl_empty : boolean. Default is true
+        if true, include isEmpty label in calculations
 
     Returns
     -------
@@ -289,25 +291,32 @@ def stance_f1(pred_stance, true_stance):
     '''
     # remember to rescale the stance labels to take care of -1s
     new_stance = rescale_labels(true_stance)
-    precisions, recalls, f1scores, supports = f1_help(new_stance, 
-                                                      pred_stance, 
-                                                      average=None,
-                                                      labels=[0,1,2,3,4])
+    if incl_empty:
+        precisions, recalls, f1scores, supports = f1_help(new_stance, 
+                                                          pred_stance, 
+                                                          average=None,
+                                                          labels=[0,1,2,3,4])
+    else:
+        precisions, recalls, f1scores, supports = f1_help(new_stance, 
+                                                          pred_stance, 
+                                                          average=None,
+                                                          labels=[1,2,3,4])
     f1_score_macro = sum(f1scores) / len(f1scores)
     return precisions, recalls, f1scores, supports, f1_score_macro
 
-def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro):
+def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro, incl_empty=True):
     '''
     For printing the f1 score for stance prediction task
 
     Parameters
     ----------
-    precisions : tuple of length 2
-    recalls : tuple of length 2
-    f1scores : tuple of length 2
-    supports : tuple of length 2
-    f1_scores_macro : tuple of length 2
-
+    precisions : tuple of length 5
+    recalls : tuple of length 5
+    f1scores : tuple of length 5
+    supports : tuple of length 5
+    f1_scores_macro : tuple of length 5
+    incl_empty : boolean to decide whether to include isempty label. default is True
+    
     Returns
     -------
     string : string
@@ -315,13 +324,21 @@ def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro):
 
     '''
     string = 'Labels \t\tPrecision\tRecall\t\tF1 score\tSupport\n'
-    string +='Empty  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
-    string +='Deny   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
-    string +='Support\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
-    string +='Query  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[3],recalls[3],f1scores[3],supports[3])
-    string +='Comment\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[4],recalls[4],f1scores[4],supports[4])
-    string +='\n'
-    string +='F1-macro\t%1.4f' % f1_scores_macro
+    if incl_empty:
+        string +='Empty  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
+        string +='Deny   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
+        string +='Support\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
+        string +='Query  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[3],recalls[3],f1scores[3],supports[3])
+        string +='Comment\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[4],recalls[4],f1scores[4],supports[4])
+        string +='\n'
+        string +='F1-macro\t%1.4f' % f1_scores_macro
+    else:
+        string +='Deny   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
+        string +='Support\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
+        string +='Query  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
+        string +='Comment\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[3],recalls[3],f1scores[3],supports[3])
+        string +='\n'
+        string +='F1-macro\t%1.4f' % f1_scores_macro
     return string
 
 def plot_confusion_matrix(y_true, y_pred, labels, label_names):
