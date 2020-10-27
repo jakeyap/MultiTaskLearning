@@ -149,6 +149,15 @@ def main():
                                            max_post_num=MAX_POST_PER_THREAD, 
                                            max_post_length=MAX_POST_LENGTH,
                                            num_transformers=number)
+    elif MODELNAME.lower()[:6]=='modelc':
+        # this is too large to fit into GPU memory currently. discuss with team
+        number = int(MODELNAME[6:])
+        model = my_ModelBn.from_pretrained('bert-large-uncased',
+                                           stance_num_labels=5,
+                                           length_num_labels=2,
+                                           max_post_num=MAX_POST_PER_THREAD, 
+                                           max_post_length=MAX_POST_LENGTH,
+                                           num_transformers=number)
     else:
         logger.info('Exiting, model not found: ' + MODELNAME)
         raise Exception()

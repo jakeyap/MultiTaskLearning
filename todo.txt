@@ -5,40 +5,44 @@ ModelA0 (length 2 classes, stance 5 classes)
 exp1: SGD,epochs=20,lr=0.0005, moment=0.125, GPU=6, minibatch=24. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. Only have logs(6h) 
 exp2: SGD,epochs=20,lr=0.0005, moment=0.250, GPU=6, minibatch=24. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. Only have logs(6h) 
 exp3: SGD,epochs=20,lr=0.0005, moment=0.500, GPU=6, minibatch=24. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. Only have logs(6h) 
-exp4: Adam,epochs=10,lr=0.00005, GPU=5, minibatch=25. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (2h30m) 
-exp5: Adam,epochs=10,lr=0.00010, GPU=5, minibatch=25. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (2h30m) 
+exp4: Adam,epochs=10,lr=0.00005, GPU=5, minibatch=25. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (2h30m) FAIL
+exp5: Adam,epochs=10,lr=0.00010, GPU=5, minibatch=25. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (2h30m) MEH
 exp6: Adam,epochs=10,lr=0.00020, GPU=5, minibatch=25. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (2h30m) FAIL
-exp7: Adam,epochs=20,lr=0.00001, GPU=5, minibatch=25. weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) TODO: update results
-exp8: Adam,epochs=20,lr=0.00002, GPU=5, minibatch=25. weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) TODO: update results
-exp9: Adam,epochs=20,lr=0.00005, GPU=5, minibatch=25. weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) FAIL
+exp7: Adam,epochs=20,lr=0.00001, GPU=5, minibatch=25. weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) OK
+exp8: Adam,epochs=20,lr=0.00002, GPU=5, minibatch=25. weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) MEH
+exp9: Adam,epochs=20,lr=0.00005, GPU=5, minibatch=25. weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) MEH
 exp10: Adam,epochs=20,lr=0.00010, GPU=5, minibatch=25. weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) FAIL
 exp11: Adam,epochs=20,lr=0.00020, GPU=5, minibatch=25. weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) FAIL
 
 ModelBN (length 2 classes, stance 5 classes) N=hierarchy in transformers
-exp12: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h15m)
-exp13: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB3, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h)
-exp14: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB2, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h45m)
-exp15: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB1, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m)
-exp16: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB4. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h15m)
-exp17: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB3. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h)
-exp18: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB2. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (3h45m)
-exp19: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB1. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (3h30m)
+exp12: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h15m) OK
+exp13: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB3, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h) OK
+exp14: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB2, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h45m) OK
+exp15: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB1, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m) MEH
+exp16: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB4. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h15m) MEH
+exp17: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB3. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h) OK
+exp18: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB2. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (3h45m) MEH
+exp19: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB1. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (3h30m) MEH
+
 
 -------------- Experiments in progress --------------
 
-
-
 ---------------- Experiments planned ----------------
+ModelCN (length 2 classes, stance 5 classes) N=hierarchy in transformers. Emphasize the length loss
+exp20: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h15m)
+exp21: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB3, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h)
+exp22: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB2, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h45m)
+exp23: Adam,epochs=10,lr=0.00001, GPU=5, minibatch=15, ModelB1, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h30m)
 
+ModelDN (change the architecture to use different classifiers for the 2 datasets)
 
 
 ===================== TASKS TODO ====================
 implement logic to do single task training on either task
-try bert large
+try bert large (TOO large to fit into memory. discuss with teammates)
 try weighing length cost function higher
 try to split into smaller buckets for length
-try without masking URLs and hashtags
-implement a file to run tests on SRQ only, using older models
+try without masking URLs
 implement single datapoint test 
 eval - printing
 
@@ -69,3 +73,4 @@ try adam optimizer
 try weighing the cost function to penalize the negative class
 formatted SRQ dataset in the same way
 tokenize SRQ dataset
+implement a file to run tests on SRQ only, using older models

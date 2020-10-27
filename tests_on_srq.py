@@ -11,6 +11,7 @@ import DataProcessor
 import multitask_helper_functions as helper
 from classifier_models import my_ModelA0, my_ModelBn
 import torch
+import matplotlib.pyplot as plt
 
 import logging, sys, argparse
 import time
@@ -61,6 +62,7 @@ def main():
         DEBUG = args.DEBUG                      # debug flag
         
     logfile_name = './log_files/test_srq_'+MODELFILE[:-4]+'.log'    # save the log
+    plotfile_name ='./log_files/plot_srq_'+MODELFILE[:-4]+'.png'    # save the log
     
     file_handler = logging.FileHandler(filename=logfile_name)       # for saving into a log file
     stdout_handler = logging.StreamHandler(sys.stdout)              # for printing onto terminal
@@ -72,13 +74,14 @@ def main():
     logger.info('Getting test data from %s' % DATADIR+DATAFILE)
     dataframe = DataProcessor.load_from_pkl(DATADIR+DATAFILE)       # get test data as dataframe
     if DEBUG:
-        dataframe = dataframe[0:10]
+        dataframe = dataframe[0:20]
     dataloader = DataProcessor.dataframe_2_dataloader(dataframe,    # pack data into dataloader
                                                       batchsize=BATCH_SIZE_TEST,
                                                       randomize=False,
                                                       DEBUG=DEBUG,
                                                       num_workers=5)
     
+    logger.info('Test file is '+MODELFILE)
     logger.info('Getting model ready')
     model = get_model(MODELDIR, MODELFILE, 
                       stance_num_labels=STANCE_NUM_LABELS, 
@@ -115,6 +118,13 @@ def main():
                                       incl_empty=False)
     logger.info('\n'+stance_msg)
     logger.info('Stance Accuracy: %1.4f' % stance_accuracy)
+    
+    stance_true = helper.rescale_labels(stance_true)        # take care of -1 in labels first
+    helper.plot_confusion_matrix(y_true = stance_true,
+                                 y_pred = stance_pred, 
+                                 labels=[1,2,3,4],
+                                 label_names=['deny','support','query','comment'])
+    plt.savefig(plotfile_name)
     return stance_pred, stance_true
 
 
@@ -211,5 +221,4 @@ def get_model(modeldir, modelfile,
     return model
 
 if __name__ == '__main__':
-    main()
-    
+    ans = main()

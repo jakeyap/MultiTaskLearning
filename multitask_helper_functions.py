@@ -348,7 +348,7 @@ def plot_confusion_matrix(y_true, y_pred, labels, label_names):
     ----------
     y_true : linear numpy array of true labels
     y_pred : linear numpy array of predicted labels
-    labels : list of ints for axes ticks in confusion matrix
+    label_ticks : list of ints for axes ticks in confusion matrix
     label_names : list of strings. For labelling axes
         DESCRIPTION.
 
@@ -366,8 +366,8 @@ def plot_confusion_matrix(y_true, y_pred, labels, label_names):
     plt.imshow(matrix0, cmap='gray')
     
     # We want to show all ticks...
-    ax0.set_xticks(labels)
-    ax0.set_yticks(labels)
+    ax0.set_xticks(range(label_list_len))
+    ax0.set_yticks(range(label_list_len))
     
     # ... and label them with the respective list entries
     ax0.set_xticklabels(label_names, size=10)
