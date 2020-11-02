@@ -207,6 +207,14 @@ def get_model(modeldir, modelfile,
                                            max_post_num=max_post_num, 
                                            max_post_length=max_post_len,
                                            num_transformers=number)
+    elif 'modelc'==modelfile.lower()[0:6]:
+        number = int(modelfile[6])
+        model = my_ModelBn.from_pretrained('bert-base-uncased',
+                                           stance_num_labels=stance_num_labels,
+                                           length_num_labels=length_num_labels,
+                                           max_post_num=max_post_num, 
+                                           max_post_length=max_post_len,
+                                           num_transformers=number)
     else:
         logger.info('Exiting, model not found: ' + modelfile)
         raise Exception

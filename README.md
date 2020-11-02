@@ -17,8 +17,7 @@ The base model used is shown here.
 
 <img src="./misc/ModelA0.png" alt="drawing" width="600"/>    
 
-The BERT attention layer tried so far is only 1 layer.    
-TODO: try deeper layers
+The BERT attention layer tried so far are combos of 1-4 layers.    
     
 ### **Datasets used**        
 There were 2 datasets used in this work
@@ -72,7 +71,7 @@ Convert Coarse Discourse labels into SemEval labels as follows.
 Next, take care of thread lengths. Here's a histogram of the distribution in the training set.    
 The x-axis represents thread length., y-axis means length frequency.    
 
-<img src="./data/combined/training_convo_lengths.png" alt="drawing" width="600"/>    
+<img src="./data/combined/training_convo_lengths_pre_post_prune.png" alt="drawing" width="600"/>    
 
 To define whether a conversation is long, I split it along the median or 9.     
 i.e. Threads with lengths. >=9 are long
@@ -101,37 +100,48 @@ To handle such situations, I stuck in empty posts and created a annotated them w
 
 ### **Other Important Stuff**    
 
-#### *Optimizers:*   
-* **Base SGD** 
-    * LR=0.0005, Moment=0.125, batchsize=24, flat_stance_weights,epochs=20 (exp1)
-    * LR=0.0005, Moment=0.250, batchsize=24, flat_stance_weights,epochs=20 (exp2)
-    * LR=0.0005, Moment=0.500, batchsize=24, flat_stance_weights,epochs=20 (exp3)
-    * Try other combo of LR, momentum and weighted stance loss functions later
-* **ADAM**
-    * LR=0.00005, batchsize=25 flat_stance_weights, epochs=10 (exp4)
-    * LR=0.00010, batchsize=25 flat_stance_weights, epochs=10 (exp5)
-    * LR=0.00020, batchsize=25 flat_stance_weights, epochs=10 (exp6)
+Here's a summary of the stuff tried. It is just a short explnation. See ./misc/experiment_results.ods for full settings of each experiment and full results.
 
-#### *Loss Functions:*   
-* Uniform cross entropy loss (multiclass for stance, binary for length)
-* TODO: Weighted cross entropy loss for stance
+*Optimizers:*   
+Tried *Base SGD*, *ADAM*.    
+
+*Loss Functions:*   
+Tried uniform cross entropy loss (multiclass for stance, binary for length)    
+as well as weighted cross entropy for stance (1, 10, 1, 5, 1). Deny=10, query=5    
+
+*Learning rates (LR)*    
+Most of the experiments have LR set to 
+\\[10^{-4}, 2 \times 10^{-4}, 5 \times 10^{-4}\\]
+Some have dual learning rates. See excel file for actual data.
 
 ### **Experiment Results**    
 
 Training using base SGD optimizers didn't work for stance prediction. 
-Cannot learn DENY class. Probably too slow or something. Results stored in archive.md
+Cannot learn DENY class. Probably too slow or something. 
 Training with ADAM seem to work better
 
-**Experiment 4** 
+Full set of results stored in ./misc/experiment_results.ods.
+Results shown below are the more interesting ones. 
+
+**Experiment 12 (Best in Deny F1 score)**   
+ModelB4
+* 4 transformer layers stacked on top of BERT
+* Weighted loss function for stance
+* Looked up 4 posts/thread, 256 tokens/post
+* Minibatch size=15
+* num GPUs=5
+* Training took 5h15m
 
 Labels |Precision|Recall|F1 score|Support
 -------|---------|------|--------|-------
 isEmpty|1.0000|1.0000|1.0000|345
-Deny   |0.0976|0.0513|0.0672|78   
-Support|0.8606|0.8672|0.8639|1032
-Query  |0.7662|0.7314|0.7484|242
-Comment|0.9034|0.9196|0.9114|2227
-Average|      |      |0.7182
+Deny   |0.1832|0.3077|**0.2297**|78   
+Support|0.8888|0.8130|0.8492|1032
+Query  |0.6588|0.8058|0.7249|242
+Comment|0.8999|0.8922|0.8961|2227
+F1 avg |      |      |0.7400|
+F1 wo isEmpty||      |0.6750|
+Acc.   |      |      |86.4%|
 
 Length |Precision|Recall|F1 score|Support
 -------|---------|------|--------|-------
@@ -140,62 +150,92 @@ Long   |0.6075|0.6608|0.6331|513
 Average|      |      |0.5960
 Accuracy|     |      |59.9%
 
-**Experiment 5** 
+
+**Experiment 13 (Best in Overall Stance F1 score)**   
+ModelB3
+* *3* transformer layers stacked on top of BERT
+* Weighted loss function for stance
+* Looked up 4 posts/thread, 256 tokens/post
+* Minibatch size=15
+* num GPUs=5
+* Training took 5h
 
 Labels |Precision|Recall|F1 score|Support
 -------|---------|------|--------|-------
 isEmpty|1.0000|1.0000|1.0000|345
-Deny   |0.2667|0.1026|0.1481|78   
-Support|0.8375|0.8391|0.8383|1032
-Query  |0.7512|0.6736|0.7102|242
-Comment|0.8851|0.9133|0.8990|2227
-Average|      |      |0.7191
+Deny   |0.1770|0.2564|0.2094|78   
+Support|0.8843|0.8295|0.8560|1032
+Query  |0.6656|0.8884|0.7611|242
+Comment|0.9099|0.8886|0.8991|2227
+F1 avg |      |      |**0.7451**|
+F1 wo isEmpty||      |**0.6814**|
+Acc.   |      |      |87.0%|
 
 Length |Precision|Recall|F1 score|Support
 -------|---------|------|--------|-------
-Short  |0.5773|0.6944|0.6305|468
-Long   |0.6579|0.5361|0.5908|513
-Average|      |      |0.6106
-Accuracy|     |      |61.2%
+Short  |0.7073|0.5577|0.6237|468
+Long   |0.6618|0.7895|0.7200|513
+Average|      |      |0.6718
+Accuracy|     |      |67.9%
 
-**Experiment 6** 
+**Experiment 20 (Best in Length acc., OK in stance)**   
+ModelC4
+* *4* transformer layers stacked on top of BERT
+* Weighted loss function for stance
+* *3x higher starting LR for length vs stance tasks*
+* Looked up 4 posts/thread, 256 tokens/post
+* Minibatch size=6 
+* num GPUs=2
+* Training took 6h
 
-Results not meaningful.
+Labels |Precision|Recall|F1 score|Support
+-------|---------|------|--------|-------
+isEmpty|1.0000|1.0000|1.0000|345
+Deny   |0.1400|0.3590|0.2014|78   
+Support|0.8539|0.7190|0.7806|1032
+Query  |0.4444|0.9256|0.6005|242
+Comment|0.9123|0.8217|0.8646|2227
+F1 avg |      |      |0.6895|
+F1 wo isEmpty||      |0.6118|
+Acc.   |      |      |80.8%|
 
-**Experiment 7** 
+Length |Precision|Recall|F1 score|Support
+-------|---------|------|--------|-------
+Short  |0.8097|0.4637|0.5897|468
+Long   |0.680|0.9006|0.7537|513
+Average|      |      |0.6717
+Accuracy|     |      |**69.2%**
 
 
-
-**Experiment 8** 
-
-
-**Experiment 9, 10, 11** 
-
-Results not meaningful.
-
-**Experiment 12** 
-
-**Experiment 13** 
-
-**Experiment 14** 
 
 ### **Discussion**
 
 So far, I am near / exceeding Backstrom's length prediction accuracy. But the stance prediction task isn't very good.    
 There are more modern papers, but I don't really understand their metrics. An example is the Spearman Rho score in Kowalczyk et. al. (2019)    
-I haven't tried to compare against them yet.
 
+In Kowalczyk et. al. (2019), they framed the problem as a regression problem. So their metrics of error are different I guess.    
+Accuracy isn't relevant in their use case. But they did use other features to get their results (eg. follower count, num likes, account age etc.)    
+
+In the various ModelCs, I tried to make the length task learn faster compared to the stance task. I did it by forcing the learning rate of the length loss to be 3x that of the stance loss. I'm not sure whether ADAM will screw up this hardcoded behavior though.    
+
+Perhaps it might be easier to do double stepping the length prediction task. In pseudo code:
+
+1. *for each minibatch:*    
+    1.1 *learn the length*    
+    1.2 *learn the stance*    
+    1.3 *learn the length again*
 
 ### **Further steps**    
 1. Strengthen the model
-    * Stack attention layers higher
-    * Restore twitter keywords and URLs
+    * ~~Stack attention layers higher~~
+    * ~~Restore URLs~~ [Doesn't seem necessary. Some papers keep URLs, others filter them]
+    * Double stepping the learning for length
 2. Abalation Study
     * Train the network for stance only
     * Train the network for length prediction only
     * Remove middle attention network, straight into MLPs
-3. Use other models for comparison
-    * BOW regression?
+3. Build another entirely different model
+    * 2 entirely separate networks to not discard posts. Share only underlying BERT
 
 ## **References**
 [1] Backstrom, L., Kleinberg, J., Lee, L., & Danescu-Niculescu-Mizil, C. (2013). Characterizing and curating conversation threads: Expansion, focus, volume, re-entry. WSDM 2013 - Proceedings of the 6th ACM International Conference on Web Search and Data Mining, 13–22. https://doi.org/10.1145/2433396.2433401

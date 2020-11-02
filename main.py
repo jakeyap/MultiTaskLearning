@@ -150,9 +150,8 @@ def main():
                                            max_post_length=MAX_POST_LENGTH,
                                            num_transformers=number)
     elif MODELNAME.lower()[:6]=='modelc':
-        # this is too large to fit into GPU memory currently. discuss with team
         number = int(MODELNAME[6:])
-        model = my_ModelBn.from_pretrained('bert-large-uncased',
+        model = my_ModelBn.from_pretrained('bert-base-uncased',
                                            stance_num_labels=5,
                                            length_num_labels=2,
                                            max_post_num=MAX_POST_PER_THREAD, 
@@ -162,7 +161,7 @@ def main():
         logger.info('Exiting, model not found: ' + MODELNAME)
         raise Exception()
     '''
-    
+    # bert base large is too large to fit into GPU RAM. discuss with team
     '''
     # Resize model vocab
     model.resize_token_embeddings(len(DataProcessor.default_tokenizer))
@@ -183,7 +182,10 @@ def main():
     elif OPTIMIZER=='ADAM':         # Use ADAM
         logger.info('Using Adam')
         stance_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-        length_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+        if 'modelc' in MODELNAME.lower():
+            length_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE * 3)
+        else:
+            length_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     else:
         logger.info('Exiting. No such optimizer '+OPTIMIZER)
         raise Exception()

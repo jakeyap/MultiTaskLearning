@@ -62,18 +62,55 @@ def length_loss(pred_logits, true_labels, loss_fn, divide=9):
     loss_fn: loss function
         Takes in 2 tensors and calculates cross entropy loss
     
-    divide : integer, default is 9
+    divide : integer, default is 9. 
         Number to split thread lengths into a binary classification problem
         Number <= divide is class 0, >divide is class 1
     Returns
     -------
     loss, a scalar or vector. depending on loss's setting. 
     '''
-    
     binary_labels = (true_labels>=divide)*1 # convert to binary labels. shape=(n,1)
     binary_labels = binary_labels.view(-1)  # cast it into shape=(N,)
     binary_labels = binary_labels.long()    # convert into long datatype
     return loss_fn(pred_logits, binary_labels)
+
+def length_loss_4class(pred_logits, true_labels, loss_fn, divide=[5,9,15]):
+    '''
+    Given a set of length labels and logits, calculate the binary cross entropy loss
+
+    Parameters
+    ----------
+    predicted_logits: tensor
+        raw logits from with dimensions [n, A] where
+            n: minibatch size
+            A: num of classes in length. 4
+    
+    true_labels : tensor
+        original thread lengths with dimensions [n, A] where
+            n: minibatch size
+            A: number of posts in original thread
+        
+    loss_fn: loss function
+        Takes in 2 tensors and calculates cross entropy loss
+    
+    divide : integer, default is [5,9,15]. 
+        Numbers to split thread lengths into 
+    Returns
+    -------
+    loss, a scalar or vector. depending on loss's setting. 
+    '''
+    
+    labels = 0 * (true_labels < divide[0])      # split into buckets
+    labels += 1 * ((true_labels >= divide[1]) & 
+                   (true_labels < divide[2]))
+    labels += 2 * ((true_labels >= divide[2]) & 
+                   (true_labels < divide[3]))
+    labels += 3 * (true_labels >= divide[3])
+    
+    labels = labels.view(-1)    # cast it into shape=(N,)
+    labels = labels.long()      # convert into long datatype
+    
+    return loss_fn(pred_logits, labels)
 
 def stance_loss(pred_logits, true_labels, loss_fn):
     '''
