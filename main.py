@@ -16,48 +16,37 @@ import logging, sys, argparse
 import time
 import matplotlib.pyplot as plt
 
-'''======== FILE NAMES FOR LOGGING ========'''
-FROM_SCRATCH = True
-
 
 def main():
     '''======== DEFAULT HYPERPARAMETERS ========'''
-    BATCH_SIZE_TRAIN = 2
-    BATCH_SIZE_TEST = 2
-    LOG_INTERVAL = 1
-    N_EPOCHS = 1
-    LEARNING_RATE = 0.0005
-    MOMENTUM = 0.25
-    MAX_POST_LENGTH = 256
-    MAX_POST_PER_THREAD = 4
-    THREAD_LENGTH_DIVIDER = 9 # for dividing thread lengths into binary buckets
-    '''======== HYPERPARAMETERS END ========'''
     if True: # Collapse this for readability
         # Grab the non default hyperparameters from input arguments
         parser = argparse.ArgumentParser()
-        parser.add_argument("--BATCH_SIZE_TRAIN",   default=BATCH_SIZE_TRAIN,
+        parser.add_argument("--BATCH_SIZE_TRAIN",   default=2,
                             type=int,               help="Minibatch size for training.")
-        parser.add_argument("--BATCH_SIZE_TEST",   default=BATCH_SIZE_TEST,
+        parser.add_argument("--BATCH_SIZE_TEST",   default=2,
                             type=int,               help="Minibatch size for training.")
-        parser.add_argument("--LOG_INTERVAL",   default=LOG_INTERVAL,
+        parser.add_argument("--LOG_INTERVAL",   default=1,
                             type=int,           help="Num of minibatches before printing")
-        parser.add_argument("--N_EPOCHS",       default=N_EPOCHS,
+        parser.add_argument("--N_EPOCHS",       default=1,
                             type=int,           help="Num of training epochs")
-        parser.add_argument("--LEARNING_RATE",  default=LEARNING_RATE,
+        parser.add_argument("--LEARNING_RATE",  default=0.0005,
                             type=float,         help="learning rate for Adam.")
-        parser.add_argument("--MOMENTUM",       default=MOMENTUM,
+        parser.add_argument("--MOMENTUM",       default=0.25,
                             type=float,         help="momentum term for SGD.")
-        parser.add_argument("--MAX_POST_LENGTH",    default=MAX_POST_LENGTH,    type=int,
+        parser.add_argument("--MAX_POST_LENGTH",    default=256,    type=int,
                             help="Max input sequence length after BERT tokenizer")
-        parser.add_argument("--MAX_POST_PER_THREAD",    default=MAX_POST_PER_THREAD,    type=int,
+        parser.add_argument("--MAX_POST_PER_THREAD",    default=4,    type=int,
                             help="Max number of posts per thread to look at")
-        parser.add_argument("--THREAD_LENGTH_DIVIDER",   default=THREAD_LENGTH_DIVIDER,
+        parser.add_argument("--THREAD_LENGTH_DIVIDER",   default=9,
                             type=int,           help="Number to divide lengths into binary classes")
         parser.add_argument("--OPTIMIZER",      default='SGD',
                             help="SGD (Default) or ADAM.")
         
         parser.add_argument("--WEIGHTED_STANCE",action='store_true',
                             help="Whether to weigh DENY and QUERY higher")
+        parser.add_argument("--DOUBLESTEP",     action='store_true',
+                            help="Whether to double step length training")
         
         parser.add_argument("--DO_TRAIN",       action='store_true',
                             help="Whether to run training. Not implemented yet")
@@ -69,7 +58,8 @@ def main():
                             help="For choosing model")
         parser.add_argument("--NAME",          default='',
                             help="For naming log files")
-
+    '''======== HYPERPARAMETERS END ========'''
+    
     args = parser.parse_args()
     BATCH_SIZE_TRAIN = args.BATCH_SIZE_TRAIN            # minibatch size (train)
     BATCH_SIZE_TEST = args.BATCH_SIZE_TEST              # minibatch size (test)
@@ -79,9 +69,10 @@ def main():
     MOMENTUM = args.MOMENTUM                            # momentum for SGD
     MAX_POST_LENGTH = args.MAX_POST_LENGTH              # num of tokens per post 
     MAX_POST_PER_THREAD = args.MAX_POST_PER_THREAD      # num of posts to inspect per thread
-    OPTIMIZER = args.OPTIMIZER                          # ADAM, SGD or RMSProp
     THREAD_LENGTH_DIVIDER = args.THREAD_LENGTH_DIVIDER  # how to split the dataset for binary cls
+    OPTIM_NAME = args.OPTIMIZER                         # ADAM, SGD or RMSProp
     WEIGHTED_STANCE = args.WEIGHTED_STANCE              # Whether to weigh cost functions or flat
+    DOUBLESTEP = args.DOUBLESTEP                        # Whether to double step length training
     
     DO_TRAIN = args.DO_TRAIN                            # Whether to run training
     DO_TEST = args.DO_TEST                              # Whether to run a test
@@ -173,13 +164,13 @@ def main():
     model = torch.nn.DataParallel(model)
     
     # Define the optimizers. 
-    if OPTIMIZER=='SGD':            # Use SGD
+    if OPTIM_NAME=='SGD':            # Use SGD
         logger.info('Using SGD')
         stance_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
                                      momentum=MOMENTUM)
         length_optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE,
                                      momentum=MOMENTUM)
-    elif OPTIMIZER=='ADAM':         # Use ADAM
+    elif OPTIM_NAME=='ADAM':         # Use ADAM
         logger.info('Using Adam')
         stance_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
         if 'modelc' in MODELNAME.lower():
@@ -187,7 +178,7 @@ def main():
         else:
             length_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     else:
-        logger.info('Exiting. No such optimizer '+OPTIMIZER)
+        logger.info('Exiting. No such optimizer '+OPTIM_NAME)
         raise Exception()
         
     # Set up loss functions. Use averaging to calculate a value
@@ -207,9 +198,10 @@ def main():
     logger.info('THREAD_LENGTH_DIVIDER: %d' % THREAD_LENGTH_DIVIDER)
     
     logger.info('===== Other settings ======')
-    logger.info('OPTIMIZER: ' + OPTIMIZER)
+    logger.info('OPTIMIZER: ' + OPTIM_NAME)
     logger.info('WEIGHTED STANCE LOSS' if WEIGHTED_STANCE else 'FLAT STANCE LOSS')
-    
+    if DOUBLESTEP:
+        logger.info('DOUBLESTEPPING LENGTH')
     
     # Load the test and training data
     logger.info('====== Loading data ========')
@@ -268,6 +260,21 @@ def main():
                 attention_masks = attention_masks.to(gpu)
                 length_labels = length_labels.to(gpu)
                 stance_labels = stance_labels.to(gpu)
+                
+                if DOUBLESTEP:    # try double stepping
+                    # get the length prediction logits
+                    length_logits = model(input_ids = encoded_comments,
+                                          token_type_ids = token_type_ids, 
+                                          attention_masks = attention_masks, 
+                                          task='length')
+                    # calculate the length loss
+                    length_loss = helper.length_loss(pred_logits = length_logits,
+                                                     true_labels = length_labels, 
+                                                     loss_fn = length_loss_fn,
+                                                     divide = THREAD_LENGTH_DIVIDER)
+                    length_loss.backward()              # back propagation
+                    length_optimizer.step()             # step the gradients once
+                    length_optimizer.zero_grad()        # clear the gradients before the next step
                 
                 # get the stance prediction logits
                 stance_logits = model(input_ids = encoded_comments,

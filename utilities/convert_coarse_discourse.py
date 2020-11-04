@@ -34,6 +34,19 @@ import matplotlib.pyplot as plt
 from preprocessor_functions import remove_urls, remove_spaces, post_isempty
 
 def extract_jsonfile(directory, filename):
+    '''
+    Takes a directory and filename of a json file. Spits out a list of dictionaries
+
+    Parameters
+    ----------
+    directory : string. Folder of json file
+    filename : string. Name of json file
+
+    Returns
+    -------
+    entries : list of dictionaries
+
+    '''
     entries = []    
     file = open(directory+filename, 'r')
     counter = 0

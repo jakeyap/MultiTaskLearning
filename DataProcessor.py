@@ -22,12 +22,7 @@ default_tokenizer.add_tokens(['[deleted]', '[URL]','[empty]'])
 
 def open_tsv_data(filename):
     '''
-    Reads TSV data. Outputs a list of list where
-        [
-            [index, labels, original_length, comments]
-            [index, labels, original_length, comments]
-            ...
-        ]
+    Reads TSV data. Converts into a list of list, then convert to dataframe
 
     Parameters
     ----------
@@ -36,7 +31,12 @@ def open_tsv_data(filename):
 
     Returns
     -------
-    lines : list of list (See above)
+    examples : pandas dataframe after converting list of list below
+    [
+        [index, labels, original_length, comments]
+        [index, labels, original_length, comments]
+        ...
+    ]
     '''
     with open(filename, "r", encoding='utf-8') as f:
         reader = csv.reader(f, delimiter="\t")
@@ -323,6 +323,7 @@ def dataframe_2_dataloader(dataframe,
     return dataloader
 
 if __name__ == '__main__':
+    '''
     MAX_POST_PER_THREAD = 4
     MAX_POST_LENGTH = 256
     # DIRECTORY = './data/combined/'
@@ -343,4 +344,29 @@ if __name__ == '__main__':
     time2 = time.time()
     time_taken = int(time2-time1)
     print('time taken: %ds' % time_taken)
+    '''
     
+    
+    ''' Stuff for 20201103 - tokenize flattend reddit threads '''
+    MAX_POST_PER_THREAD = 20
+    MAX_POST_LENGTH = 256
+    # DIRECTORY = './data/combined/'
+    DIRECTORY = './data/coarse_discourse/'
+    #filenames = ['shuffled_dev', 'shuffled_test', 'shuffled_train', 
+    #             'combined_dev', 'combined_test', 'combined_train']
+    filenames = ['coarse_discourse_dump_reddit_test_flat', 
+                 'coarse_discourse_dump_reddit_dev_flat',
+                 'coarse_discourse_dump_reddit_train_flat']
+    
+    time1 = time.time()
+    for each_filename in filenames:
+        logging.info('Encoding dataset: ' + each_filename)
+        suffix = '_' + str(MAX_POST_PER_THREAD) + '_' +str(MAX_POST_LENGTH)
+        tsv_filename = DIRECTORY + each_filename +'.tsv'
+        pkl_filename = DIRECTORY + 'encoded_' + each_filename + suffix +'.pkl'
+        dataframe = get_dataset(tsv_filename)
+        dataframe = tokenize_encode_dataframe(dataframe, MAX_POST_LENGTH, MAX_POST_PER_THREAD)
+        save_2_pkl(dataframe, pkl_filename)
+    time2 = time.time()
+    time_taken = int(time2-time1)
+    print('time taken: %ds' % time_taken)
