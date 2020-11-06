@@ -144,6 +144,7 @@ def stance_loss(pred_logits, true_labels, loss_fn):
     labels = labels.long()              # convert into long datatype
     new_labels = rescale_labels(labels) # rescale labels to take care of -1s
     #loss_fn.ignore_index = 0            # set the loss function to ignore 0 labels
+    
     return loss_fn(logits, new_labels)
 
 def logit_2_class_length(pred_logits):
@@ -215,7 +216,7 @@ def accuracy_length(pred_labels, true_labels, divide=9):
     num_correct = torch.sum(pred_labels == binarylabels).item()
     return num_correct / count
 
-def accuracy_stance(pred_labels, true_labels):
+def accuracy_stance(pred_labels, true_labels, incl_empty=True):
     '''
     Returns the accuracy of stance predictions 
 
@@ -225,17 +226,29 @@ def accuracy_stance(pred_labels, true_labels):
         predicted labels.
     true_labels : 1D tensor, shape=(N,)
         ground truth labels.
-
+    incl_empty : boolean. Default is True
+        if True, count all the empty posts as part of accuracy
     Returns
     -------
     accuracy : float
         [True Pos + True Neg] / [Total].
     '''
-    count = true_labels.shape[0]
-    # rescale labels to take care of -1s
-    new_labels = rescale_labels(true_labels) 
-    num_correct = torch.sum(pred_labels == new_labels).item()
-    return num_correct / count
+    if incl_empty:
+        count = true_labels.shape[0]
+        # rescale labels to take care of -1s
+        new_labels = rescale_labels(true_labels) 
+        num_correct = torch.sum(pred_labels == new_labels).item()
+        return num_correct / count
+    else:
+        # rescale labels to take care of -1s
+        new_labels = rescale_labels(true_labels)
+        sel_indices = (new_labels!=0)
+        filt_new_labels = new_labels[sel_indices]
+        filt_pred_labels= pred_labels[sel_indices]
+        
+        count = filt_new_labels.shape[0]
+        num_correct = torch.sum(filt_new_labels == filt_pred_labels).item()
+        return num_correct / count
 
 def length_f1(pred_lengths, true_lengths, divide=9):
     '''
@@ -300,7 +313,7 @@ def length_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro):
     string +='F1-macro\t%1.4f' % f1_scores_macro
     return string
 
-def stance_f1(pred_stance, true_stance, incl_empty=True):
+def stance_f1(pred_stance, true_stance, incl_empty=True, coarse_disc=False):
     '''
     Calculates the f1 scores for each label category
 
@@ -312,7 +325,9 @@ def stance_f1(pred_stance, true_stance, incl_empty=True):
         binary true lengths. 0=short, 1=long
     incl_empty : boolean. Default is true
         if true, include isEmpty label in calculations
-
+    coarse_disc : boolean. Default is false
+        if true, do the full 10 classes of coarse discourse dataset + isEmpty
+        if false, do the 4 classes of SRQ dataset + isEmpty
     Returns
     -------
     precisions : tuple of floats, length=5
@@ -328,20 +343,23 @@ def stance_f1(pred_stance, true_stance, incl_empty=True):
     '''
     # remember to rescale the stance labels to take care of -1s
     new_stance = rescale_labels(true_stance)
-    if incl_empty:
-        precisions, recalls, f1scores, supports = f1_help(new_stance, 
-                                                          pred_stance, 
-                                                          average=None,
-                                                          labels=[0,1,2,3,4])
+    if coarse_disc:
+        stance_labels = [1,2,3,4,5,6,7,8,9,10]
     else:
-        precisions, recalls, f1scores, supports = f1_help(new_stance, 
-                                                          pred_stance, 
-                                                          average=None,
-                                                          labels=[1,2,3,4])
+        stance_labels = [1,2,3,4]
+    if incl_empty:
+        stance_labels.insert(0,0)
+        
+    precisions, recalls, f1scores, supports = f1_help(new_stance, 
+                                                  pred_stance, 
+                                                  average=None,
+                                                  labels=stance_labels)
+    
     f1_score_macro = sum(f1scores) / len(f1scores)
     return precisions, recalls, f1scores, supports, f1_score_macro
 
-def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro, incl_empty=True):
+def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro, 
+                  incl_empty=True, coarse_disc=False):
     '''
     For printing the f1 score for stance prediction task
 
@@ -353,7 +371,9 @@ def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro, incl
     supports : tuple of length 5
     f1_scores_macro : tuple of length 5
     incl_empty : boolean to decide whether to include isempty label. default is True
-    
+    coarse_disc : boolean. Default is false
+        if true, do the full 10 classes of coarse discourse dataset + isEmpty
+        if false, do the 4 classes of SRQ dataset + isEmpty
     Returns
     -------
     string : string
@@ -361,21 +381,52 @@ def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro, incl
 
     '''
     string = 'Labels \t\tPrecision\tRecall\t\tF1 score\tSupport\n'
-    if incl_empty:
-        string +='Empty  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
-        string +='Deny   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
-        string +='Support\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
-        string +='Query  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[3],recalls[3],f1scores[3],supports[3])
-        string +='Comment\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[4],recalls[4],f1scores[4],supports[4])
-        string +='\n'
-        string +='F1-macro\t%1.4f' % f1_scores_macro
+    if coarse_disc:
+        if incl_empty:
+            string +='Empty       \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
+            string +='Question    \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
+            string +='Answer      \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
+            string +='Announcement\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[3],recalls[3],f1scores[3],supports[3])
+            string +='Agreement   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[4],recalls[4],f1scores[4],supports[4])
+            string +='Appreciation\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[5],recalls[5],f1scores[5],supports[5])
+            string +='Disagreement\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[6],recalls[6],f1scores[6],supports[6])
+            string +='-ve reaction\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[7],recalls[7],f1scores[7],supports[7])
+            string +='Elaboration \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[8],recalls[8],f1scores[8],supports[8])
+            string +='Humor       \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[9],recalls[9],f1scores[9],supports[9])
+            string +='Other       \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[10],recalls[10],f1scores[10],supports[10])
+            
+            string +='\n'
+            string +='F1-macro\t%1.4f' % f1_scores_macro
+        else:
+            string +='Question    \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
+            string +='Answer      \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
+            string +='Announcement\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
+            string +='Agreement   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[3],recalls[3],f1scores[3],supports[3])
+            string +='Appreciation\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[4],recalls[4],f1scores[4],supports[4])
+            string +='Disagreement\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[5],recalls[5],f1scores[5],supports[5])
+            string +='-ve reaction\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[6],recalls[6],f1scores[6],supports[6])
+            string +='Elaboration \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[7],recalls[7],f1scores[7],supports[7])
+            string +='Humor       \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[8],recalls[8],f1scores[8],supports[8])
+            string +='Other       \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[9],recalls[9],f1scores[9],supports[9])
+            
+            string +='\n'
+            string +='F1-macro\t%1.4f' % f1_scores_macro
     else:
-        string +='Deny   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
-        string +='Support\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
-        string +='Query  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
-        string +='Comment\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[3],recalls[3],f1scores[3],supports[3])
-        string +='\n'
-        string +='F1-macro\t%1.4f' % f1_scores_macro
+        if incl_empty:
+            string +='Empty  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
+            string +='Deny   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
+            string +='Support\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
+            string +='Query  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[3],recalls[3],f1scores[3],supports[3])
+            string +='Comment\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[4],recalls[4],f1scores[4],supports[4])
+            string +='\n'
+            string +='F1-macro\t%1.4f' % f1_scores_macro
+        else:
+            string +='Deny   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
+            string +='Support\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
+            string +='Query  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
+            string +='Comment\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[3],recalls[3],f1scores[3],supports[3])
+            string +='\n'
+            string +='F1-macro\t%1.4f' % f1_scores_macro
     return string
 
 def plot_confusion_matrix(y_true, y_pred, labels, label_names):

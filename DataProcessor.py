@@ -304,13 +304,20 @@ def dataframe_2_dataloader(dataframe,
         
     posts_index = torch.from_numpy(posts_index)
     orig_length = torch.from_numpy(orig_length)
-    
-    dataset = TensorDataset(posts_index,
-                            encoded_comments,
-                            token_type_ids,
-                            attention_masks,
-                            orig_length,
-                            stance_labels)
+    if DEBUG:
+        dataset = TensorDataset(posts_index[0:10],
+                                encoded_comments[0:10],
+                                token_type_ids[0:10],
+                                attention_masks[0:10],
+                                orig_length[0:10],
+                                stance_labels[0:10])
+    else:
+        dataset = TensorDataset(posts_index,
+                                encoded_comments,
+                                token_type_ids,
+                                attention_masks,
+                                orig_length,
+                                stance_labels)
     if (randomize):
         sampler = RandomSampler(dataset)
     else:

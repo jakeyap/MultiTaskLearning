@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Sep 11 17:32:49 2020
-
+This is similar to main.py, but is for training with deeper trees in reddit data
 @author: jakeyap
 """
 import torch
@@ -38,6 +38,8 @@ def main():
                             help="Max input sequence length after BERT tokenizer")
         parser.add_argument("--MAX_POST_PER_THREAD",    default=4,    type=int,
                             help="Max number of posts per thread to look at for stance prediction")
+        parser.add_argument("--EXPOSED_POSTS",          default=4,    type=int,
+                            help="Max num of posts per thread to look at for length prediction")
         
         parser.add_argument("--THREAD_LENGTH_DIVIDER",   default=9,
                             type=int,           help="Number to divide lengths into binary classes")
@@ -70,6 +72,7 @@ def main():
     MOMENTUM = args.MOMENTUM                            # momentum for SGD
     MAX_POST_LENGTH = args.MAX_POST_LENGTH              # num of tokens per post 
     MAX_POST_PER_THREAD = args.MAX_POST_PER_THREAD      # num of posts to inspect per thread for stance
+    EXPOSED_POSTS = args.EXPOSED_POSTS                  # num of posts to inspect per thread for length
     
     THREAD_LENGTH_DIVIDER = args.THREAD_LENGTH_DIVIDER  # how to split the dataset for binary cls
     OPTIM_NAME = args.OPTIMIZER                         # ADAM, SGD or RMSProp
@@ -113,42 +116,29 @@ def main():
                         level = logging.INFO)
     logger = logging.getLogger(__name__)
     
-    directory = './data/combined/'
-    test_filename = 'encoded_shuffled_test_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
-    train_filename = 'encoded_shuffled_train_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
-    dev_filename = 'encoded_shuffled_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
+    directory = './data/coarse_discourse/'
+    test_filename = 'encoded_coarse_discourse_dump_reddit_test_flat_20_256.pkl'
+    train_filename = 'encoded_coarse_discourse_dump_reddit_train_flat_20_256.pkl'
+    dev_filename = 'encoded_coarse_discourse_dump_reddit_dev_flat_20_256.pkl'
     
     if DEBUG:
         logger.info('Debugging with a very small dev set')
-        test_filename = 'encoded_combined_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
-        train_filename = 'encoded_combined_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
-        dev_filename = 'encoded_combined_dev_%d_%d.pkl' % (MAX_POST_PER_THREAD, MAX_POST_LENGTH)
+        test_filename = 'encoded_coarse_discourse_dump_reddit_dev_flat_20_256.pkl'
+        train_filename = 'encoded_coarse_discourse_dump_reddit_dev_flat_20_256.pkl'
+        dev_filename = 'encoded_coarse_discourse_dump_reddit_dev_flat_20_256.pkl'
     
     gpu = torch.device("cuda")
     n_gpu = torch.cuda.device_count()
     torch.cuda.empty_cache()
     
-    if MODELNAME.lower()=='modela0':
-        model = my_ModelA0.from_pretrained('bert-base-uncased',
-                                           stance_num_labels=5,
-                                           length_num_labels=2,
-                                           max_post_num=MAX_POST_PER_THREAD, 
-                                           max_post_length=MAX_POST_LENGTH)
-    elif MODELNAME.lower()[:6]=='modelb':
+    if MODELNAME.lower()[:6]=='modeld':
         number = int(MODELNAME[6:])
-        model = my_ModelBn.from_pretrained('bert-base-uncased',
-                                           stance_num_labels=5,
+        model = my_ModelDn.from_pretrained('bert-base-uncased', 
+                                           stance_num_labels=11,
                                            length_num_labels=2,
-                                           max_post_num=MAX_POST_PER_THREAD, 
+                                           max_post_num=MAX_POST_PER_THREAD,
                                            max_post_length=MAX_POST_LENGTH,
-                                           num_transformers=number)
-    elif MODELNAME.lower()[:6]=='modelc':
-        number = int(MODELNAME[6:])
-        model = my_ModelBn.from_pretrained('bert-base-uncased',
-                                           stance_num_labels=5,
-                                           length_num_labels=2,
-                                           max_post_num=MAX_POST_PER_THREAD, 
-                                           max_post_length=MAX_POST_LENGTH,
+                                           exposed_posts=EXPOSED_POSTS,
                                            num_transformers=number)
     else:
         logger.info('Exiting, model not found: ' + MODELNAME)
@@ -185,7 +175,8 @@ def main():
         
     # Set up loss functions. Use averaging to calculate a value
     if WEIGHTED_STANCE:
-        weights = torch.tensor([1.0, 10.0, 1.0, 5.0, 1.0]).to(gpu)
+        # increase the weights for disagreement and -ve reaction
+        weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 10.0, 10.0, 1.0, 1.0, 1.0]).to(gpu)
         stance_loss_fn = torch.nn.CrossEntropyLoss(weight=weights, reduction='mean')
     else:
         stance_loss_fn = torch.nn.CrossEntropyLoss(reduction='mean')
@@ -197,6 +188,7 @@ def main():
     logger.info('MOMENTUM: %1.6f' % MOMENTUM)
     logger.info('MAX_POST_LENGTH: %d' % MAX_POST_LENGTH)
     logger.info('MAX_POST_PER_THREAD: %d' % MAX_POST_PER_THREAD)
+    logger.info('EXPOSED_POSTS: %d' % EXPOSED_POSTS)
     logger.info('THREAD_LENGTH_DIVIDER: %d' % THREAD_LENGTH_DIVIDER)
     
     logger.info('===== Other settings ======')
@@ -218,18 +210,18 @@ def main():
     train_dataloader = DataProcessor.dataframe_2_dataloader(train_dataframe,
                                                             batchsize=BATCH_SIZE_TRAIN,
                                                             randomize=True,
-                                                            DEBUG=False,
-                                                            num_workers=5)
+                                                            DEBUG=DEBUG,
+                                                            num_workers=4)
     test_dataloader = DataProcessor.dataframe_2_dataloader(test_dataframe,
                                                            batchsize=BATCH_SIZE_TEST,
                                                            randomize=False,
-                                                           DEBUG=False,
-                                                           num_workers=5)
+                                                           DEBUG=DEBUG,
+                                                           num_workers=4)
     dev_dataloader = DataProcessor.dataframe_2_dataloader(dev_dataframe,
                                                           batchsize=BATCH_SIZE_TRAIN,
                                                           randomize=False,
-                                                          DEBUG=False,
-                                                          num_workers=5)
+                                                          DEBUG=DEBUG,
+                                                          num_workers=4)
     
     def train(epochs):    
         best_f1_score = 0   # For tracking best model on dev set so far
@@ -250,11 +242,16 @@ def main():
                     logger.info(('\tEPOCH: %3d\tMiniBatch: %4d' % (epoch_counter, batch_idx)))
                 # get the features from dataloader
                 # posts_index = minibatch[0]
-                encoded_comments = minibatch[1]
-                token_type_ids = minibatch[2]
-                attention_masks = minibatch[3]
-                length_labels = minibatch[4]
-                stance_labels = minibatch[5]
+                
+                encoded_comments = minibatch[1] # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
+                token_type_ids = minibatch[2]   # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
+                attention_masks = minibatch[3]  # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
+                length_labels = minibatch[4]    # shape = (n, 20) need to truncate here
+                stance_labels = minibatch[5]    # shape = (n, 20) need to truncate here
+                
+                # keep the ones needed only
+                length_labels = length_labels[:,0:MAX_POST_PER_THREAD]
+                stance_labels = stance_labels[:,0:MAX_POST_PER_THREAD]
                 
                 # move features to gpu
                 encoded_comments = encoded_comments.to(gpu)
@@ -345,7 +342,7 @@ def main():
         
         # Start the arrays to store the entire test set. 
         # Initialize a blank 1st data point first. Remember to delete later    
-        stance_logits_arr = torch.zeros(size=(1,MAX_POST_PER_THREAD,5),dtype=torch.float)
+        stance_logits_arr = torch.zeros(size=(1,MAX_POST_PER_THREAD,11),dtype=torch.float)
         stance_labels_arr = torch.zeros(size=(1,MAX_POST_PER_THREAD),dtype=torch.int64)
         length_logits_arr = torch.zeros(size=(1,2),dtype=torch.float)
         length_labels_arr = torch.zeros(size=(1,1),dtype=torch.int64)
@@ -361,11 +358,15 @@ def main():
                     logger.info(('\tTesting '+ mode +' set Minibatch: %4d' % batch_idx))
                 # get the features from dataloader
                 # posts_index = minibatch[0]
-                encoded_comments = minibatch[1]
-                token_type_ids = minibatch[2]
-                attention_masks = minibatch[3]
-                length_labels = minibatch[4]
-                stance_labels = minibatch[5]
+                encoded_comments = minibatch[1] # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
+                token_type_ids = minibatch[2]   # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
+                attention_masks = minibatch[3]  # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
+                length_labels = minibatch[4]    # shape = (n, 20) need to truncate here
+                stance_labels = minibatch[5]    # shape = (n, 20) need to truncate here
+                
+                # keep the ones needed only
+                length_labels = length_labels[:,0:MAX_POST_PER_THREAD]
+                stance_labels = stance_labels[:,0:MAX_POST_PER_THREAD]
                 
                 # move features to gpu
                 encoded_comments = encoded_comments.to(gpu)
@@ -419,13 +420,15 @@ def main():
             length_true = length_labels_arr.reshape(length_pred.shape)      # reshape from (n,1) into (n,)
             
             stance_metrics = helper.stance_f1(stance_pred,                  # calculate the f1-metrics for stance
-                                              stance_true)
+                                              stance_true,
+                                              coarse_disc=True)
             length_metrics = helper.length_f1(length_pred,                  # calculate the f1-metrics for length
                                               length_true,
                                               THREAD_LENGTH_DIVIDER)
             
             stance_accuracy = helper.accuracy_stance(stance_pred,           # calculate prediction accuracies
-                                                     stance_true)
+                                                     stance_true,
+                                                     incl_empty=False)
             length_accuracy = helper.accuracy_length(length_pred,           # calculate prediction accuracies
                                                      length_true,
                                                      THREAD_LENGTH_DIVIDER)
@@ -434,7 +437,9 @@ def main():
                                               stance_metrics[1],
                                               stance_metrics[2],
                                               stance_metrics[3],
-                                              stance_metrics[4])
+                                              stance_metrics[4],
+                                              coarse_disc=True)
+            
             length_msg = helper.length_f1_msg(length_metrics[0],            # Get the strings to display for f1 scores
                                               length_metrics[1],
                                               length_metrics[2],
@@ -459,10 +464,8 @@ def main():
         For saving all the model parameters, optimizer states
         '''
         logging.info('Saving best model')
-        torch.save([model.state_dict(),
-                    stance_optimizer.state_dict(),
-                    length_optimizer.state_dict()], 
-                   model_savefile)
+        # dont save optimizer states to reduce HDD usage
+        torch.save(model.state_dict(),model_savefile)
         return 
     
     ''' 
@@ -478,7 +481,8 @@ def main():
         train_losses = torch.load(lossfile) # load losses from archive
     
     temp = torch.load(model_savefile)       # load the best model
-    model_state = temp[0]                   # get the model state
+    #model_state = temp[0]                   # get the model state
+    model_state = temp                      # unlike older implementations, optimizers not stored
     model.load_state_dict(model_state)      # stuff state into model
     test_losses = test(mode='test')         # run a test 
     
