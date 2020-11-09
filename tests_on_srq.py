@@ -9,7 +9,7 @@ This file contains the logic to run tests on SRQ dataset
 
 import DataProcessor
 import multitask_helper_functions as helper
-from classifier_models import my_ModelA0, my_ModelBn
+from classifier_models import my_ModelA0, my_ModelBn, my_ModelDn
 import torch
 import matplotlib.pyplot as plt
 
@@ -17,6 +17,7 @@ import logging, sys, argparse
 import time
 
 def main():
+    start_time = time.time()
     if True:
         parser = argparse.ArgumentParser()
         parser.add_argument('--MODELDIR',       default='./saved_models/',
@@ -41,7 +42,8 @@ def main():
                             help='Max input sequence length after BERT tokenizer')
         parser.add_argument('--MAX_POST_PER_THREAD', default=4,  type=int,
                             help='Max number of posts per thread to look at')
-        
+        parser.add_argument("--EXPOSED_POSTS",          default=4,    type=int,
+                            help="Max num of posts per thread to look at for length prediction")
         parser.add_argument('--DEBUG',  action='store_true',
                             help='Set to true when debugging code')
         
@@ -58,7 +60,7 @@ def main():
         LENGTH_NUM_LABELS = args.LENGTH_NUM_LABELS
         MAX_POST_LENGTH = args.MAX_POST_LENGTH
         MAX_POST_PER_THREAD = args.MAX_POST_PER_THREAD
-        
+        EXPOSED_POSTS = args.EXPOSED_POSTS
         DEBUG = args.DEBUG                      # debug flag
         
     logfile_name = './log_files/test_srq_'+MODELFILE[:-4]+'.log'    # save the log
@@ -87,11 +89,16 @@ def main():
                       stance_num_labels=STANCE_NUM_LABELS, 
                       length_num_labels=LENGTH_NUM_LABELS, 
                       max_post_num=MAX_POST_PER_THREAD,
-                      max_post_len=MAX_POST_LENGTH)
+                      max_post_len=MAX_POST_LENGTH,
+                      exposed_posts=EXPOSED_POSTS)
     
     results =  test(model, dataloader, LOG_INTERVAL, -1)
     stance_pred = results[0]    # shape is (NA,)
     stance_true = results[1]    # shape is (NA,)
+    
+    # if modelD is used, need to convert the labels to 5 classes
+    if 'modeld' == MODELFILE.lower()[0:6]:
+        stance_pred = map_coarse_discourse_2_sdqc_labels(stance_pred)
     
     # select only the replies to do analysis on
     # SRQ dataset only has parent, 1 reply. ignore all other labels
@@ -125,6 +132,10 @@ def main():
                                  labels=[1,2,3,4],
                                  label_names=['deny','support','query','comment'])
     plt.savefig(plotfile_name)
+    time_end = time.time()
+    time_taken = time_end - start_time  
+    logger.info('Time elapsed: %6.2fs' % time_taken)
+    
     return stance_pred, stance_true
 
 
@@ -190,7 +201,8 @@ def get_model(modeldir, modelfile,
               stance_num_labels=5, 
               length_num_labels=2,
               max_post_num=4,
-              max_post_len=256):
+              max_post_len=256,
+              exposed_posts=4):
     ''' Returns the model, with weights loaded '''
     logger = logging.getLogger(__name__)
     if 'modela0'==modelfile.lower()[0:7]:
@@ -215,6 +227,15 @@ def get_model(modeldir, modelfile,
                                            max_post_num=max_post_num, 
                                            max_post_length=max_post_len,
                                            num_transformers=number)
+    elif 'modeld'==modelfile.lower()[0:6]:
+        number = int(modelfile[6])
+        model = my_ModelDn.from_pretrained('bert-base-uncased',
+                                           stance_num_labels=stance_num_labels,
+                                           length_num_labels=length_num_labels,
+                                           max_post_num=max_post_num, 
+                                           max_post_length=max_post_len,
+                                           exposed_posts=exposed_posts,
+                                           num_transformers=number)
     else:
         logger.info('Exiting, model not found: ' + modelfile)
         raise Exception
@@ -224,9 +245,44 @@ def get_model(modeldir, modelfile,
     model = torch.nn.DataParallel(model)    # wrap the model using DataParallel
     
     temp = torch.load(modeldir+modelfile)   # load the best model
-    model_state = temp[0]                   # get the model state
-    model.load_state_dict(model_state)      # stuff state into model
+    if 'modeld'==modelfile.lower()[0:6]:    # for modelD onwards, optimizers are not saved 
+        model.load_state_dict(temp)         # stuff state into model
+    else:
+        model_state = temp[0]               # get the model state
+        model.load_state_dict(model_state)  # stuff state into model
     return model
+
+def map_coarse_discourse_2_sdqc_labels(input_tensor):
+    '''
+    mapping table from coarse_discourse into semeval17 format
+    Reddit + Empty ==> SDQC + Empty
+    0.empty        ==> 0.empty
+    1.question     ==> 3.query
+    2.answer       ==> 4.comment
+    3.announcement ==> 4.comment
+    4.agreement    ==> 2.support
+    5.appreciation ==> 4.comment
+    6.disagreement ==> 1.deny
+    7.-ve reaction ==> 1.deny
+    8.elaboration  ==> 4.comment
+    9.humor        ==> 4.comment
+    10.other       ==> 4.comment
+    '''
+    output_tensor = torch.zeros(size=input_tensor.size())
+    for i in range(len(input_tensor)):
+        value = input_tensor[i]
+        if (value==0):
+            output_tensor[i] = 0
+        elif (value==6) or (value==7):
+            output_tensor[i] = 1
+        elif (value==4) :
+            output_tensor[i] = 2
+        elif (value==1):
+            output_tensor[i] = 3
+        else:
+            output_tensor[i] = 4
+            
+    return output_tensor
 
 if __name__ == '__main__':
     ans = main()

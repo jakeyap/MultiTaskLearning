@@ -31,30 +31,42 @@ exp22: Adam,epochs=10,lr=0.00001, GPU=2, minibatch=6, ModelC2, weighted stance l
 exp23: Adam,epochs=10,lr=0.00001, GPU=2, minibatch=6, ModelC1, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (4h)
 
 ModelCN (length 2 classes, stance 5 classes) N=hierarchy in transformers. Emphasize the length loss with 3x learning rate
-exp24: Adam,epochs=10,lr=0.00001, GPU=2, minibatch=4, ModelC4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (?h)
+exp24: Adam,epochs=10,lr=0.00001, GPU=2, minibatch=4, ModelC4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (6h15m)
 exp25: Adam,epochs=10,lr=0.00001, GPU=2, minibatch=6, ModelC3, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h15m)
 exp26: Adam,epochs=10,lr=0.00001, GPU=2, minibatch=6, ModelC2, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h15m)
 exp27: Adam,epochs=10,lr=0.00001, GPU=2, minibatch=6, ModelC1, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h)
 
 ModelBN (length 2 classes, stance 5 classes) N=hierarchy in transformers. Emphasize the length loss by double stepping length
-exp28: Adam,epochs=10,lr=0.00001, GPU=2, minibatch=4, ModelC4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (?h)
-exp29: Adam,epochs=10,lr=0.00001, GPU=2, minibatch=6, ModelC3, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (?h)
-exp30: Adam,epochs=10,lr=0.00001, GPU=2, minibatch=6, ModelC2, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (?h)
+exp28: Adam,epochs=10,lr=0.00001, GPU=2, minibatch=4, ModelC4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h30m)
+exp29: Adam,epochs=10,lr=0.00001, GPU=2, minibatch=6, ModelC3, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h15m)
+exp30: Adam,epochs=10,lr=0.00001, GPU=2, minibatch=6, ModelC2, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, stance_class=5, length_class=2. (5h)
+
+ModelDN (length 2 classes, stance 11 classes) N=hierarchy in transformers. On flattened coarse discourse
+
+exp32: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=8, ModelD3, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, EXPOSED=4, stance_class=11, length_class=2. (12h30m)
+exp33: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=8, ModelD2, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, EXPOSED=4, stance_class=11, length_class=2. (11h15m)
+exp34: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=8, ModelD1, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, EXPOSED=4, stance_class=11, length_class=2. (16h30m)
+
+exp35: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=8, ModelD4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (16h30m) 
 
 -------------- Experiments in progress --------------
+ti
+exp31: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=8, ModelD4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, EXPOSED=4, stance_class=11, length_class=2. (20h expected)
+exp36: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=8, ModelD3, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
+exp37: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=8, ModelD2, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
+exp38: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=8, ModelD1, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
 
+quadro
+exp39: Adam,epochs=4,lr=0.00001, GPU=2, minibatch=16, ModelD4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
+exp40: Adam,epochs=4,lr=0.00001, GPU=2, minibatch=16, ModelD4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
+exp41: Adam,epochs=4,lr=0.00001, GPU=2, minibatch=16, ModelD4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
+exp42: Adam,epochs=4,lr=0.00001, GPU=2, minibatch=16, ModelD4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
 
 ---------------- Experiments planned ----------------
-ModelDN (length 2 classes, stance 11 classes) N=hierarchy in transformers. On flattened coarse discourse
-exp31: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=16, ModelD4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
-exp32: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=16, ModelD3, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected)
-exp33: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=16, ModelD2, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected)
-exp34: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=16, ModelD2, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected)
 
 
 
 ===================== TASKS TODO ====================
-build ModelDN
 implement logic to do single task training on either task
 try bert large (TOO large to fit into memory. discuss with teammates)
 try to split into smaller buckets for length

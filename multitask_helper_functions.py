@@ -380,9 +380,10 @@ def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro,
         for printing the f1 score nicely.
 
     '''
-    string = 'Labels \t\tPrecision\tRecall\t\tF1 score\tSupport\n'
+    
     if coarse_disc:
         if incl_empty:
+            string = 'Labels      \t\tPrecision\tRecall\t\tF1 score\tSupport\n'
             string +='Empty       \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
             string +='Question    \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
             string +='Answer      \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
@@ -398,6 +399,7 @@ def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro,
             string +='\n'
             string +='F1-macro\t%1.4f' % f1_scores_macro
         else:
+            string = 'Labels      \t\tPrecision\tRecall\t\tF1 score\tSupport\n'
             string +='Question    \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
             string +='Answer      \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
             string +='Announcement\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
@@ -413,6 +415,7 @@ def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro,
             string +='F1-macro\t%1.4f' % f1_scores_macro
     else:
         if incl_empty:
+            string = 'Labels \t\tPrecision\tRecall\t\tF1 score\tSupport\n'
             string +='Empty  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
             string +='Deny   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
             string +='Support\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
@@ -421,6 +424,7 @@ def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro,
             string +='\n'
             string +='F1-macro\t%1.4f' % f1_scores_macro
         else:
+            string = 'Labels \t\tPrecision\tRecall\t\tF1 score\tSupport\n'
             string +='Deny   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
             string +='Support\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[1],recalls[1],f1scores[1],supports[1])
             string +='Query  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[2],recalls[2],f1scores[2],supports[2])
