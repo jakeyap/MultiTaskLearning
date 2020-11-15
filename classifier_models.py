@@ -10,7 +10,7 @@ import copy
 import torch
 from transformers import BertModel
 from transformers.modeling_bert import BertPreTrainedModel, BertPooler, BertLayer
-from torch.nn import MSELoss, CrossEntropyLoss
+from torch.nn import CrossEntropyLoss
 import torch.nn as nn
 
 class BertHierarchyPooler(nn.Module):
