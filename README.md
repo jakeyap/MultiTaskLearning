@@ -148,7 +148,7 @@ Finally, for ModelDN, I only looked at the first 4 posts to try to make a predic
 
 ### **Other Important Stuff**    
 
-Here's a summary of the stuff tried. It is just a short explanation. See ./misc/experiment_results.ods for full settings of each experiment and full results.
+Here's a summary of the stuff tried. It is just a short explanation. See [this file](./misc/experiment_results.ods) for full settings of each experiment and full results.
 
 *Optimizers:*   
 Tried *Base SGD*, *ADAM*.    
@@ -158,8 +158,7 @@ Tried uniform cross entropy loss (multiclass for stance, binary for length)
 as well as weighted cross entropy for stance (1, 10, 1, 5, 1). Deny=10, query=5    
 
 *Learning rates (LR)*    
-Most of the experiments have LR set to 
-\\[10^{-4}, 2 \times 10^{-4}, 5 \times 10^{-4}\\]
+Most of the experiments have LR set to 10e-4, 2x10e-4, 5x10e-4.
 Some have dual learning rates (ModelC). See excel file for actual data.
 
 
@@ -170,14 +169,16 @@ Training using base SGD optimizers didn't work for stance prediction.
 Cannot learn DENY class. Probably too slow or something. 
 Training with ADAM seem to work better
 
-Full set of results stored in ./misc/experiment_results.ods.
+Full set of results stored in [this file](./misc/experiment_results.ods).
 Results shown below are the more interesting ones. 
 
-**Experiment 12 (Best in Deny F1 score)**   
-ModelB4
-* 4 transformer layers stacked on top of BERT
+**Experiment 29 (Best in Length Prediction F1 score)**   
+ModelB3
+* Trained on 4 stance categories, thread lengths split at 9
+* 3 transformer layers stacked on top of BERT
 * Weighted loss function for stance
-* Looked up 4 posts/thread, 256 tokens/post
+* 256 tokens/post
+* Looked up 4 posts/thread for both tasks
 * Minibatch size=15
 * num GPUs=5
 * Training took 5h15m
@@ -185,77 +186,61 @@ ModelB4
 Labels |Precision|Recall|F1 score|Support
 -------|---------|------|--------|-------
 isEmpty|1.0000|1.0000|1.0000|345
-Deny   |0.1832|0.3077|**0.2297**|78   
-Support|0.8888|0.8130|0.8492|1032
-Query  |0.6588|0.8058|0.7249|242
-Comment|0.8999|0.8922|0.8961|2227
-F1 avg |      |      |0.7400|
-F1 wo isEmpty||      |0.6750|
-Acc.   |      |      |86.4%|
+Deny   |0.2769|0.2308|**0.2517**|78   
+Support|0.8338|0.8605|0.8469|1032
+Query  |0.7186|0.781|0.7485|242
+Comment|0.9149|0.8981|0.9064|2227
+F1 avg |      |      |0.7507|
+F1 wo isEmpty||      |0.6884|
+W.avg F1 wo isEmpty|||0.8643|
+Acc.   |      |      |**87.7%**|
+F1 on SRQ dataset||  |**0.4303**|
 
 Length |Precision|Recall|F1 score|Support
 -------|---------|------|--------|-------
-Short  |0.5887|0.5321|0.5589|468
-Long   |0.6075|0.6608|0.6331|513
-Average|      |      |0.5960
-Accuracy|     |      |59.9%
+Short  |0.7391|0.5449|0.6273|468
+Long   |0.6651|0.8246|0.7363|513
+Average|      |      |**0.6818**
+Accuracy|     |      |**69.1%**
 
 
-**Experiment 13 (Best in Overall Stance F1 score)**   
-ModelB3
-* *3* transformer layers stacked on top of BERT
+**Experiment 38 (Best in Deny F1 score)**   
+ModelD1
+* Trained on 10 stance categories, thread lengths split at 8
+* *1* transformer layers stacked on top of BERT
 * Weighted loss function for stance
-* Looked up 4 posts/thread, 256 tokens/post
-* Minibatch size=15
-* num GPUs=5
-* Training took 5h
-
-Labels |Precision|Recall|F1 score|Support
--------|---------|------|--------|-------
-isEmpty|1.0000|1.0000|1.0000|345
-Deny   |0.1770|0.2564|0.2094|78   
-Support|0.8843|0.8295|0.8560|1032
-Query  |0.6656|0.8884|0.7611|242
-Comment|0.9099|0.8886|0.8991|2227
-F1 avg |      |      |**0.7451**|
-F1 wo isEmpty||      |**0.6814**|
-Acc.   |      |      |87.0%|
-
-Length |Precision|Recall|F1 score|Support
--------|---------|------|--------|-------
-Short  |0.7073|0.5577|0.6237|468
-Long   |0.6618|0.7895|0.7200|513
-Average|      |      |0.6718
-Accuracy|     |      |67.9%
-
-**Experiment 20 (Best in Length acc., OK in stance)**   
-ModelC4
-* *4* transformer layers stacked on top of BERT
-* Weighted loss function for stance
-* *3x higher starting LR for length vs stance tasks*
-* Looked up 4 posts/thread, 256 tokens/post
-* Minibatch size=6 
+* 256 tokens/post
+* Looked up 8 posts/thread for stance task
+* Looked up 4 posts/thread for length task
+* Minibatch size=8
 * num GPUs=2
-* Training took 6h
+* Training took 16h
 
-Labels |Precision|Recall|F1 score|Support
--------|---------|------|--------|-------
-isEmpty|1.0000|1.0000|1.0000|345
-Deny   |0.1400|0.3590|0.2014|78   
-Support|0.8539|0.7190|0.7806|1032
-Query  |0.4444|0.9256|0.6005|242
-Comment|0.9123|0.8217|0.8646|2227
-F1 avg |      |      |0.6895|
-F1 wo isEmpty||      |0.6118|
-Acc.   |      |      |80.8%|
+Labels   |Precision|Recall|F1 score|Support
+---------|---------|------|--------|-------
+isEmpty  |1.0000|1.0000|1.0000|29890
+Question |0.8562|0.8804|0.8681|5537
+Answer   |0.7283|0.7844|0.7553|4587
+Annouce  |0.6238|0.4436|0.5185|1267
+Agreement|0.5558|0.4506|0.4977|486
+Apprec   |0.6759|0.7140|0.6944|923
+Disagree |0.3053|0.4856|**0.3749**|418
+-ve Reaction|0.1152|0.5141|0.1882|177
+Elaborate|0.4533|0.4172|0.4345|1908
+Humor    |0.1357|0.0964|0.1127|280
+Other    |0.2020|0.0994|0.1332|1439
+F1 avg   |      |      |0.5070|
+F1 wo isEmpty|  |      |0.4578|
+W.avg F1 wo isEmpty||  |0.6494|
+Acc.     |      |      |65.6%|
+F1 on SRQ dataset||    |0.3706|
 
 Length |Precision|Recall|F1 score|Support
 -------|---------|------|--------|-------
-Short  |0.8097|0.4637|0.5897|468
-Long   |0.680|0.9006|0.7537|513
-Average|      |      |0.6717
-Accuracy|     |      |**69.2%**
-
+Short  |0.2435|0.5102|0.3297|1127
+Long   |0.8424|0.6230|0.7163|4737
+Average|      |      |0.5230
+Accuracy|     |      |60.1%
 
 
 ### **Discussion**
@@ -266,7 +251,7 @@ There are more modern papers, but I don't really understand their metrics. An ex
 In Kowalczyk et. al. (2019), they framed the problem as a regression problem. So their metrics of error are different I guess.    
 Accuracy isn't relevant in their use case. But they did use other features to get their results (eg. follower count, num likes, account age etc.)    
 
-In the various ModelCs, I tried to make the length task learn faster compared to the stance task. I did it by forcing the learning rate of the length loss to be 3x that of the stance loss. I'm not sure whether ADAM will screw up this hardcoded behavior though.    
+In the various ModelCs, I tried to make the length task learn faster compared to the stance task. I did it by forcing the learning rate of the length loss to be 3x that of the stance loss. My gut feeling is ADAM will adjust away this hardcoded behavior after several steps though. The stance prediction task does miserably in this set up.    
 
 Perhaps it might be easier to do double stepping the length prediction task. In pseudo code:
 
@@ -275,9 +260,14 @@ Perhaps it might be easier to do double stepping the length prediction task. In 
     1.2 *learn the stance*    
     1.3 *learn the length again*
 
-Double stepping the learning for length seems to work well. Try it further later.    
-The modelDNs seem to be learning well, but I need to adjust the loss function weights a bit more.    
-Try to double step the length training.
+Double stepping the learning for length seems to work well. The performance in experiment 29 was achieved in this manner.    
+The modelDNs seem to be learning the disagree/deny class well, but it is at the expense of the agree/support class. Perhaps I need to adjust the loss function weights a bit more.    
+
+For experiment 29, I reached the performance metrics published in [4], marginally. 
+
+For training modelD*N*s, the manner I am splitting the data will make the posts higher up the hierarchy get seen a lot more times in training than the leaf nodes. I am wondering if this this is a potential problem. 
+
+One thing I noticed is that even though the tree sizes are split at median 8 for the dataset, when they get flattened into leaf-to-root paths, a disproportionate number of these paths come from the conversations with bigger number of members. To illustrate the problem, see experiment 38 length results 'support' column. Even though roughly 50% of conversations have 8 or more posts inside, when flattened into individual leaf-to-root paths, these conversations account for 80% of the paths. Not sure whether this is a problem. Perhaps I should re-frame the length prediction task as predicting "will this specific path will end soon?"    
 
 ### **Further steps**    
 1. Strengthen the model
@@ -290,6 +280,7 @@ Try to double step the length training.
     * Remove middle attention network, straight into MLPs
 3. Build another entirely different model
     * ~~2 entirely separate networks to not discard posts. Share only underlying BERT~~
+    * Stack transformers before the length MLP also
 
 ## **References**
 [1] Backstrom, L., Kleinberg, J., Lee, L., & Danescu-Niculescu-Mizil, C. (2013). Characterizing and curating conversation threads: Expansion, focus, volume, re-entry. WSDM 2013 - Proceedings of the 6th ACM International Conference on Web Search and Data Mining, 13–22. https://doi.org/10.1145/2433396.2433401

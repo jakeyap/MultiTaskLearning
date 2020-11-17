@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import torch
 import DataProcessor
 import multitask_helper_functions as helper
-from classifier_models import my_ModelA0, my_ModelBn
+from classifier_models import my_ModelA0, my_ModelBn, my_ModelDn
 
 def accuracy_from_recall(short_recall, short_support, long_recall, long_support):
     short_true_pos = short_support * short_recall
@@ -56,11 +56,33 @@ def reload_modelBn(model_filename,
     model.load_state_dict(state_dict)           # Stuff state into model
     return model
 
-def reload_test_data(test_filename = 'encoded_shuffled_test_4_256.pkl', BATCH_SIZE_TRAIN=2):
+def reload_modelDn(model_filename,
+                   number,
+                   MAX_POST_PER_THREAD=4,
+                   MAX_POST_LENGTH=256):
+    model = my_ModelDn.from_pretrained('bert-base-uncased', 
+                                        stance_num_labels=11,
+                                        length_num_labels=2,
+                                        max_post_num=8,
+                                        max_post_length=256,
+                                        exposed_posts=4,
+                                        num_transformers=number)
+    token_len = len(DataProcessor.default_tokenizer)
+    model.resize_token_embeddings(token_len)    # Resize model vocab
+    temp = torch.load(model_filename)           # Reload model and optimizer states
+    try:
+        state_dict = temp[0]                    # Extract state dict
+        model.load_state_dict(state_dict)       # Stuff state into model
+    except Exception:
+        state_dict = temp                       # Extract state dict
+        model.load_state_dict(state_dict)       # Stuff state into model
+    return model
+
+def reload_test_data(test_filename = 'encoded_shuffled_test_4_256.pkl', BATCH_SIZE_TEST=2):
     # Grab test data pickle file and reload into a dataframe
     test_dataframe = DataProcessor.load_from_pkl(test_filename)
     test_dataloader = DataProcessor.dataframe_2_dataloader(test_dataframe,
-                                                           batchsize=BATCH_SIZE_TRAIN,
+                                                           batchsize=BATCH_SIZE_TEST,
                                                            randomize=False,
                                                            DEBUG=False,
                                                            num_workers=1)
@@ -110,11 +132,42 @@ def replot_training_losses(filename):
     return lossfile, fig, axes
 
 if __name__ =='__main__':
-    filename = './log_files/losses_25_10_4_256_0.0002_exp6.bin'
+    filename = './log_files/training_losses/losses_ModelD4_exp43.bin'
     losses, fig, axes = replot_training_losses(filename)
     
-    model_filename = './saved_models/ModelA0_25_10_4_256_0.0002_exp6.bin'
-    model = reload_modelA0(model_filename,4,256)
+    model_filename = './saved_models/ModelD4_exp43.bin'
+    #model = reload_modelA0(model_filename,4,256)
+    model = reload_modelDn(model_filename, 
+                           number=4,
+                           MAX_POST_PER_THREAD=4,
+                           MAX_POST_LENGTH=256)
     model.eval()
+    model.cuda()
+    test_dataframe = DataProcessor.load_from_pkl('./data/coarse_discourse/encoded_coarse_discourse_dump_reddit_test_flat_20_256.pkl')
     
+    index_2_choose = 10
+    i = index_2_choose
+    encoded_comments = test_dataframe['encoded_comments'][i]
+    token_type_ids = test_dataframe['token_type_ids'][i]
+    attention_masks = test_dataframe['token_type_ids'][i]
+    length_labels = test_dataframe['orig_length'][i]
+    stance_labels = test_dataframe['labels_array'][i]
     
+    MAX_POST_PER_THREAD = 4
+    # keep the ones needed only
+    length_labels = length_labels[:,0:MAX_POST_PER_THREAD]
+    stance_labels = stance_labels[:,0:MAX_POST_PER_THREAD]
+    gpu = 'cuda'
+    # move features to gpu
+    encoded_comments = encoded_comments.to(gpu)
+    token_type_ids = token_type_ids.to(gpu)
+    attention_masks = attention_masks.to(gpu)
+    length_labels = length_labels.to(gpu)
+    stance_labels = stance_labels.to(gpu)
+    '''
+    encoded_comments = minibatch[1] # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
+    token_type_ids = minibatch[2]   # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
+    attention_masks = minibatch[3]  # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
+    length_labels = minibatch[4]    # shape = (n, 20) need to truncate here
+    stance_labels = minibatch[5]    # shape = (n, 20) need to truncate here
+    '''

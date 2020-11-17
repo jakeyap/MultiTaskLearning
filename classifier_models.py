@@ -278,18 +278,7 @@ class my_ModelDn(BertPreTrainedModel):
                                             token_type_ids[:,i*idx:(i+1)*idx], 
                                             attention_masks[:,i*idx:(i+1)*idx])
             sequence_output = torch.cat((sequence_output, sequence_outputn), dim=1)
-        ''' # Legacy hard coded style from ModelA0-Bn
-        sequence_output1, _ = self.bert(input_ids[:,0*idx:1*idx], token_type_ids[:,0*idx:1*idx], attention_masks[:,0*idx:1*idx])
-        sequence_output2, _ = self.bert(input_ids[:,1*idx:2*idx], token_type_ids[:,1*idx:2*idx], attention_masks[:,1*idx:2*idx])
-        sequence_output3, _ = self.bert(input_ids[:,2*idx:3*idx], token_type_ids[:,2*idx:3*idx], attention_masks[:,2*idx:3*idx])
-        sequence_output4, _ = self.bert(input_ids[:,3*idx:4*idx], token_type_ids[:,3*idx:4*idx], attention_masks[:,3*idx:4*idx])
         
-        # Stick the outputs back together. 
-        # sequence_output dimension = (n, AxB, hidden_size). n=minibatch_size, A=max_post_length, B=max_post_num
-        tmp_sequence = torch.cat((sequence_output1, sequence_output2), dim=1)
-        tmp_sequence = torch.cat((tmp_sequence, sequence_output3), dim=1)
-        sequence_output = torch.cat((tmp_sequence, sequence_output4), dim=1)
-        '''        
         # the attention mask size must be (n, 1, 1, length) where n is minibatch
         attention_masks = attention_masks.unsqueeze(1).unsqueeze(2)
         
