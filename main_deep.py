@@ -10,7 +10,7 @@ import torch.optim as optim
 
 import DataProcessor
 import multitask_helper_functions as helper
-from classifier_models import my_ModelA0, my_ModelBn, my_ModelDn
+from classifier_models import my_ModelDn, my_ModelEn
 
 import logging, sys, argparse
 import time
@@ -134,6 +134,15 @@ def main():
     if MODELNAME.lower()[:6]=='modeld':
         number = int(MODELNAME[6:])
         model = my_ModelDn.from_pretrained('bert-base-uncased', 
+                                           stance_num_labels=11,
+                                           length_num_labels=2,
+                                           max_post_num=MAX_POST_PER_THREAD,
+                                           max_post_length=MAX_POST_LENGTH,
+                                           exposed_posts=EXPOSED_POSTS,
+                                           num_transformers=number)
+    elif MODELNAME.lower()[:6]=='modele':
+        number = int(MODELNAME[6:])
+        model = my_ModelEn.from_pretrained('bert-base-uncased', 
                                            stance_num_labels=11,
                                            length_num_labels=2,
                                            max_post_num=MAX_POST_PER_THREAD,
@@ -284,6 +293,7 @@ def main():
                                       token_type_ids = token_type_ids, 
                                       attention_masks = attention_masks, 
                                       task='stance')
+                
                 # calculate the stance loss
                 stance_loss = helper.stance_loss(pred_logits = stance_logits,
                                                  true_labels = stance_labels, 
@@ -379,7 +389,8 @@ def main():
                 length_labels = length_labels.to(gpu)
                 stance_labels = stance_labels.to(gpu)
                 
-                stance_logits = model(input_ids = encoded_comments,         # get the stance prediction logits
+                
+                stance_logits = model(input_ids = encoded_comments,         # get the stance and length logits
                                       token_type_ids = token_type_ids,      # (n,A,B): n=minibatch, A=max_posts_per_thread, B=num of classes
                                       attention_masks = attention_masks, 
                                       task='stance')
@@ -510,14 +521,14 @@ def main():
     ax1,ax2,ax3 = axes[0], axes[1], axes[2]
     
     ax1.set_title('stance loss')
-    ax1.scatter(train_horz_index, train_stance_losses, color='red', s=10)
-    ax1.scatter(dev_horz_index, dev_stance_losses, color='blue')
     ax1.set_yscale('log')
+    ax1.scatter(dev_horz_index, dev_stance_losses, color='blue')
+    ax1.scatter(train_horz_index, train_stance_losses, color='red', s=10)
     
     ax2.set_title('length loss')
-    ax2.scatter(train_horz_index, train_length_losses, color='red', s=10)
-    ax2.scatter(dev_horz_index, dev_length_losses, color='blue')
     ax2.set_yscale('log')
+    ax2.scatter(dev_horz_index, dev_length_losses, color='blue')
+    ax2.scatter(train_horz_index, train_length_losses, color='red', s=10)
     
     ax3.set_title('f1 score')
     ax3.scatter(dev_horz_index, dev_f1_scores, color='red')

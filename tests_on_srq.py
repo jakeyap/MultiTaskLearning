@@ -9,7 +9,7 @@ This file contains the logic to run tests on SRQ dataset
 
 import DataProcessor
 import multitask_helper_functions as helper
-from classifier_models import my_ModelA0, my_ModelBn, my_ModelDn
+from classifier_models import my_ModelA0, my_ModelBn, my_ModelDn, my_ModelEn
 import torch
 import matplotlib.pyplot as plt
 
@@ -65,6 +65,8 @@ def main():
         
     logfile_name = './log_files/test_srq_'+MODELFILE[:-4]+'.log'    # save the log
     plotfile_name ='./log_files/plot_srq_'+MODELFILE[:-4]+'.png'    # save the log
+    results_name = './log_files/'+MODELFILE[:-4]+'_predict.txt'     # save the log
+    results_file = open(results_name,'w')
     
     file_handler = logging.FileHandler(filename=logfile_name)       # for saving into a log file
     stdout_handler = logging.StreamHandler(sys.stdout)              # for printing onto terminal
@@ -96,8 +98,8 @@ def main():
     stance_pred = results[0]    # shape is (NA,)
     stance_true = results[1]    # shape is (NA,)
     
-    # if modelD is used, need to convert the labels to 5 classes
-    if 'modeld' == MODELFILE.lower()[0:6]:
+    # if modelD or modelE is used, need to convert the labels to 5 classes
+    if MODELFILE.lower()[0:6] in ['modeld', 'modele']: 
         stance_pred = map_coarse_discourse_2_sdqc_labels(stance_pred)
     
     # select only the replies to do analysis on
@@ -136,6 +138,9 @@ def main():
     time_taken = time_end - start_time  
     logger.info('Time elapsed: %6.2fs' % time_taken)
     
+    for i in range(len(stance_pred)):
+        results_file.write(str(int(stance_true[i].item())) + ','+ 
+                           str(int(stance_pred[i].item())) + '\n')
     return stance_pred, stance_true
 
 
@@ -236,6 +241,15 @@ def get_model(modeldir, modelfile,
                                            max_post_length=max_post_len,
                                            exposed_posts=exposed_posts,
                                            num_transformers=number)
+    elif 'modele'==modelfile.lower()[0:6]:
+        number = int(modelfile[6])
+        model = my_ModelEn.from_pretrained('bert-base-uncased',
+                                           stance_num_labels=stance_num_labels,
+                                           length_num_labels=length_num_labels,
+                                           max_post_num=max_post_num, 
+                                           max_post_length=max_post_len,
+                                           exposed_posts=exposed_posts,
+                                           num_transformers=number)
     else:
         logger.info('Exiting, model not found: ' + modelfile)
         raise Exception
@@ -245,11 +259,13 @@ def get_model(modeldir, modelfile,
     model = torch.nn.DataParallel(model)    # wrap the model using DataParallel
     
     temp = torch.load(modeldir+modelfile)   # load the best model
-    if 'modeld'==modelfile.lower()[0:6]:    # for modelD onwards, optimizers are not saved 
-        model.load_state_dict(temp)         # stuff state into model
-    else:
+    
+    if modelfile.lower()[0:6] in ['modela','modelb','modelc']:
         model_state = temp[0]               # get the model state
-        model.load_state_dict(model_state)  # stuff state into model
+        model.load_state_dict(model_state)  # stuff state into model        
+    else:                                   # for modelD onwards, optimizers are not saved 
+        model.load_state_dict(temp)         # stuff state into model
+    
     return model
 
 def map_coarse_discourse_2_sdqc_labels(input_tensor):
