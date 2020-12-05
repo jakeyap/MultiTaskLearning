@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 import torch
 import DataProcessor
 import multitask_helper_functions as helper
-from classifier_models import my_ModelA0, my_ModelBn, my_ModelDn
+from classifier_models import my_ModelA0, my_ModelBn, my_ModelDn, my_ModelEn
+import numpy as np
 
 def accuracy_from_recall(short_recall, short_support, long_recall, long_support):
     short_true_pos = short_support * short_recall
@@ -78,15 +79,43 @@ def reload_modelDn(model_filename,
         model.load_state_dict(state_dict)       # Stuff state into model
     return model
 
-def reload_test_data(test_filename = 'encoded_shuffled_test_4_256.pkl', BATCH_SIZE_TEST=2):
-    # Grab test data pickle file and reload into a dataframe
-    test_dataframe = DataProcessor.load_from_pkl(test_filename)
-    test_dataloader = DataProcessor.dataframe_2_dataloader(test_dataframe,
-                                                           batchsize=BATCH_SIZE_TEST,
-                                                           randomize=False,
-                                                           DEBUG=False,
-                                                           num_workers=1)
-    return test_dataloader
+def reload_modelEn(model_filename,
+                   number,
+                   MAX_POST_PER_THREAD=4,
+                   MAX_POST_LENGTH=256):
+    model = my_ModelEn.from_pretrained('bert-base-uncased',
+                                       stance_num_labels=11,
+                                       length_num_labels=2,
+                                       max_post_num=8, 
+                                       max_post_length=256,
+                                       exposed_posts=4,
+                                       num_transformers=number)
+    token_len = len(DataProcessor.default_tokenizer)
+    model.resize_token_embeddings(token_len)    # Resize model vocab
+    temp = torch.load(model_filename)           # Reload model and optimizer states
+    try:
+        state_dict = temp[0]                    # Extract state dict
+        model.load_state_dict(state_dict)       # Stuff state into model
+    except Exception:
+        state_dict = temp                       # Extract state dict
+        model.load_state_dict(state_dict)       # Stuff state into model
+    return model
+
+def reload_train_dataframe(train_filename = './data/coarse_discourse/encoded_coarse_discourse_dump_reddit_train_flat_20_256.pkl'):
+    train_dataframe = DataProcessor.load_from_pkl(train_filename)   # Grab test data pickle file, put into a dataframe
+    return train_dataframe
+
+def reload_test_dataframe(test_filename = './data/coarse_discourse/encoded_coarse_discourse_dump_reddit_test_flat_20_256.pkl'):
+    test_dataframe = DataProcessor.load_from_pkl(test_filename)     # Grab test data pickle file, put into a dataframe
+    return test_dataframe
+
+def df2dataloader(dataframe, BATCH_SIZE=2):
+    dataloader = DataProcessor.dataframe_2_dataloader(dataframe,
+                                                      batchsize=BATCH_SIZE,
+                                                      randomize=False,
+                                                      DEBUG=False,
+                                                      num_workers=4)
+    return dataloader
 
 def replot_training_losses(filename):
     # For plotting training loss and f1 scores
@@ -131,7 +160,185 @@ def replot_training_losses(filename):
     # Return the lossfile and figure handles
     return lossfile, fig, axes
 
+def convert_label_2_string(number):
+    label_ind = ['question',    'answer', 
+                 'announcement','agreement',
+                 'appreciation','disagreement',
+                 'negativereaction',
+                 'elaboration', 'humor',
+                 'other']
+    if number != -1:
+        return label_ind[int(number)][0:4]
+    else:
+        return 'none'
+
+def reprocess_df():
+    # adds in the labels for doing the error analysis plot
+    train_df = reload_train_dataframe()
+    # attach labels 
+    fulllabels = train_df.labels_array
+    label3 = []
+    label2 = []
+    label1 = []
+    label0 = []
+    
+    label_seq_4 = []
+    label_seq_3 = []
+    label_seq_2 = []
+    label_seq_1 = []
+    
+    for eachtensor in fulllabels:
+        array = eachtensor.numpy()
+        label3.append(array[0,3])
+        label2.append(array[0,2])
+        label1.append(array[0,1])
+        label0.append(array[0,0])
+        
+        label_seq = convert_label_2_string(array[0,0])
+        label_seq_1.append(label_seq)
+        label_seq += '-' + convert_label_2_string(array[0,1])
+        label_seq_2.append(label_seq)
+        label_seq += '-' + convert_label_2_string(array[0,2])
+        label_seq_3.append(label_seq)
+        label_seq += '-' + convert_label_2_string(array[0,3])
+        label_seq_4.append(label_seq)
+    
+    col_length = len(train_df.columns)
+    train_df.insert(loc=col_length, column='label_seq_4',value=label_seq_4)
+    train_df.insert(loc=col_length, column='label_seq_3',value=label_seq_3)
+    train_df.insert(loc=col_length, column='label_seq_2',value=label_seq_2)
+    train_df.insert(loc=col_length, column='label_seq_1',value=label_seq_1)
+    
+    train_df.insert(loc=col_length, column='label3',value=label3)
+    train_df.insert(loc=col_length, column='label2',value=label2)
+    train_df.insert(loc=col_length, column='label1',value=label1)
+    train_df.insert(loc=col_length, column='label0',value=label0)
+    
+    return train_df
+    
+def inspect_labels_vs_length():
+    df = reprocess_df()
+    tree_sizes = df.orig_length.to_numpy()
+    label_ind = ['question',    'answer', 
+                 'announcement','agreement',
+                 'appreciation','disagreement',
+                 'negativereaction',
+                 'elaboration', 'humor',
+                 'other']
+    
+    seq_sequences_1 = df.label_seq_1
+    seq_sequences_2 = df.label_seq_2
+    seq_sequences_3 = df.label_seq_3
+    seq_sequences_4 = df.label_seq_4
+    
+    # count number of unique sequences
+    unique_seq_1 = set(seq_sequences_1)
+    unique_seq_2 = set(seq_sequences_2)
+    unique_seq_3 = set(seq_sequences_3)
+    unique_seq_4 = set(seq_sequences_4)
+    
+    print('Number of unique 1-label sequences: %d ' % len(unique_seq_1))
+    print('Number of unique 2-label sequences: %d ' % len(unique_seq_2))
+    print('Number of unique 3-label sequences: %d ' % len(unique_seq_3))
+    print('Number of unique 4-label sequences: %d ' % len(unique_seq_4))
+    
+    # generate dictionaries to keep track of counts of each label pattern
+    lengths_seq_1 = dict()
+    lengths_seq_2 = dict()
+    lengths_seq_3 = dict()
+    lengths_seq_4 = dict()
+    
+    frequen_seq_1 = dict()
+    frequen_seq_2 = dict()
+    frequen_seq_3 = dict()
+    frequen_seq_4 = dict()
+    
+    for each_seq in unique_seq_1:
+        lengths_seq_1[each_seq] = 0
+        frequen_seq_1[each_seq] = 0
+    for each_seq in unique_seq_2:
+        lengths_seq_2[each_seq] = 0
+        frequen_seq_2[each_seq] = 0
+    for each_seq in unique_seq_3:
+        lengths_seq_3[each_seq] = 0
+        frequen_seq_3[each_seq] = 0
+    for each_seq in unique_seq_4:
+        lengths_seq_4[each_seq] = 0
+        frequen_seq_4[each_seq] = 0
+    
+    # prep plot counts against label_seq_1
+    for each_seq in lengths_seq_1:
+        indices = (df.label_seq_1 == each_seq)      # find indices of sequences
+        lengths = df.orig_length[indices]           # grab the original tree sizes
+        lengths_seq_1[each_seq] = np.mean(lengths)  # calculate the mean size
+        frequen_seq_1[each_seq] = np.sum(indices)   # get sequence total occurence
+    
+    # prep plot counts against label_seq_2
+    for each_seq in lengths_seq_2:
+        indices = (df.label_seq_2 == each_seq)      # find indices of sequences
+        lengths = df.orig_length[indices]           # grab the original tree sizes
+        lengths_seq_2[each_seq] = np.mean(lengths)  # calculate the mean size
+        frequen_seq_2[each_seq] = np.sum(indices)   # get sequence total occurence
+        
+    # prep plot counts against label_seq_3
+    for each_seq in lengths_seq_3:
+        indices = (df.label_seq_3 == each_seq)      # find indices of sequences
+        lengths = df.orig_length[indices]           # grab the original tree sizes
+        lengths_seq_3[each_seq] = np.mean(lengths)  # calculate the mean size
+        frequen_seq_3[each_seq] = np.sum(indices)   # get sequence total occurence
+    
+    # prep plot counts against label_seq_4
+    for each_seq in lengths_seq_4:
+        indices = (df.label_seq_4 == each_seq)      # find indices of sequences
+        lengths = df.orig_length[indices]           # grab the original tree sizes
+        lengths_seq_4[each_seq] = np.mean(lengths)  # calculate the mean size
+        frequen_seq_4[each_seq] = np.sum(indices)   # get sequence total occurence
+        
+    # TODO here
+    '''
+    avg_lengths = []
+    med_lengths = []
+    for each_seq in seq_lengths:
+        avg_lengths.append(np.median(each_seq))
+        med_lengths.append(np.mean(each_seq))
+    
+    sort_by_avg_all = sorted(zip(avg_lengths,seq_names), reverse=True)
+    sort_by_med_all = sorted(zip(med_lengths,seq_names), reverse=True)
+    
+    avg_lengths_0, seq_names_avg_0 = zip(*sort_by_avg_all)
+    med_lengths_0, seq_names_med_0 = zip(*sort_by_med_all)
+    
+    print(seq_names_avg_0[0:10])
+    print(avg_lengths_0[0:10])
+    print('Num of 3 sequences %d' % len(seq_names))
+    fig0, axes0 = plt.subplots(1,2)
+    fig1, ax2 = plt.subplots(1,1)
+    ax0 = axes0[0]
+    ax1 = axes0[1]
+    
+    ax0.bar(seq_names_avg_0[0:20], avg_lengths_0[0:20])
+    ax1.bar(seq_names_avg_0[-20:], avg_lengths_0[-20:])
+    
+    
+    # Rotate the tick labels and set their alignment.
+    ax0.set_title('Top avg tree size by category')
+    ax1.set_title('Bottom avg tree size by category')
+    plt.setp(ax0.get_xticklabels(), rotation=90, 
+             ha="right",rotation_mode="anchor")
+    plt.setp(ax1.get_xticklabels(), rotation=90, 
+             ha="right",rotation_mode="anchor")
+    plt.tight_layout()
+    
+    ax2.plot(avg_lengths_0)
+    ax2.set_title('Average tree size for each category')
+    plt.tight_layout()
+    '''
+    return [lengths_seq_1, lengths_seq_2, lengths_seq_3, lengths_seq_4], [frequen_seq_1,frequen_seq_2,frequen_seq_3,frequen_seq_4]
+    # return [tree_sizes, post_labels], [seq_names, seq_counts, avg_lengths, med_lengths]
+
+
 if __name__ =='__main__':
+    '''
     filename = './log_files/training_losses/losses_ModelD4_exp43.bin'
     losses, fig, axes = replot_training_losses(filename)
     
@@ -165,9 +372,7 @@ if __name__ =='__main__':
     length_labels = length_labels.to(gpu)
     stance_labels = stance_labels.to(gpu)
     '''
-    encoded_comments = minibatch[1] # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
-    token_type_ids = minibatch[2]   # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
-    attention_masks = minibatch[3]  # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
-    length_labels = minibatch[4]    # shape = (n, 20) need to truncate here
-    stance_labels = minibatch[5]    # shape = (n, 20) need to truncate here
-    '''
+    length_seq, freq_seq = inspect_labels_vs_length()
+    #train_df = reprocess_df()
+    
+    
