@@ -12,6 +12,7 @@ import DataProcessor
 import multitask_helper_functions as helper
 from classifier_models import my_ModelA0, my_ModelBn, my_ModelDn, my_ModelEn
 import numpy as np
+import time
 
 def accuracy_from_recall(short_recall, short_support, long_recall, long_support):
     short_true_pos = short_support * short_recall
@@ -228,13 +229,6 @@ def reprocess_df():
     
 def inspect_labels_vs_length():
     df = reprocess_df()
-    tree_sizes = df.orig_length.to_numpy()
-    label_ind = ['question',    'answer', 
-                 'announcement','agreement',
-                 'appreciation','disagreement',
-                 'negativereaction',
-                 'elaboration', 'humor',
-                 'other']
     
     seq_sequences_1 = df.label_seq_1
     seq_sequences_2 = df.label_seq_2
@@ -263,24 +257,34 @@ def inspect_labels_vs_length():
     frequen_seq_3 = dict()
     frequen_seq_4 = dict()
     
+    medians_seq_1 = dict()
+    medians_seq_2 = dict()
+    medians_seq_3 = dict()
+    medians_seq_4 = dict()
+    
     for each_seq in unique_seq_1:
         lengths_seq_1[each_seq] = 0
         frequen_seq_1[each_seq] = 0
+        medians_seq_1[each_seq] = 0
     for each_seq in unique_seq_2:
         lengths_seq_2[each_seq] = 0
         frequen_seq_2[each_seq] = 0
+        medians_seq_2[each_seq] = 0
     for each_seq in unique_seq_3:
         lengths_seq_3[each_seq] = 0
         frequen_seq_3[each_seq] = 0
+        medians_seq_3[each_seq] = 0
     for each_seq in unique_seq_4:
         lengths_seq_4[each_seq] = 0
         frequen_seq_4[each_seq] = 0
+        medians_seq_4[each_seq] = 0
     
     # prep plot counts against label_seq_1
     for each_seq in lengths_seq_1:
         indices = (df.label_seq_1 == each_seq)      # find indices of sequences
         lengths = df.orig_length[indices]           # grab the original tree sizes
         lengths_seq_1[each_seq] = np.mean(lengths)  # calculate the mean size
+        medians_seq_1[each_seq] = np.median(lengths)# calculate median
         frequen_seq_1[each_seq] = np.sum(indices)   # get sequence total occurence
     
     # prep plot counts against label_seq_2
@@ -288,6 +292,7 @@ def inspect_labels_vs_length():
         indices = (df.label_seq_2 == each_seq)      # find indices of sequences
         lengths = df.orig_length[indices]           # grab the original tree sizes
         lengths_seq_2[each_seq] = np.mean(lengths)  # calculate the mean size
+        medians_seq_2[each_seq] = np.median(lengths)# calculate median
         frequen_seq_2[each_seq] = np.sum(indices)   # get sequence total occurence
         
     # prep plot counts against label_seq_3
@@ -295,6 +300,7 @@ def inspect_labels_vs_length():
         indices = (df.label_seq_3 == each_seq)      # find indices of sequences
         lengths = df.orig_length[indices]           # grab the original tree sizes
         lengths_seq_3[each_seq] = np.mean(lengths)  # calculate the mean size
+        medians_seq_3[each_seq] = np.median(lengths)# calculate median
         frequen_seq_3[each_seq] = np.sum(indices)   # get sequence total occurence
     
     # prep plot counts against label_seq_4
@@ -302,135 +308,198 @@ def inspect_labels_vs_length():
         indices = (df.label_seq_4 == each_seq)      # find indices of sequences
         lengths = df.orig_length[indices]           # grab the original tree sizes
         lengths_seq_4[each_seq] = np.mean(lengths)  # calculate the mean size
+        medians_seq_4[each_seq] = np.median(lengths)# calculate median
         frequen_seq_4[each_seq] = np.sum(indices)   # get sequence total occurence
         
     ''' Extract data into lists '''
     leng1_x = list(lengths_seq_1.keys())
     leng1_y = list(lengths_seq_1.values())
+    median1x= list(medians_seq_1.keys())
+    median1y= list(medians_seq_1.values())
     freq1_x = list(frequen_seq_1.keys())
     freq1_y = list(frequen_seq_1.values())
     
     leng2_x = list(lengths_seq_2.keys())
     leng2_y = list(lengths_seq_2.values())
+    median2x= list(medians_seq_2.keys())
+    median2y= list(medians_seq_2.values())
     freq2_x = list(frequen_seq_2.keys())
     freq2_y = list(frequen_seq_2.values())
     
     leng3_x = list(lengths_seq_3.keys())
     leng3_y = list(lengths_seq_3.values())
+    median3x= list(medians_seq_3.keys())
+    median3y= list(medians_seq_3.values())
     freq3_x = list(frequen_seq_3.keys())
     freq3_y = list(frequen_seq_3.values())
     
     leng4_x = list(lengths_seq_4.keys())
     leng4_y = list(lengths_seq_4.values())
+    median4x= list(medians_seq_4.keys())
+    median4y= list(medians_seq_4.values())
     freq4_x = list(frequen_seq_4.keys())
     freq4_y = list(frequen_seq_4.values())
     
     ''' Sort the lists ''' 
     sort_leng1 = sorted(zip(leng1_y, leng1_x), reverse=True)
+    sort_medi1 = sorted(zip(median1y, median1x), reverse=True)
     sort_freq1 = sorted(zip(freq1_y, freq1_x), reverse=True)
+    
     sort_leng2 = sorted(zip(leng2_y, leng2_x), reverse=True)
+    sort_medi2 = sorted(zip(median2y, median2x), reverse=True)
     sort_freq2 = sorted(zip(freq2_y, freq2_x), reverse=True)
     
     sort_leng3 = sorted(zip(leng3_y, leng3_x), reverse=True)
+    sort_medi3 = sorted(zip(median3y, median3x), reverse=True)
     sort_freq3 = sorted(zip(freq3_y, freq3_x), reverse=True)
+    
     sort_leng4 = sorted(zip(leng4_y, leng4_x), reverse=True)
+    sort_medi4 = sorted(zip(median4y, median4x), reverse=True)
     sort_freq4 = sorted(zip(freq4_y, freq4_x), reverse=True)
     
     ''' Extract the sorted lists '''
     sort_leng1_y, sort_leng1_x = zip(*sort_leng1)
+    sort_median1y,sort_median1x= zip(*sort_medi1)
     sort_freq1_y, sort_freq1_x = zip(*sort_freq1)
+    
     sort_leng2_y, sort_leng2_x = zip(*sort_leng2)
+    sort_median2y,sort_median2x= zip(*sort_medi2)
     sort_freq2_y, sort_freq2_x = zip(*sort_freq2)
+    
     sort_leng3_y, sort_leng3_x = zip(*sort_leng3)
+    sort_median3y,sort_median3x= zip(*sort_medi3)
     sort_freq3_y, sort_freq3_x = zip(*sort_freq3)
+    
     sort_leng4_y, sort_leng4_x = zip(*sort_leng4)
+    sort_median4y,sort_median4x= zip(*sort_medi4)
     sort_freq4_y, sort_freq4_x = zip(*sort_freq4)
     
+    seq2_freq_counts = []
+    seq3_freq_counts = []
+    seq4_freq_counts = []
+    # TODO reached here
+    """ Grab the most frequent sequences' averages """
+    for each_pattern in sort_freq2_x[0:10]:
+        seq2_freq_counts.append()
+    
+    for each_pattern in sort_freq3_x[0:10]:
+        seq3_freq_counts.append()
+    
+    for each_pattern in sort_freq4_x[0:10]:
+        seq4_freq_counts.append()
+    
     ''' Set up the plots '''
-    fig1, axes1 = plt.subplots(1,2)
-    fig2, axes2 = plt.subplots(1,2)
-    fig3, axes3 = plt.subplots(1,2)
-    fig4, axes4 = plt.subplots(1,2)
+    fig1, axes1 = plt.subplots(1,3)
+    fig2, axes2 = plt.subplots(1,3)
+    fig3, axes3 = plt.subplots(1,3)
+    fig4, axes4 = plt.subplots(1,3)
+    
+    fig5, axes5 = plt.subplots(2,1)
+    fig6, axes6 = plt.subplots(2,1)
+    fig7, axes7 = plt.subplots(2,1)
     
     ax1_1 = axes1[0]
-    ax1_2 = axes1[1]   
+    ax1_2 = axes1[1]
+    ax1_3 = axes1[2]
+    
     ax2_1 = axes2[0]
     ax2_2 = axes2[1]
+    ax2_3 = axes2[2]
+    
     ax3_1 = axes3[0]
     ax3_2 = axes3[1]
+    ax3_3 = axes3[2]
+    
     ax4_1 = axes4[0]
     ax4_2 = axes4[1]
+    ax4_3 = axes4[2]
     
-    for each_ax in [ax1_1, ax1_2, ax2_1, ax2_2, ax3_1, ax3_2, ax4_1, ax4_2]:
+    ax5_1 = axes5[0]
+    ax5_2 = axes5[1]
+    ax6_1 = axes6[0]
+    ax6_2 = axes6[1]
+    ax7_1 = axes7[0]
+    ax7_2 = axes7[1]
+    
+    for each_ax in [ax1_1, ax1_2, ax1_3, ax2_1, ax2_2, ax2_3, 
+                    ax3_2, ax3_3, ax4_2, ax4_3,
+                    ax5_1, ax5_2, ax6_1, ax6_2, ax7_1, ax7_2]:
         each_ax.grid(True)
         plt.setp(each_ax.get_xticklabels(), rotation=90, ha="right")
     
-    ax1_1.set_title('1-seqs avg. tree size')
+    ax1_1.set_title('1-seqs avg tree size')
     ax1_1.bar(sort_leng1_x, sort_leng1_y)
-    ax1_2.set_title('1-seqs occurence freq')
-    ax1_2.bar(sort_freq1_x, sort_freq1_y)
-    plt.tight_layout()
+    ax1_2.set_title('1-seqs median tree size')
+    ax1_2.bar(sort_median1x, sort_median1y)
+    ax1_3.set_title('1-seqs frequencies')
+    ax1_3.bar(sort_freq1_x, sort_freq1_y)
     
-    ax2_1.set_title('2-seqs avg. tree size')
+    #ax2_1.set_title('2-seqs top/bottom 10 avg tree size')
+    ax2_1.set_title('2-seqs avg tree size')
     ax2_1.bar(sort_leng2_x[0:10], sort_leng2_y[0:10])
-    ax2_2.set_title('2-seqs occurence freq')
-    ax2_2.bar(sort_freq2_x[0:10], sort_freq2_y[0:10])
-    plt.tight_layout()
+    ax2_1.bar(sort_leng2_x[10:-10], sort_leng2_y[10:-10],color='orange')
+    ax2_1.bar(sort_leng2_x[-10:], sort_leng2_y[-10:], color='red')
+    limit2 = ax2_1.get_ylim()
+    ax2_1.get_xaxis().set_ticks([])
+    #ax2_1.bar(sort_leng2_x[0:10], sort_leng2_y[0:10])
+    #ax2_1.bar(sort_leng2_x[-10:], sort_leng2_y[-10:], color='red')
+    ax2_2.set_title('2-seqs top/bottom 10 avg tree size')
+    ax2_2.bar(sort_leng2_x[0:10], sort_leng2_y[0:10])
+    ax2_2.bar(sort_leng2_x[-10:], sort_leng2_y[-10:], color='red')
+    ax2_3.set_title('2-seqs top 10 occurring')
+    ax2_3.bar(sort_freq2_x[0:10], sort_freq2_y[0:10])
     
-    ax3_1.set_title('3-seqs avg. tree size')
-    ax3_1.bar(sort_leng3_x[0:10], sort_leng3_y[0:10])
-    ax3_2.set_title('3-seqs occurence freq')
-    ax3_2.bar(sort_freq3_x[0:10], sort_freq3_y[0:10])
-    plt.tight_layout()
+    #ax3_1.set_title('3-seqs top/bottom 10 avg tree size')
+    ax3_1.set_title('3-seqs avg tree size')
+    ax3_1.stem(sort_leng3_x[0:10], sort_leng3_y[0:10], markerfmt=',')
+    ax3_1.stem(sort_leng3_x[10:-10], sort_leng3_y[10:-10], linefmt='orange', markerfmt=',')
+    ax3_1.stem(sort_leng3_x[-10:], sort_leng3_y[-10:], linefmt='red', markerfmt=',')
+    limit3 = ax3_1.get_ylim()
+    ax3_1.get_xaxis().set_ticks([])
+    #ax3_1.bar(sort_leng3_x[0:10], sort_leng3_y[0:10])
+    #ax3_1.bar(sort_leng3_x[-10:], sort_leng3_y[-10:], color='red')
+    ax3_2.set_title('3-seqs top/bottom 10 avg tree size')
+    ax3_2.bar(sort_leng3_x[0:10], sort_leng3_y[0:10])
+    ax3_2.bar(sort_leng3_x[-10:], sort_leng3_y[-10:], color='red')
+    ax3_3.set_title('3-seqs top 10 occurring')
+    ax3_3.bar(sort_freq3_x[0:10], sort_freq3_y[0:10])
     
-    ax4_1.set_title('4-seqs avg. tree size')
-    ax4_1.bar(sort_leng4_x[0:20], sort_leng4_y[0:20])
-    ax4_2.set_title('4-seqs occurence freq')
-    ax4_2.bar(sort_freq4_x[0:20], sort_freq4_y[0:20])
-    plt.tight_layout()
+    #ax4_1.set_title('4-seqs top/bottom 10 avg tree size')
+    ax4_1.set_title('4-seqs avg tree size')
+    ax4_1.stem(sort_leng4_x[0:10], sort_leng4_y[0:10], markerfmt=',')
+    ax4_1.stem(sort_leng4_x[10:-10], sort_leng4_y[10:-10], linefmt='orange', markerfmt=',')
+    ax4_1.stem(sort_leng4_x[-10:], sort_leng4_y[-10:], linefmt='red', markerfmt=',')
+    limit4 = ax4_1.get_ylim()
+    ax4_1.get_xaxis().set_ticks([])
+    #ax4_1.bar(sort_leng4_x[0:10], sort_leng4_y[0:10])
+    #ax4_1.bar(sort_leng4_x[-10:], sort_leng4_y[-10:], color='red')
+    ax4_2.set_title('4-seqs top/bottom 10 avg tree size')
+    ax4_2.bar(sort_leng4_x[0:10], sort_leng4_y[0:10])
+    ax4_2.bar(sort_leng4_x[-10:], sort_leng4_y[-10:], color='red')
+    ax4_3.set_title('4-seqs top 10 occurring')
+    ax4_3.bar(sort_freq4_x[0:10], sort_freq4_y[0:10])
     
-    # TODO here
-    '''
-    avg_lengths = []
-    med_lengths = []
-    for each_seq in seq_lengths:
-        avg_lengths.append(np.median(each_seq))
-        med_lengths.append(np.mean(each_seq))
-    
-    sort_by_avg_all = sorted(zip(avg_lengths,seq_names), reverse=True)
-    sort_by_med_all = sorted(zip(med_lengths,seq_names), reverse=True)
-    
-    avg_lengths_0, seq_names_avg_0 = zip(*sort_by_avg_all)
-    med_lengths_0, seq_names_med_0 = zip(*sort_by_med_all)
-    
-    print(seq_names_avg_0[0:10])
-    print(avg_lengths_0[0:10])
-    print('Num of 3 sequences %d' % len(seq_names))
-    fig0, axes0 = plt.subplots(1,2)
-    fig1, ax2 = plt.subplots(1,1)
-    ax0 = axes0[0]
-    ax1 = axes0[1]
-    
-    ax0.bar(seq_names_avg_0[0:20], avg_lengths_0[0:20])
-    ax1.bar(seq_names_avg_0[-20:], avg_lengths_0[-20:])
+    ax5_1.set_title('2-seqs top 10 occurring')
     
     
-    # Rotate the tick labels and set their alignment.
-    ax0.set_title('Top avg tree size by category')
-    ax1.set_title('Bottom avg tree size by category')
-    plt.setp(ax0.get_xticklabels(), rotation=90, 
-             ha="right",rotation_mode="anchor")
-    plt.setp(ax1.get_xticklabels(), rotation=90, 
-             ha="right",rotation_mode="anchor")
-    plt.tight_layout()
+    ax6_1.set_title('3-seqs top 10 occurring')
     
-    ax2.plot(avg_lengths_0)
-    ax2.set_title('Average tree size for each category')
-    plt.tight_layout()
-    '''
-    return [lengths_seq_1, lengths_seq_2, lengths_seq_3, lengths_seq_4], [frequen_seq_1,frequen_seq_2,frequen_seq_3,frequen_seq_4]
+    ax7_1.set_title('4-seqs top 10 occurring')
+    
+    figures = plt.get_fignums()
+    for each_figure in figures:
+        plt.figure(each_figure)
+        figManager = plt.get_current_fig_manager()
+        figManager.window.showMaximized()
+        
+    return [lengths_seq_1, lengths_seq_2, lengths_seq_3, lengths_seq_4], [frequen_seq_1,frequen_seq_2,frequen_seq_3,frequen_seq_4], df
     # return [tree_sizes, post_labels], [seq_names, seq_counts, avg_lengths, med_lengths]
 
+def tighten_plots():
+    figures = plt.get_fignums()
+    for each_figure in figures:
+        plt.figure(each_figure)
+        plt.tight_layout()
 
 if __name__ =='__main__':
     '''
@@ -467,7 +536,7 @@ if __name__ =='__main__':
     length_labels = length_labels.to(gpu)
     stance_labels = stance_labels.to(gpu)
     '''
-    length_seq, freq_seq = inspect_labels_vs_length()
+    length_seq, freq_seq, df = inspect_labels_vs_length()
     #train_df = reprocess_df()
-    
+    tighten_plots()
     
