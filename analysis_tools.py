@@ -173,7 +173,17 @@ def convert_label_2_string(number):
         return 'none'
 
 def reprocess_df():
-    # adds in the labels for doing the error analysis plot
+    ''' 
+    adds in the labels for doing the error analysis plot
+    for eg. 'ques-answ-nega' will be appended for a sequence of posts with 
+    question-answer-negativereaction tags.
+    
+    there will be 4 labels appended.
+    1st: only 1 label
+    2nd: up to 2 labels
+    3rd: up to 3 labels
+    4th: up to 4 labels
+    '''
     train_df = reload_train_dataframe()
     # attach labels 
     fulllabels = train_df.labels_array
@@ -294,6 +304,91 @@ def inspect_labels_vs_length():
         lengths_seq_4[each_seq] = np.mean(lengths)  # calculate the mean size
         frequen_seq_4[each_seq] = np.sum(indices)   # get sequence total occurence
         
+    ''' Extract data into lists '''
+    leng1_x = list(lengths_seq_1.keys())
+    leng1_y = list(lengths_seq_1.values())
+    freq1_x = list(frequen_seq_1.keys())
+    freq1_y = list(frequen_seq_1.values())
+    
+    leng2_x = list(lengths_seq_2.keys())
+    leng2_y = list(lengths_seq_2.values())
+    freq2_x = list(frequen_seq_2.keys())
+    freq2_y = list(frequen_seq_2.values())
+    
+    leng3_x = list(lengths_seq_3.keys())
+    leng3_y = list(lengths_seq_3.values())
+    freq3_x = list(frequen_seq_3.keys())
+    freq3_y = list(frequen_seq_3.values())
+    
+    leng4_x = list(lengths_seq_4.keys())
+    leng4_y = list(lengths_seq_4.values())
+    freq4_x = list(frequen_seq_4.keys())
+    freq4_y = list(frequen_seq_4.values())
+    
+    ''' Sort the lists ''' 
+    sort_leng1 = sorted(zip(leng1_y, leng1_x), reverse=True)
+    sort_freq1 = sorted(zip(freq1_y, freq1_x), reverse=True)
+    sort_leng2 = sorted(zip(leng2_y, leng2_x), reverse=True)
+    sort_freq2 = sorted(zip(freq2_y, freq2_x), reverse=True)
+    
+    sort_leng3 = sorted(zip(leng3_y, leng3_x), reverse=True)
+    sort_freq3 = sorted(zip(freq3_y, freq3_x), reverse=True)
+    sort_leng4 = sorted(zip(leng4_y, leng4_x), reverse=True)
+    sort_freq4 = sorted(zip(freq4_y, freq4_x), reverse=True)
+    
+    ''' Extract the sorted lists '''
+    sort_leng1_y, sort_leng1_x = zip(*sort_leng1)
+    sort_freq1_y, sort_freq1_x = zip(*sort_freq1)
+    sort_leng2_y, sort_leng2_x = zip(*sort_leng2)
+    sort_freq2_y, sort_freq2_x = zip(*sort_freq2)
+    sort_leng3_y, sort_leng3_x = zip(*sort_leng3)
+    sort_freq3_y, sort_freq3_x = zip(*sort_freq3)
+    sort_leng4_y, sort_leng4_x = zip(*sort_leng4)
+    sort_freq4_y, sort_freq4_x = zip(*sort_freq4)
+    
+    ''' Set up the plots '''
+    fig1, axes1 = plt.subplots(1,2)
+    fig2, axes2 = plt.subplots(1,2)
+    fig3, axes3 = plt.subplots(1,2)
+    fig4, axes4 = plt.subplots(1,2)
+    
+    ax1_1 = axes1[0]
+    ax1_2 = axes1[1]   
+    ax2_1 = axes2[0]
+    ax2_2 = axes2[1]
+    ax3_1 = axes3[0]
+    ax3_2 = axes3[1]
+    ax4_1 = axes4[0]
+    ax4_2 = axes4[1]
+    
+    for each_ax in [ax1_1, ax1_2, ax2_1, ax2_2, ax3_1, ax3_2, ax4_1, ax4_2]:
+        each_ax.grid(True)
+        plt.setp(each_ax.get_xticklabels(), rotation=90, ha="right")
+    
+    ax1_1.set_title('1-seqs avg. tree size')
+    ax1_1.bar(sort_leng1_x, sort_leng1_y)
+    ax1_2.set_title('1-seqs occurence freq')
+    ax1_2.bar(sort_freq1_x, sort_freq1_y)
+    plt.tight_layout()
+    
+    ax2_1.set_title('2-seqs avg. tree size')
+    ax2_1.bar(sort_leng2_x[0:10], sort_leng2_y[0:10])
+    ax2_2.set_title('2-seqs occurence freq')
+    ax2_2.bar(sort_freq2_x[0:10], sort_freq2_y[0:10])
+    plt.tight_layout()
+    
+    ax3_1.set_title('3-seqs avg. tree size')
+    ax3_1.bar(sort_leng3_x[0:10], sort_leng3_y[0:10])
+    ax3_2.set_title('3-seqs occurence freq')
+    ax3_2.bar(sort_freq3_x[0:10], sort_freq3_y[0:10])
+    plt.tight_layout()
+    
+    ax4_1.set_title('4-seqs avg. tree size')
+    ax4_1.bar(sort_leng4_x[0:20], sort_leng4_y[0:20])
+    ax4_2.set_title('4-seqs occurence freq')
+    ax4_2.bar(sort_freq4_x[0:20], sort_freq4_y[0:20])
+    plt.tight_layout()
+    
     # TODO here
     '''
     avg_lengths = []
