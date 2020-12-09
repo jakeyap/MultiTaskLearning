@@ -33,6 +33,7 @@ def reload_modelA0(model_filename,
     
     token_len = len(DataProcessor.default_tokenizer)
     model.resize_token_embeddings(token_len)    # Resize model vocab
+    model = torch.nn.DataParallel(model)        # encapsulate with dataparallel
     temp = torch.load(model_filename)           # Reload model and optimizer states
     state_dict = temp[0]                        # Extract state dict
     # stance_opt_state = temp[1]
@@ -71,6 +72,7 @@ def reload_modelDn(model_filename,
                                         num_transformers=number)
     token_len = len(DataProcessor.default_tokenizer)
     model.resize_token_embeddings(token_len)    # Resize model vocab
+    model = torch.nn.DataParallel(model)        # encapsulate with dataparallel
     temp = torch.load(model_filename)           # Reload model and optimizer states
     try:
         state_dict = temp[0]                    # Extract state dict
@@ -92,7 +94,9 @@ def reload_modelEn(model_filename,
                                        exposed_posts=4,
                                        num_transformers=number)
     token_len = len(DataProcessor.default_tokenizer)
+    
     model.resize_token_embeddings(token_len)    # Resize model vocab
+    model = torch.nn.DataParallel(model)        # encapsulate with dataparallel
     temp = torch.load(model_filename)           # Reload model and optimizer states
     try:
         state_dict = temp[0]                    # Extract state dict
@@ -161,7 +165,7 @@ def replot_training_losses(filename):
     # Return the lossfile and figure handles
     return lossfile, fig, axes
 
-def convert_label_2_string(number):
+def convert_label_int_2_string(number):
     label_ind = ['question',    'answer', 
                  'announcement','agreement',
                  'appreciation','disagreement',
@@ -205,13 +209,13 @@ def reprocess_df():
         label1.append(array[0,1])
         label0.append(array[0,0])
         
-        label_seq = convert_label_2_string(array[0,0])
+        label_seq = convert_label_int_2_string(array[0,0])
         label_seq_1.append(label_seq)
-        label_seq += '-' + convert_label_2_string(array[0,1])
+        label_seq += '-' + convert_label_int_2_string(array[0,1])
         label_seq_2.append(label_seq)
-        label_seq += '-' + convert_label_2_string(array[0,2])
+        label_seq += '-' + convert_label_int_2_string(array[0,2])
         label_seq_3.append(label_seq)
-        label_seq += '-' + convert_label_2_string(array[0,3])
+        label_seq += '-' + convert_label_int_2_string(array[0,3])
         label_seq_4.append(label_seq)
     
     col_length = len(train_df.columns)
@@ -377,16 +381,16 @@ def inspect_labels_vs_length():
     seq2_freq_counts = []
     seq3_freq_counts = []
     seq4_freq_counts = []
-    # TODO reached here
+    
     """ Grab the most frequent sequences' averages """
     for each_pattern in sort_freq2_x[0:10]:
-        seq2_freq_counts.append()
+        seq2_freq_counts.append(lengths_seq_2[each_pattern])
     
     for each_pattern in sort_freq3_x[0:10]:
-        seq3_freq_counts.append()
+        seq3_freq_counts.append(lengths_seq_3[each_pattern])
     
     for each_pattern in sort_freq4_x[0:10]:
-        seq4_freq_counts.append()
+        seq4_freq_counts.append(lengths_seq_4[each_pattern])
     
     ''' Set up the plots '''
     fig1, axes1 = plt.subplots(1,3)
@@ -439,7 +443,7 @@ def inspect_labels_vs_length():
     ax2_1.bar(sort_leng2_x[0:10], sort_leng2_y[0:10])
     ax2_1.bar(sort_leng2_x[10:-10], sort_leng2_y[10:-10],color='orange')
     ax2_1.bar(sort_leng2_x[-10:], sort_leng2_y[-10:], color='red')
-    limit2 = ax2_1.get_ylim()
+    limit2 = ax2_1.get_ylim() # for setting plot limits
     ax2_1.get_xaxis().set_ticks([])
     #ax2_1.bar(sort_leng2_x[0:10], sort_leng2_y[0:10])
     #ax2_1.bar(sort_leng2_x[-10:], sort_leng2_y[-10:], color='red')
@@ -454,7 +458,7 @@ def inspect_labels_vs_length():
     ax3_1.stem(sort_leng3_x[0:10], sort_leng3_y[0:10], markerfmt=',')
     ax3_1.stem(sort_leng3_x[10:-10], sort_leng3_y[10:-10], linefmt='orange', markerfmt=',')
     ax3_1.stem(sort_leng3_x[-10:], sort_leng3_y[-10:], linefmt='red', markerfmt=',')
-    limit3 = ax3_1.get_ylim()
+    limit3 = ax3_1.get_ylim() # for setting plot limits
     ax3_1.get_xaxis().set_ticks([])
     #ax3_1.bar(sort_leng3_x[0:10], sort_leng3_y[0:10])
     #ax3_1.bar(sort_leng3_x[-10:], sort_leng3_y[-10:], color='red')
@@ -469,7 +473,7 @@ def inspect_labels_vs_length():
     ax4_1.stem(sort_leng4_x[0:10], sort_leng4_y[0:10], markerfmt=',')
     ax4_1.stem(sort_leng4_x[10:-10], sort_leng4_y[10:-10], linefmt='orange', markerfmt=',')
     ax4_1.stem(sort_leng4_x[-10:], sort_leng4_y[-10:], linefmt='red', markerfmt=',')
-    limit4 = ax4_1.get_ylim()
+    limit4 = ax4_1.get_ylim() # for setting plot limits
     ax4_1.get_xaxis().set_ticks([])
     #ax4_1.bar(sort_leng4_x[0:10], sort_leng4_y[0:10])
     #ax4_1.bar(sort_leng4_x[-10:], sort_leng4_y[-10:], color='red')
@@ -479,12 +483,27 @@ def inspect_labels_vs_length():
     ax4_3.set_title('4-seqs top 10 occurring')
     ax4_3.bar(sort_freq4_x[0:10], sort_freq4_y[0:10])
     
-    ax5_1.set_title('2-seqs top 10 occurring')
+    ''' plot lengths for most frequent patterns '''
+    ax5_1.set_title("2-seqs top 10's avg length")
+    ax5_1.bar(sort_freq2_x[0:10], seq2_freq_counts[0:10])
+    ax5_1.set_ylim(limit2)
+    ax5_1.get_xaxis().set_ticks([])
+    ax5_2.set_title('2-seqs top 10 occurring')
+    ax5_2.bar(sort_freq2_x[0:10], sort_freq2_y[0:10])
     
+    ax6_1.set_title("3-seqs top 10's avg length")
+    ax6_1.bar(sort_freq3_x[0:10], seq3_freq_counts[0:10])
+    ax6_1.set_ylim(limit3)
+    ax6_1.get_xaxis().set_ticks([])
+    ax6_2.set_title('3-seqs top 10 occurring')
+    ax6_2.bar(sort_freq3_x[0:10], sort_freq3_y[0:10])
     
-    ax6_1.set_title('3-seqs top 10 occurring')
-    
-    ax7_1.set_title('4-seqs top 10 occurring')
+    ax7_1.set_title("Top 10's avg length")
+    ax7_1.bar(sort_freq4_x[0:10], seq4_freq_counts[0:10])
+    ax6_1.set_ylim(limit4)
+    ax7_1.get_xaxis().set_ticks([])
+    ax7_2.set_title('4-seqs top 10 occurring')
+    ax7_2.bar(sort_freq4_x[0:10], sort_freq4_y[0:10])
     
     figures = plt.get_fignums()
     for each_figure in figures:
@@ -495,6 +514,75 @@ def inspect_labels_vs_length():
     return [lengths_seq_1, lengths_seq_2, lengths_seq_3, lengths_seq_4], [frequen_seq_1,frequen_seq_2,frequen_seq_3,frequen_seq_4], df
     # return [tree_sizes, post_labels], [seq_names, seq_counts, avg_lengths, med_lengths]
 
+def run_single_point(model, dataframe, index=-1, MAX_POST_PER_THREAD=8):
+    ''' 
+    Runs a single test point. If index is -1, randomly pick 1.
+    '''
+    if index==-1:
+        index = np.random.randint(len(dataframe))
+    
+    encoded_comments = test_dataframe['encoded_comments'][index]    # shape=(1,20x256)
+    token_type_ids = test_dataframe['token_type_ids'][index]        # shape=(1,20x256)
+    attention_masks = test_dataframe['token_type_ids'][index]       # shape=(1,20x256)
+    length_labels = test_dataframe['orig_length'][index]            # shape=(1,)
+    stance_labels = test_dataframe['labels_array'][index]           # shape=(1,20)
+    
+    stance_labels = stance_labels[0,0:MAX_POST_PER_THREAD]
+    
+    gpu = 'cuda'
+    cpu = 'cpu'
+    encoded_comments = encoded_comments.to(gpu) # move features to gpu
+    token_type_ids = token_type_ids.to(gpu)     # move features to gpu
+    attention_masks = attention_masks.to(gpu)   # move masks to gpu
+    
+    stance_logits = model(input_ids = encoded_comments,         # get the stance and length logits
+                          token_type_ids = token_type_ids,      # (n,A,B): n=minibatch, A=max_posts_per_thread, B=num of classes
+                          attention_masks = attention_masks, 
+                          task='stance')
+    length_logits = model(input_ids = encoded_comments,         # get the length prediction logits
+                          token_type_ids = token_type_ids,      # (n,2): n=minibatch, 2=num of classes
+                          attention_masks = attention_masks, 
+                          task='length')
+    
+    length_pred = helper.logit_2_class_length(length_logits.to(cpu))
+    stance_pred = helper.logit_2_class_stance(stance_logits.to(cpu))
+    stance_pred = stance_pred - 1 # take care to rescale empty posts to -1
+    
+    predictions = []
+    print('Original Post %4d, tree size=%d' % (index, length_labels))
+    texts = test_dataframe['text'][index]
+    for i in range (len(texts)):
+        if i>=8:
+            break
+        else:
+            label = convert_label_int_2_string(stance_labels[i])
+            pred  = convert_label_int_2_string(stance_pred[i])
+            print(texts[i])
+            print('original stance:  ' + label)
+            print('predicted stance: ' + pred + '\n')
+            predictions.append(pred)
+    print('Original tree:  ' + ('LARGE' if length_labels >= 8 else 'SMALL'))
+    print('Predicted tree: ' + ('LARGE' if length_pred.item() == 1 else 'SMALL'))
+    return predictions
+
+def run_until_find_pattern(model, dataframe, 
+                           count=100, pattern='disa'):
+    '''
+    run until count or pattern is found
+    '''
+    counter = 0
+    while True:
+        print('-------------------------------------------')
+        predictions = run_single_point(model, dataframe)
+        counter += 1
+        if 'disa' in predictions:
+            print('seen disagree')
+            break
+        if counter>100:
+            print('reached end')
+            break
+    
+
 def tighten_plots():
     figures = plt.get_fignums()
     for each_figure in figures:
@@ -502,7 +590,7 @@ def tighten_plots():
         plt.tight_layout()
 
 if __name__ =='__main__':
-    '''
+    ''' # for misc tests
     filename = './log_files/training_losses/losses_ModelD4_exp43.bin'
     losses, fig, axes = replot_training_losses(filename)
     
@@ -536,7 +624,19 @@ if __name__ =='__main__':
     length_labels = length_labels.to(gpu)
     stance_labels = stance_labels.to(gpu)
     '''
-    length_seq, freq_seq, df = inspect_labels_vs_length()
-    #train_df = reprocess_df()
-    tighten_plots()
     
+    ''' # for plotting the data distributions (20201208)
+    # length_seq, freq_seq, df = inspect_labels_vs_length()
+    # tighten_plots()
+    '''
+    
+    ''' for running tests on datapoints (20201208) '''
+    filename = './saved_models/ModelE2_exp49.bin'
+    model = reload_modelEn(filename, number=int(filename[-11]), 
+                           MAX_POST_PER_THREAD=4,MAX_POST_LENGTH=256)
+    model.eval()
+    model.cuda()
+    test_dataframe = DataProcessor.load_from_pkl('./data/coarse_discourse/encoded_coarse_discourse_dump_reddit_test_flat_20_256.pkl')
+    
+    run_until_find_pattern(model, test_dataframe, count=100, pattern='disa')
+            

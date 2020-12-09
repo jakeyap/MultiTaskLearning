@@ -1,0 +1,195 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Dec  8 16:54:54 2020
+
+@author: jakeyap
+"""
+-------------------------------------------
+Original Post  573, tree size=23
+i've been trying to compare different desktop environments (cinnamon, gnome, xfce, lxde, xkcd^ha ^jokes, mate, kde, etc). while google image search is pretty good for giving me the rough idea, i figure i'm going to need to try them out to figure out which i like most. any recommendations?
+original stance:  ques
+predicted stance: ques
+
+use virtual machines. with a virtual machine hypervisor like vmware or virtualbox, you can try all of those out within windows or an existing linux installation. 
+original stance:  answ
+predicted stance: answ
+
+virtualbox is not a hypervisor.  and just for the record op virtualbox us the easiest to set up and use - although performance will be subject to virtualisation penalties. 
+original stance:  disa
+predicted stance: disa
+
+both vmware player and virtualbox are type 2 hypervisors. however, i agree that virtualbox will be easier to install if the host is linux. in windows, op might as well flip a coin. 
+original stance:  disa
+predicted stance: agre
+
+yes, that's true - but not bare metal. much confusion. many thanks.
+original stance:  agre
+predicted stance: appr
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post  128, tree size=17
+if any video game universe of your choice could become reality, which one would you choose and why?
+original stance:  ques
+predicted stance: ques
+
+pokemon because... do i really need to explain?
+original stance:  answ
+predicted stance: ques
+
+only, you get to be the pokemon.
+original stance:  agre
+predicted stance: answ
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 3438, tree size=9
+[deleted]
+original stance:  ques
+predicted stance: ques
+
+uhhh, no? do not plug that back in. there is a short circuit inside the charger. it is broken. it will create more massive sparks, trip more circuit breakers and possibly damage the circuit breaker too. you need a new charger.
+original stance:  answ
+predicted stance: answ
+
+ok yep, that's what i figured. thanks for confirming.
+original stance:  appr
+predicted stance: appr
+
+eh, i'm sure it'll be fine, it's not like i'm going to school for ee or anything, i'm just a lowly cpe!
+original stance:  elab
+predicted stance: elab
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 3319, tree size=8
+[deleted]
+original stance:  ques
+predicted stance: ques
+
+if there is any flawd code in the source code then it is possiple. but i think that mod ash will check all changed codes etc to detect the new bugs.
+original stance:  answ
+predicted stance: answ
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 5294, tree size=8
+hey guys! i've been pretty bored recently and would love to spend some time chatting and getting to know people. you can be from wherever- i love making friends from all over the world to discuss anything! from life to love to religion to literature to movies.   i know there's not a lot about me in this post so if you're interested, send me a pm and we can get to know each other! 
+original stance:  ques
+predicted stance: ques
+
+hey there .... im actually younger to u , im 18 .... but yea im not childish and im looking for some new frnds too would u like to join me ?? and im myself allergic to one-liners :d  and om me to continue :d 
+original stance:  answ
+predicted stance: othe
+
+might want to try your hand at grammar and spelling if you do not want to sound childish...
+original stance:  nega
+predicted stance: elab
+
+oh !  i didn't know that will be considered childish ... is this ok now ?
+original stance:  othe
+predicted stance: ques
+
+[deleted]
+original stance:  othe
+predicted stance: answ
+
+i would* grammar nazi ? :p
+original stance:  ques
+predicted stance: ques
+
+[deleted]
+original stance:  othe
+predicted stance: answ
+
+i see ..... i'm out of replies now :p
+original stance:  othe
+predicted stance: elab
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 3298, tree size=11
+i'm sure i'm not the only music fan who's interested in alternate track lists and new ways of experiencing music and other media. sometimes, if you mix up a band's tracks, you can get a whole new experience.   a pearl jam example: [the original *binaural* track listing]([url] is a whole differnet album, imo.   so, fans, i ask:    **what's a great pearl jam playlist?   what are some pj songs that make a great segue from one to the other?   what otherwise unrelated pj songs mean something new when you put them together?**
+original stance:  ques
+predicted stance: ques
+
+save you/life wasted go together, as they're trying to help a friend out of a pit of despair and depression.
+original stance:  answ
+predicted stance: othe
+
+you could possibly throw in habit to make it a trilogy.
+original stance:  appr
+predicted stance: elab
+
+pretty sure habit was written about mike's addiction to heroin, and i'm not sure that save you/life wasted had anyone specific in mind.   i think habit and severed hand go together, since they're both about drugs, but that's just me.
+original stance:  disa
+predicted stance: answ
+
+i can see that pairing. good suggestion!
+original stance:  appr
+predicted stance: appr
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 4693, tree size=40
+this is really unfortunate as i *love* the functionality of the charge hr, the feel is fine, and i like the software well enough.  but, after suffering from the same manufacturing problems multiple times and now their refusal for (yet another) replacement, my wife and i are done with fitbits.  i'm mainly posting this for people who are interested in getting the unit - please consider your usage and whether or not you will run into the same problems.  * original charge hr: after ~2 months, the charging port came off when unplugging from the cable (stayed attached to the cable).  that was weird.  support immediately sent out a replacement.  * 1st replacement: material on band/face of unit bubbled up and then peeled away.  support immediately sent out a replacement after recommending that the unit be wiped down/cleaned after heavy workouts.  * 2nd replacement - followed support directions regarding cleaning but ran into same exact issue.  [here is a picture that i just took]([url] so you know what i'm talking about.  support will not replace because i'm now ~400 days since my original purchase, so outside of warranty.    my wife is also on her third unit - the first two for the band peeling issue, and the third has just stopped vibrating for alarms and other actions.  they won't replace hers, either, as it was purchased at the same time (late christmas presents for each other).  they offered each of us 25% off vouchers for new units, but i find it a hard pill to swallow.  why would i want to put money towards a product that has proven to fail in our use case?  so, it seems like if you are looking to use your charge hr for high-impact/high sweat activities, you may want to steer clear as there is some kind of manufacturing defect with the bands leading to this peeling issue.  if you're just looking to use it more casually, it's pretty awesome and you'll probably be ok.
+original stance:  anno
+predicted stance: anno
+
+[deleted]
+original stance:  agre
+predicted stance: elab
+
+it's really a shame.  great functionality, terrible build quality.  
+original stance:  agre
+predicted stance: elab
+
+my charge hr latch broke after 3 months. 
+original stance:  elab
+predicted stance: elab
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 5077, tree size=22
+michael chidester just posted a fascinating new definition of indes on the hema alliance facebook page.  [url]  this link should get you there...assuming you're on evil-book
+original stance:  anno
+predicted stance: anno
+
+i think meyer's definition is better.   > many have believed that the word indes has its origin from the latin word intus [inside], and indicates the inside combat, which arises from the windings and similar work; but you will hear now that this is not true.  > i leave the meaning of the word intus to the latinists, but the word indes is a good german word, and embodies a serious exhortation to quick judgment, so that one should be constantly swift of mind. for example, if you first strike to the left, and secondly you see at that moment in opening to the right, then thirdly when you rush at the opening you have seen, you must pay that good heed where or when what techniques you may come to you, so that you don’t overcommit to your attack to your opponent’s opening, and receive harm from it. **thus the word indes admonishes you to have a sharp lookout, which involves seeing and heeding many things at once. also you learn sufficiently from your opponent’s body language, what kinds of techniques he intends to use, and what they will entail by way of openings, and where they will offer you opportunities.** for the while art of combat likes in all these things that the word indes admonishes you, as liechtenauer says. 
+original stance:  disa
+predicted stance: elab
+
+"in the moment" is a much simpler concept to grasp, especially for newer students
+original stance:  disa
+predicted stance: disa
+
+if you translate indes as "in the moment" or "instantly", it is still boils down to just "pay attention and react accordingly". which, admitedly, is much harder to do than to say.  it's when you conflate it with fuhlen that it takes on a (in my opinion unnecessary) conceptual complexity.
+original stance:  elab
+predicted stance: elab
+
+/u/grauenwolf : >it's when you conflate it with fuhlen that it takes on a (in my opinion unnecessary) conceptual complexity.  ringeck (c487 38r): > you will learn this carefully, and understand, feeling and the word "instantly", **because these two things  go together** and are the highest arts in the fencing.  ppvd (codex 44.a.8 28v-29r) >mark, the feeling and the word meanwhile are the greatest and the best art with the sword, and who is a master of the sword, or wants to be, and cannot understand the feeling and the word meanwhile, then is he not a master, but he is a buffalo of the sword. therefore you shall before all things learn well these two things so that you understand them rightly.  ms 3227a: >because of this fencing teaches the feeling well as liechtenauer says: "learn the feeling, indes is a word that cuts" because if you are at the sword with someone, and you are now skilled at feeling whether your opponent is weak or strong at the sword, **indes or while you are in the bind**, you may very well observe and plan what you should do against him.  i'll concede that meyer discusses indes in a different way than the liechtenauer sources, but in general in the earlier sources, chidester is right, indes and fuhlen from the bind are always discussed together. also, i don't find this pairing unnecessarily complex (also note that chidester's argument is for a "paring" not a "conflation" of these two concepts). in fact, i've taught hundreds of new students indes this way without them having a problem understanding the idea or being able to put it into practice.
+original stance:  elab
+predicted stance: elab
+
+indes is certainly very inportant in the bind, but that doesn't necessarily mean it is only applicable in the bind. that's the difference between paring and conflating the terms, and what meyer seems to be warning us against doing.  and this distinction isn't just academic, it changes the focus of your training. meyer is telling us that we need keep the concept of indes in mind when working wide plays as well as from the bind.   if you don't, you run the risk of running into the "one-strike, one-counter, break" sequence we see time and time again in sparring videos. too many people train for indes in the bind, but not when they fail to bind and need to change their plans.
+original stance:  elab
+predicted stance: disa
+
+forget meyer for a minute. i think we agree on what he's saying, but you missed my point. my argument was that the liechtenauer texts almost exclusively discuss indes paired up with fuhlen.   so instead of hypothesizing, prove me (and chidester) wrong. find a passage in the liechtenauer texts where indes is discussed from outside the bind. i'm willing to admit that it's possible, but if we see no evidence for it in those texts, then maybe we need to challenge our assumptions about how the earlier masters defined indes.
+original stance:  elab
+predicted stance: disa
+
+the johannes liechtenauer texts are often intentionally obscure.  we rely on subsequent interpretation by the masters of his lineage to infer the nuances of his artform.  the fact that one such master (meyer) has explicitly defined it in such or such a way is, in fact, evidence (though indirect) of liechtenauer's meaning.  the burden of proof lies on anyone who would contradict meyer's interpretation to find evidence in the source material that explicitly supports their challenge.
+original stance:  elab
+predicted stance: disa
+
+Original tree:  LARGE
+Predicted tree: LARGE

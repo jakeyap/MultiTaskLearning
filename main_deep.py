@@ -259,11 +259,11 @@ def main():
                 encoded_comments = minibatch[1] # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
                 token_type_ids = minibatch[2]   # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
                 attention_masks = minibatch[3]  # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
-                length_labels = minibatch[4]    # shape = (n, 20) need to truncate here
+                length_labels = minibatch[4]    # shape = (n, 1) 
                 stance_labels = minibatch[5]    # shape = (n, 20) need to truncate here
                 
                 # keep the ones needed only
-                length_labels = length_labels[:,0:MAX_POST_PER_THREAD]
+                length_labels = length_labels[:,0:]
                 stance_labels = stance_labels[:,0:MAX_POST_PER_THREAD]
                 
                 # move features to gpu
@@ -375,11 +375,11 @@ def main():
                 encoded_comments = minibatch[1] # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
                 token_type_ids = minibatch[2]   # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
                 attention_masks = minibatch[3]  # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
-                length_labels = minibatch[4]    # shape = (n, 20) need to truncate here
+                length_labels = minibatch[4]    # shape = (n, 1) 
                 stance_labels = minibatch[5]    # shape = (n, 20) need to truncate here
                 
                 # keep the ones needed only
-                length_labels = length_labels[:,0:MAX_POST_PER_THREAD]
+                length_labels = length_labels[:,0:]
                 stance_labels = stance_labels[:,0:MAX_POST_PER_THREAD]
                 
                 # move features to gpu
