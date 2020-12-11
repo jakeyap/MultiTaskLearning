@@ -1,0 +1,233 @@
+-------------------------------------------
+Original Post  725, tree size=40
+so my ex-girlfriend and i broke up, party because cooking and food was a "big part" of her life and she was mad i wouldn't eat the cookies she baked or the food she ordered when we were on dates. when i suggested giving vegan baking a try, she said "i like to make things that actually taste good." her family is friends with my family and they are coming up for easter dinner (kill me now). i thought it would be hilarious to make as many vegan dishes as i could, and relay the news of its ingredients to her after she enjoys a full plate of it. so if anyone has recipes that don't look or taste vegan but actually are, please give them to me!
+original stance:  supp
+predicted stance: supp
+
+you need to go a step further and arrange for a beautiful girl to attend the dinner with you to bring out the delicious homemade vegan cookies.
+original stance:  comm
+predicted stance: comm
+
+[these]([url] cupcakes tend to taste like very delicious store-bought cupcakes, but it's also important to buy/make the best frosting you can for them in order to make them really impressive.  [these]([url] "cheezy" broccoli fritters will fool anyone who believes you need dairy in order for something to taste gooey and cheezy.  other than that, just look up vegan versions of very common meals if you want vegan food that looks identical to non-vegan food. some suggestions would be vegan mac and cheese or vegan lasagna, vegan desserts (anything from cookies to ice cream), any dish that typically requires a lot of eggs or dairy.
+original stance:  comm
+predicted stance: comm
+
+... isn't her already knowing that you're vegan going to kind of ruin the "surprise"?
+original stance:  quer
+predicted stance: quer
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post  468, tree size=5
+long story short, i don't feel comfortable in my house anymore. my younger brother physically steals my stuff in an effort to stop my transition and yells at me about how selfish i am and how everything he does is for me. my mom has hid my military id so i can't go to my endocrinologist appointment. one time i even went on a hunger strike to get it back, and my brother did a counter strike and called me selfish for continuing. every day there is an argument, and i'm starting to think my brother's behavior constitutes abuse.   so i need somewhere to go. i have some money saved up from student loans. i'm working on finding a job.   problem is, i have no idea how to work this out logistically. how do i move my stuff without my parents interfering? heck, how do i even look for t-friendly housing in hawaii? craigslist (without being murdered)? can i get my mail redirected? 
+original stance:  supp
+predicted stance: supp
+
+i'm sorry you're in that situation. what a nightmare. :/  moving works however it works, and there's no one true way of doing it. maybe you have a car, or a friend with a car who can help you move? some people do that. some people smuggle out smaller items (their own, of course; i'm not advocating theft) in the hope that their family won't notice, and then do a bigger move at the end. when i left my parents' house it was from an at risk situation. i waited until my parents weren't home, packed my university stuff in one bag, my favourite books in another, clothes in a third, and a spare pair of shoes and a blanket in a fourth, then i caught a bus with the lot of that and slept in a friend's kitchen until i could get a room.   i will say that it's easier to move out with the knowledge of your parents, but if you feel unsafe there are always options. perhaps there's a queer or trans advocacy organisation near you who can offer other assistance. regarding mail, i'm nowhere near you, but in most places you can get mail redirected by going into the post office or similar with id and probably some cash. your local postal service may also have a website with information. 
+original stance:  comm
+predicted stance: comm
+
+[this]([url] will walk you through changing your address. on another part of usps's site you can even have your mail held. you could always get a po box and have your stuff sent there. iirc po boxes are fairly cheap.
+original stance:  comm
+predicted stance: comm
+
+this is a tough situation to be in, :( ...i would suggest looking out for if there is a support group of trans folk that meet weekly or monthly in your area and after going to one of the meetings putting it out there that you are in this situation and are really needing a place to go for now. i personally have not ever been to one of these groups myself, but this may work.  the only other thing i can think of, and it would take some time, is to find a job asap and start saving up in a bank account for a place of your own. efficiency apartments are pretty cheap, and you can also find rooms to rent on craigslist for really cheap as well.  which island are you on? i lived on the big island for 6 months on a farm for work trade to stay there, and it was just in a tent but this could probably be a last case scenario for you if you *need* it.  edit: feel free to ask me any questions you might have, i will help you in any way i can.
+original stance:  comm
+predicted stance: comm
+
+Original tree:  SMALL
+Predicted tree: SMALL
+-------------------------------------------
+Original Post  489, tree size=15
+let's have a quick discussion thread.   you make a proposition for a possible modification or addition to eve online, be it to warfare, economy or something else. others come in and discuss either for it or against it.   here is my first proposition: under certain conditions, allow for the players to target specific modules. for example, if a pc has a certain skills and a strong enough modules on his ships, he can aim specific modules of a enemy. inversely, a damaged module can be fixed by the owner or someone else. that could add a very interesting aspect to battles.
+original stance:  supp
+predicted stance: supp
+
+i really wish the fleet warp mechanics that they proposed actually went through.  i was super looking forward to doing sniping fleets again, especially with these grid sizes. would mean more people can get involved in fights without having to fork out for massive numbers (e.g. a sizeable pete fleet to 3rd party).  
+original stance:  comm
+predicted stance: comm
+
+my suggestion actually has multiple conditions, since it is a rework of the criminal system.  1. npcs including concord now go for pods, too. (i already can taste the tears!) 2. if your sec status would flag you as criminal in a system (say, too bad sec to be allowed in 1.0) you wouldn't even be let into the system, you could not dock in npc stations, and you would not be able to resurrect at a clone in a system of that safety level. but you would be able to operate from a pos or daytravel via wormhole, to spread shenanigans. 3. concord no longer comes on 'first shot fired', but on 'ship destroyed' or (only available if you dedicate a high slot for it) via 'emergency beacon'. reason: you would be able to bring a miner or hauler down and hold them down, for a ransom. but if they wanted actual rescue, they would have to rely on players or sacrifice a highslot for a 'concord emergency beacon uplink' module.
+original stance:  comm
+predicted stance: comm
+
+highsec/lowsec to become variable, the more players rat/mission in a system the higher security gets and less concord patrols the space, the less players do these things, the lower security gets and the more concord patrols the space. varriance will impact quality of mission/rat rewards higher sec worse < lower sec better, and can move from low to high security depending on usage.  ganking/acts of piracy will lower security and encourage more concord patrols. concord still stays in .5+ but empire navies will patrol .4 and down, remove gate guns and station guns. systems will slowly degrade towards .1 sec status if unused for missioning/ratting.
+original stance:  comm
+predicted stance: comm
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post  412, tree size=7
+our client is looking for an experienced desktop support analyst to join their team in redmond. an ideal candidate will have a wide range of it knowledge and experience. if you are eager to strengthen your capabilities in a dynamic, fast-paced environment, this is the job for you!  responsibilities desktop/server software/hardware set-up and troubleshooting rack-stack-cable-imaging and hardware/os troubleshooting end-user support for proprietary tools works as a team member to assist with operations support  qualifications and skills 1-2 years of work-related experience strong understanding of microsoft products outstanding communication and customer service skills excellent problem resolution and analytical skills ability to learn quickly in fast-paced environment  pluses strong understanding of desktop support experience with core it infrastructure  email me at chris.morris@disys.com with your resume if you are interested. 
+original stance:  supp
+predicted stance: comm
+
+i assume that not being able to pass a background check would be a deal breaker, yes?
+original stance:  quer
+predicted stance: quer
+
+[deleted]
+original stance:  quer
+predicted stance: supp
+
+Original tree:  SMALL
+Predicted tree: SMALL
+-------------------------------------------
+Original Post  584, tree size=4
+pretty simple. im bored and want to play pokemon but ive played all the game so many times. a new adventure would be nice im looking for: -new story -new region  -new pokemon (fakemon are cool) if you can help that would be awesome
+original stance:  supp
+predicted stance: supp
+
+a lot of people seem to like the ruby destiny series, if that's any help.
+original stance:  comm
+predicted stance: comm
+
+definitley give a look to zeta/omicron. they are not rom hacks but standalone games, featuring two regions, new mega evolutions, new stories and a veritable ton af things to do. they even have a subreddit. it's fully updated for gen 6 mechanincs, moves, pokemon and items.
+original stance:  comm
+predicted stance: supp
+
+pokémon vega is in japanese, but you can get a partially english patched version somewhere. it has tons of cool fakemon in it, and is really challenging. despite being a firered hack, it has the physical/special split and has moves from 4th and 5th gen, as well as a few new moves mixed in. you can hardly understand waht's going on, but it has a lot of polish and is my personal favorite hack atm.
+original stance:  comm
+predicted stance: comm
+
+Original tree:  SMALL
+Predicted tree: LARGE
+-------------------------------------------
+Original Post   90, tree size=11
+i'm interested in how many redditors actively scrim and/or compete.  i'm looking to join an 1800+ mmr team.  i love competing in just about anything i do which would include hon but i've never played in a team before.  if your team is looking for a carry/semi-carry player, msg me in-game.  my main is imgwanghyo.  i also play on blas0206 and lexy`sfan.  maybe we can get an 1800+ hon reddit scrim team together?  we'll see.  hope you redditors are doing well!  edit:  i play mainly on us east and west.
+original stance:  supp
+predicted stance: supp
+
+my name in game is newerthhero im around 1840ish at the moment.
+original stance:  comm
+predicted stance: comm
+
+playing on us or eu servers?
+original stance:  quer
+predicted stance: quer
+
+i'm down to play if you need a support player. i'm 1780-1830 just hard to get higher without people you play with often.
+original stance:  comm
+predicted stance: comm
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post  124, tree size=15
+so my phone slid off my bed and got caught between the bedframe and box-spring and got chipped in several areas. it's also been chipped from being bumped around in my pocket at work (before i got a case for it). does anyone know if apple can replace the body of the phone, without having to do a full replacement? i'm more than capable of paying for a repair like that if it's something that can be done in-store. or should i just use my phone insurance and pay the $165 deductible and get it replaced that way?  i'm pretty picky about my electronics, and especially my phone, since i paid so much for it just 3 months ago and it's already gotten chipped in the weirdest spots ever. anyone have any info or advice for my situation?  i can provide pics, if requested. frankly, i'm too lazy to take them if they're not needed.
+original stance:  supp
+predicted stance: supp
+
+next time buy the $15 case.
+original stance:  comm
+predicted stance: comm
+
+i assume you're talking about the glass. replacing the back glass is [very easy]([url] the front is [fairly easy]([url] too.   but first, take it to the apple store. they're known to replace user damage that normally wouldn't be covered by warranty. just be upfront and polite. 
+original stance:  comm
+predicted stance: comm
+
+Original tree:  LARGE
+Predicted tree: SMALL
+-------------------------------------------
+Original Post  329, tree size=5
+[empty]
+original stance:  supp
+predicted stance: supp
+
+i have really oily skin and i use milk of magnesia on my face before makeup. it's not a permanent solution,but it's  worked wonders for me. look it up on youtube :) 
+original stance:  comm
+predicted stance: comm
+
+wash gently with tea tree soap.  gently! either liquid or solid.  it has been the greatest relief in my life.  the tea tree oil commonly is the closest ph to the skin of one troubled with oily skin and/or acne problems.  it is also a natural antibiotic.  it has made my life and my skin so much less of a problem.  start slowly on a specific area and see if it works for you. 
+original stance:  comm
+predicted stance: comm
+
+/r/skincareaddiction fixed me up good. lots of knowledge over there :)
+original stance:  comm
+predicted stance: comm
+
+Original tree:  SMALL
+Predicted tree: LARGE
+-------------------------------------------
+Original Post   23, tree size=17
+[empty]
+original stance:  supp
+predicted stance: supp
+
+the former. the second means something totally different.
+original stance:  comm
+predicted stance: comm
+
+Original tree:  LARGE
+Predicted tree: SMALL
+-------------------------------------------
+Original Post  655, tree size=4
+as the title suggests, i'm considering making a templar mage following the dawn's wrath skill line. this would be mixed with the mages guild skill line and destro staff. however, i've heard dawn's wrath is below average when it comes to dps and i feel this might put me at a disadvantage in pvp. has this been buffed at all or would i be better off just going sorc sc?
+original stance:  supp
+predicted stance: supp
+
+there is no reason to stick to one skill tree in eso i would recommend going on tamriel foundry website and looking for templar builds with destro staff :)
+original stance:  comm
+predicted stance: comm
+
+if you want to take a more proactive route. you still have time to hop on the pts server and actually test your ideas before 1.6 goes live.
+original stance:  comm
+predicted stance: comm
+
+i would also love to have some thoughts from solar mage players
+original stance:  comm
+predicted stance: supp
+
+Original tree:  SMALL
+Predicted tree: LARGE
+-------------------------------------------
+Original Post  377, tree size=7
+if i'm running a 6* like eze or vargas who's super bb increases attack after they use it, do i have to use his first and wait for it to complete to give everyone else the attack buff? or can i just use it first and then use everyone else's bb right after while his is still going so his attack is still part of the sparks? 
+original stance:  supp
+predicted stance: supp
+
+you can use it first then everyone else uses theirs, thats how it will work. as long as the ability is cast, the buff will be cast. source : i tested it with vargas.
+original stance:  comm
+predicted stance: comm
+
+wait until you get the buff over everyone's head.   for all other questions, go here: [url]
+original stance:  comm
+predicted stance: comm
+
+Original tree:  SMALL
+Predicted tree: SMALL
+-------------------------------------------
+Original Post  859, tree size=10
+i was wondering who has the biggest selection of craft beer to buy at a store. all i really know of is big red liquors, but there are several locations and they don't seem to be consistent with their selection. i know there are many bars with craft beer, but i don't always want to go out.  thanks!
+original stance:  supp
+predicted stance: supp
+
+i have always found a good selection at sahara mart. both locations have a big selection... but some beers may be really old..
+original stance:  comm
+predicted stance: comm
+
+i select most of the craft beer for one of the smaller big red stores, so i can give some insight.  each store has a lot of individual control over what they carry, and stores cater to their local clientele.  the big store (8th and college) will have the widest selection, but may not have specific beer you're looking for.  some stores are more craft beer-centric because they have employees who are knowledgeable beer enthusiasts.  this is what i look for in a beer place.  i like to talk to people about the selection, get recommendations, etc.  there's a sprinkling of home brewers in the chain, too.  try college mall (in front of kroger), west 3rd (next to the jiffy lube), and 2nd & walnut (near saraha mart).  i can vouch for these stores in particular.  in my own personal beer shopping experience, saraha mart's beer sits around for a *long* time.  they're usually cheaper than big red, but i only buy it if i can see a date code.  imperials stouts and barleywines would be fine, but i probably wouldn't buy an ipa from them.
+original stance:  comm
+predicted stance: comm
+
+sahara mart on 3rd and the big red across from smallwood probably have the biggest selections in town.  i'd say look at sahara mart if you're looking for more foreign beers, or big red if you're looking for the largest selection of already-cold beer.  you can also buy carry-out from the tap, but you'll pay more there, especially for most of the non-indiana stuff.
+original stance:  comm
+predicted stance: comm
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post  547, tree size=4
+[empty]
+original stance:  supp
+predicted stance: supp
+
+always sign the papers. do you know the divorce rate now a days? fucking huge. bitches will stick it out and then bam. there goes your house. that shit is never happening to me. they don't wanna sign? no marriage then.
+original stance:  deny
+predicted stance: comm
+
+Original tree:  SMALL
+Predicted tree: SMALL
+seen disagree

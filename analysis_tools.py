@@ -54,6 +54,7 @@ def reload_modelBn(model_filename,
                                        num_transformers=number)
     token_len = len(DataProcessor.default_tokenizer)
     model.resize_token_embeddings(token_len)    # Resize model vocab
+    model = torch.nn.DataParallel(model)        # encapsulate with dataparallel
     temp = torch.load(model_filename)           # Reload model and optimizer states
     state_dict = temp[0]                        # Extract state dict
     model.load_state_dict(state_dict)           # Stuff state into model
@@ -165,13 +166,19 @@ def replot_training_losses(filename):
     # Return the lossfile and figure handles
     return lossfile, fig, axes
 
-def convert_label_int_2_string(number):
-    label_ind = ['question',    'answer', 
-                 'announcement','agreement',
-                 'appreciation','disagreement',
-                 'negativereaction',
-                 'elaboration', 'humor',
-                 'other']
+def convert_label_int_2_string(number, old_models=False):
+    if old_models:
+        label_ind = ['deny',
+                     'support', 
+                     'query',
+                     'comment']
+    else:
+        label_ind = ['question',    'answer', 
+                     'announcement','agreement',
+                     'appreciation','disagreement',
+                     'negativereaction',
+                     'elaboration', 'humor',
+                     'other']
     if number != -1:
         return label_ind[int(number)][0:4]
     else:
@@ -514,7 +521,7 @@ def inspect_labels_vs_length():
     return [lengths_seq_1, lengths_seq_2, lengths_seq_3, lengths_seq_4], [frequen_seq_1,frequen_seq_2,frequen_seq_3,frequen_seq_4], df
     # return [tree_sizes, post_labels], [seq_names, seq_counts, avg_lengths, med_lengths]
 
-def run_single_point(model, dataframe, index=-1, MAX_POST_PER_THREAD=8):
+def run_single_point(model, dataframe, index=-1, MAX_POST_PER_THREAD=8, old_models=False):
     ''' 
     Runs a single test point. If index is -1, randomly pick 1.
     '''
@@ -549,39 +556,60 @@ def run_single_point(model, dataframe, index=-1, MAX_POST_PER_THREAD=8):
     stance_pred = stance_pred - 1 # take care to rescale empty posts to -1
     
     predictions = []
+    truths = []
     print('Original Post %4d, tree size=%d' % (index, length_labels))
     texts = test_dataframe['text'][index]
-    for i in range (len(texts)):
-        if i>=8:
-            break
-        else:
-            label = convert_label_int_2_string(stance_labels[i])
-            pred  = convert_label_int_2_string(stance_pred[i])
-            print(texts[i])
-            print('original stance:  ' + label)
-            print('predicted stance: ' + pred + '\n')
-            predictions.append(pred)
-    print('Original tree:  ' + ('LARGE' if length_labels >= 8 else 'SMALL'))
-    print('Predicted tree: ' + ('LARGE' if length_pred.item() == 1 else 'SMALL'))
-    return predictions
+    if old_models:
+        for i in range (len(texts)):
+            if i>=4:
+                break
+            else:
+                label = convert_label_int_2_string(stance_labels[i], old_models)
+                pred  = convert_label_int_2_string(stance_pred[i], old_models)
+                print(texts[i])
+                print('original stance:  ' + label)
+                print('predicted stance: ' + pred + '\n')
+                predictions.append(pred)
+                truths.append(label)
+        print('Original tree:  ' + ('LARGE' if length_labels >= 9 else 'SMALL'))
+        print('Predicted tree: ' + ('LARGE' if length_pred.item() == 1 else 'SMALL'))
+        return predictions, truths
+    else:
+        for i in range (len(texts)):
+            if i>=8:
+                break
+            else:
+                label = convert_label_int_2_string(stance_labels[i], old_models)
+                pred  = convert_label_int_2_string(stance_pred[i], old_models)
+                print(texts[i])
+                print('original stance:  ' + label)
+                print('predicted stance: ' + pred + '\n')
+                predictions.append(pred)
+                truths.append(label)
+        print('Original tree:  ' + ('LARGE' if length_labels >= 8 else 'SMALL'))
+        print('Predicted tree: ' + ('LARGE' if length_pred.item() == 1 else 'SMALL'))
+        return predictions, truths
 
 def run_until_find_pattern(model, dataframe, 
-                           count=100, pattern='disa'):
+                           count=100, pattern='disa',
+                           old_models=True,
+                           MAX_POST_PER_THREAD=8):
     '''
     run until count or pattern is found
     '''
     counter = 0
     while True:
         print('-------------------------------------------')
-        predictions = run_single_point(model, dataframe)
+        predictions, truths = run_single_point(model, dataframe, 
+                                               MAX_POST_PER_THREAD=MAX_POST_PER_THREAD, 
+                                               old_models=old_models)
         counter += 1
-        if 'disa' in predictions:
+        if pattern in predictions or pattern in truths:
             print('seen disagree')
             break
-        if counter>100:
+        if counter>count:
             print('reached end')
             break
-    
 
 def tighten_plots():
     figures = plt.get_fignums()
@@ -630,13 +658,26 @@ if __name__ =='__main__':
     # tighten_plots()
     '''
     
-    ''' for running tests on datapoints (20201208) '''
-    filename = './saved_models/ModelE2_exp49.bin'
+    ''' ============== for running tests on datapoints (20201208) ============== '''
+    '''
+    filename = './saved_models/ModelE3_exp54.bin'
     model = reload_modelEn(filename, number=int(filename[-11]), 
                            MAX_POST_PER_THREAD=4,MAX_POST_LENGTH=256)
     model.eval()
     model.cuda()
     test_dataframe = DataProcessor.load_from_pkl('./data/coarse_discourse/encoded_coarse_discourse_dump_reddit_test_flat_20_256.pkl')
     
-    run_until_find_pattern(model, test_dataframe, count=100, pattern='disa')
-            
+    run_until_find_pattern(model, test_dataframe, count=100, pattern='disa',old_models=False, MAX_POST_PER_THREAD=8)
+    '''      
+    
+    ''' ============== for running tests on modelB3_exp29 (20201208) ============== '''
+    filename = './saved_models/ModelB3_exp29.bin'
+    model = reload_modelBn(filename, number=int(filename[-11]), 
+                           MAX_POST_PER_THREAD=4,MAX_POST_LENGTH=256)
+    
+    model.eval()
+    model.cuda()
+    test_dataframe = DataProcessor.load_from_pkl('./data/combined/encoded_shuffled_test_4_256.pkl')
+    
+    run_until_find_pattern(model, test_dataframe, count=20, pattern='deny',old_models=True, MAX_POST_PER_THREAD=4)
+    

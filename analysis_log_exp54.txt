@@ -1,0 +1,194 @@
+-------------------------------------------
+Original Post 5555, tree size=37
+well, i am actually a cook for a living. decided to make 3 am breaded pork chops. i was tilting the pan and drenched half the oil on my foot. my foot has been soaking in ice water for an hour. the pain is unreal. i'm gonna have blisters all between my toes and then some. what i've come to; dont drink and cook. i doubt i will even sleep tonight. my god the pain. im shivering from the ice water bath my foot is in. but, as soon as i remove it i get a ton of pain. and ofc im out of booze till tomorrow morning.
+original stance:  anno
+predicted stance: elab
+
+jesus man, i've managed to drench my foot in boiling water and that sucked enough. can't imagine boiling oil. hope your foot gets better.
+original stance:  elab
+predicted stance: elab
+
+i shoulda passed out drunk an hr ago but the pain has kept me awake. as soon as i remove it from the ice bath and regain feeling i stick it righ back in. i can feel the blisters forming. so fucked
+original stance:  elab
+predicted stance: elab
+
+trust me on this one.   i've had many nasty burns.  after the first bit of shocking it (ice bath, you know). you want to keep it dry, it will hurt like crap for a bit, but it will die down to a dull throbbing eventually. sorry, babe, but thems the breaks.
+original stance:  elab
+predicted stance: agre
+
+true shit.
+original stance:  agre
+predicted stance: agre
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 4956, tree size=6
+eli5:what exactly happens when i rub my eyes and see all those squiggly lines ?
+original stance:  ques
+predicted stance: ques
+
+your eye transmits one type of information to your brain -- *visual* information. and typically, that information comes from light entering your eye; this is the only stimulus that your eye knows what to do with. when you put physical pressure on your eye (such as rubbing them with your palms), you are providing your eye with a *different* kind of stimulus, one that it does not know what to do with. so your brain does its best to interpret this unfamiliar stimulus coming from the eye in the only way it knows how -- as an image.
+original stance:  answ
+predicted stance: answ
+
+Original tree:  SMALL
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 2684, tree size=17
+hello again guys,  i'm moving to amsterdam on the 6th of june and i'm currently emailing back and forth with a potential landlord for staying and it'ls looking really good to be honest. the thing is, is it too good to be true?  i told her i won't be coming for at least 9 weeks (in which i will have a different apartment with friends since it would be a very large risk going without having a place to stay instantly that's already paid for, so i'd move in after and if it was fake i could find a different accommodation) so if she doesn't wish to reserve the accommodation for me, that's fine.  she's replied to me today saying it's the perfect procedure.  i'm really worried because she asked for a scanned photo of my passport, also sending me a scanned photo of hers, with an actual picture of her?  now in fairness, i can understand the picture of her and the passport to prove who she is etc etc, but is that something i should really send her?  she put this in the email (full email):    "hello,thanks for your respond and also for the introduction of your self .you will have right to use everywhere in the apartment,you really sound great,never mind i can reserve the apartment for you since there is a perfect procedure that we both have to undergo before you can proceed with the payment.   however if you really have interest in renting the apt just let me have your  full name, your exact arrival date, your departure date, your current address a scanned copy of your passport id or your pics,  so that i can quickly instruct our family lawyer to prepare the tenant agreement form for you, to see the terms and condition of the contract and if you are okay with the terms and condition then you can proceed with the one month rent and the security deposit to my mother secretary in usa via money gram  money transfer so that the apartment can be reserve for you till your arrival date  so i want you to follow this instruction because there are alot of people that also have interest in renting the room,but my mother prefer the most serious person   the signed agreement form will be send to you first through attached mail.for you to read and understand,after which you will proceed with the payment ,i'll now send you the original copy through a registered courier to your address for you to bring along with you when moving in and you will be more than happy when you get to the apartment   dishes and towels are there in the apartment you dont need to bring a lot  manon"    now don't get me wrong, i do love the apartment - it's only 500m from the central station which is just a 6 minute walk and at 350 a month i honestly can't go wrong, it's perfect.  i won't bother with minute details of what it looks like etc, but is this **really** safe?  i have applied at abn amro for a bank account since they apparently allow people outside the netherlands to apply without a bsn number (trying to sort that out asap) and as far as i am aware, a landlord would strictly want money from a dutch bank account, i'm very confused!!  if anyone could help me with my situation, i would be mighty grateful!  i hope i haven't posted it in the wrong section again because i don't want to clutter the lovely board with potential nonsense.  thank you to anyone in advance!   **edit:  been cleared up, thanks for the swift response guys!**
+original stance:  ques
+predicted stance: ques
+
+looks like a scam to me. stay far away. if you want my advice, book an airbnb for a couple weeks and take that time to find a place while you're here.
+original stance:  answ
+predicted stance: answ
+
+i'm going to be with my friends for 10 days in an apartment we're sharing, hoping to get my bsn number sorted within those days (hoping my bank account will be sorted, too) and then looking for work almost instantly - thanks for the reply!
+original stance:  appr
+predicted stance: othe
+
+> hoping to get my bsn number sorted within those days (hoping my bank account will be sorted, too)  you need a place to live to get a bsn, and you need a bsn to get a dutch bank account
+original stance:  elab
+predicted stance: elab
+
+no you don't (for the bank account). i was there for 3 months for work and opened a bank account just showing my passport.
+original stance:  disa
+predicted stance: disa
+
+yeah, that's what i did as well, but i hear plenty of times that this way rarely works in practice...
+original stance:  othe
+predicted stance: agre
+
+Original tree:  LARGE
+Predicted tree: LARGE
+seen disagree
+-------------------------------------------
+Original Post  192, tree size=36
+blogging can be a powerful, yet sometimes daunting tool for writers to use. some bloggers/writers have great success with their blogs to the point that they have thousands of followers, while others have fewer followers than the fingers on their hands.  i am sure i am not the only blogger on /r/writing who wants to share and talk about their blogs and how to improve them.  so what is your blog about? who is it for? how can i read it?  personally my blog is a collection of the stories, poems and short stories that i have written ([link for any people interested to look at it]([url]  interested to hear about your blog :d
+original stance:  ques
+predicted stance: ques
+
+[honestpracticum.com]([url] is my blog. i try to update it daily or multiple times a day as news comes in or i come across relevant material. it's about teaching and education, very american-centric. probably quite different from the other blogs on /r/writing as it's non-fiction.   my goal as a blogger is to be a link between parents and teachers, explaining what's going on in education to people that don't have much time to explore it themselves. 
+original stance:  answ
+predicted stance: answ
+
+i like the quick hit idea of your blog and the layout.  made it easy to move from one idea to the next.
+original stance:  appr
+predicted stance: agre
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 2425, tree size=7
+is teamliquid down fo you too?
+original stance:  ques
+predicted stance: ques
+
+it's more up than morning wood.
+original stance:  othe
+predicted stance: answ
+
+Original tree:  SMALL
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 1645, tree size=40
+*edit- thank you for the feedback guys! i will do the post about the heroes i left out and a few more things about invoker and ember that work out of midlane too, which i forgot to include in the first post soon. thank you for the love :d*  so i replied to someone in another thread about a trick with invoker and i thought why not compile a list of all these niche tricks i use.  invoker-   1. when cold snapping an enemy hero in lane, you can tornado his creeps so that your creeps aggro him and proc coldsnap.  2. when you are chasing someone and he is a bit faster than you, and you have to catchup left, turn to your side and cast icewall immediately, it takes a lot of practice to master but sometimes works really good.  3. almost everyone knows this, but i will include this for the sake of including it, urn of shadows procs cold snap, so you can cold snap- urn - alacrity and kill a solo target.  4. always use shorter invoke commands. for example, you invoke emp, and now you want alacrity, so instead of pressing wwer, press er because you have 3 w active already.  5. the aoe of people detecting you ghostwalking is 3/4 of your attack range.   6. use tornado to scout, it has amazing range and a short cd, and if by chance you find an isolated enemy, you can kill them.  7. always look at enemy heroes hp before sunstriking, sometimes its a little more than your current sunstrike damage and there is no point in wasting mana/cd for that.  sf-   1. for hitting the w-e raze combo, you have to attack the melee creep from your max attack range, get to the point where your q would hit from there and do the w-e.  2. similarly, if you are attacking the ranged creep, you can instantly press q-w to clean the creepwave if razes are level 4.  3. when you are trading hits, get in a position so that the enemy is standing between the animation of your q and w raze, hence hitting him with those and later allowing you to finish him off when running with e.  4. always stack with illusion rune, land 3 raze combo on enemy mid(or better requiem) with invis,  win lane by getting every lh/d with dd, spam the shit out of razes with arcane rune. if you get a haste rune keep it bottled for escaping ganks or stacking+securing next rune at the next minute mark.  5. you can kill most heroes with 3/4th hp or below with a surprise w and e combo at level 5 and 7. when the guy comes for a last hit, surprise him with a quick w and e. most people won't be expecting this and won't be fast enough to react with it. (thanks to /u/thenoobvoker for this)  kunkka-   1. always cast torrent from fog of war so enemy mid doesn't see the animation of you shaking wrist for torrent.   2. if you are having trouble with harass, x mark yourself and tp home, heal up and return.  3. if you are having trouble against someone like viper, consider double waving with torrent+tidebringer.   4.~~if you want creep equillibrium closer to your tower, go back and x mark the ranged creep in the next wave at your t2~~ no longer works, not sure since when because i havn't played kunkka in a long time.  ember spirit-   1. you can pickup runes by placing a remnant at rune spot and lane, jump to the one in lane and click on rune instantly(it will take a lot of practice to pull this off), although its a waste of mana, but against matchups like qop, where you can't contest runes, you might be safer with having 150 less mana but a full bottle.   2. you can dodge many things with a value point in sof- qop's shadowstrike, ta's meld, dp's swarm etc etc. the only thing limiting you here is your imagination and instinct.  3. always remnant behind someone if you are going to initiate with remnant so you always land chains.   4. if you know enemy cant pop your flame guard if you keep it at level 2, max chains as they deal more burst damage. (thanks to /u/banyt for this)  5. always use phase boot active before sending a remnant(although phase boots on ember suck) because its travel speed is relavant to your current speed and phase increases that by a lot.  storm spirit-   1.you can use soul ring while in ball lightning without hurting yourself.  2. the moment the first creep waves meet, hit enemy range creep 3 times and use remnant in the middle of creepwave for free 2 last hits.  3. if you want to kill enemy mid, make sure you have full mana, use ball lightning behind them so remnant hit is sure and bottle yourself on the fly.  4. do not miss overload charges, its ok to wait a bit before using electric vortex than to lose an overload charge.  5. use remnant for vision in every place you suspect if there is someone like pudge/mirana/clock on enemy team.  ta-  1. meld deals more burst at level 7 if the target armor is 3 or less. refraction gives more survivability, make sure you level what suits you best at the moment.  2. the first creeps that meet, will hit only the two melee creeps in the middle of both waves, you can get a deny+lh if you scale psi blades(which is good imo) and deny your own creep by standing right behind it, although its just one last hit, it kills the enemy mid's morale.   3. if you are against someone who can melt your refraction quick+has aoe dot(pudge, ember etc) just turn on refraction and meld, they will stand on top of you thinking they can kill you, but wait for the meld cd, and give them two meld strikes back to back, you also have the damage part of refraction so(and in conjunction with maxing meld strike against heroes like pudge or ember) it is a sure kill.  4. always keep psi traps on both highgrounds and both rune spots, you can save the last one for misc usage.  5. when playing against qop, get refraction up, wait when there is 7 seconds of cd left(total is 17) and then trade with her, so if she thinks she can stick around and kill you after burning refraction, you can pop another instantly and kill her or atleast bully her out of lane(if she blinks away) or make her waste sonic wave.  that is all i can bring myself to type right  now, will add more heroes(puck, od, razor, lina etc) and tips in a second post. also guys if you know of any cool tricks like these comment them below and i would learn them, and(with your permission) add them in this post.
+original stance:  anno
+predicted stance: anno
+
+awesome, i will try to use these! :d thanks a lot 
+original stance:  appr
+predicted stance: appr
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 1969, tree size=14
+[deleted]
+original stance:  ques
+predicted stance: ques
+
+i love my fishpond front pack i got from cabela's in 08, hasnt had much use yet but i plan on using it a ton this season.
+original stance:  answ
+predicted stance: agre
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 5691, tree size=37
+i know a lot of people didn't like the fact that ornstein came back for round 2 in dark souls 2, and i understand why, but why do other things like this get a free pass? don't get me wrong, i love patches, the moonlight greatsword, "praise the sun," etc., but i don't get why those things can come back and people just accept it but when ornstein comes back everyone gets mad about "fanservice." i thought the fight with the old dragonslayer was great personally, and it helped sorta bid towards the origins of heide.  really i guess what i'm asking is why does everyone want important, lore-related weapons to come back and even whole characters, but no bosses?
+original stance:  ques
+predicted stance: ques
+
+with patches and the moonlight its done very tongue in cheek imo. there's no real attempt to make patches or moonlight significant in the lore, and they're clearly inside jokes. whereas i feel that the placement of ornstein was done more seriously, and was meant to have lore significance. the problem was, he didn't really make sense. it makes even less sense in sotfs, where there's a dragon literally right outside. the "old dragonslayer" isn't really doing his job.  i guess people don't mind patches and moonlight as much because they're more transparent about being fanservice. also, it takes away from the number of new boss designs in the game. especially when its a diminished version of a previous fight. the fight makes you think "hey, remember that really awesome fight in ds1, well here's a worse version of it". it doesn't help that dark souls 2 also re-used the gargoyles and sorpioness najka is very similar to quelaag.
+original stance:  answ
+predicted stance: answ
+
+>there's no real attempt to make patches or moonlight significant in the lore, and they're clearly inside jokes.   i'd argue that lore-wise, there were some interesting implications for both of those in bloodborne, more so than in their other appearances. maybe i'm alone in feeling that way though, who knows
+original stance:  elab
+predicted stance: answ
+
+i guess the mlg was somewhat relevant in regards to ludwig. the point i probably should have made, was that neither of them contradict the lore of any of the games they're in. the old dragonslayer is either ornstein, or someone pretending to be ornstein. ornstein still existing doesn't make any sense since we defeated him in ds1. so if he's an imitator, then where did this guy get almost identical armor from? and why does he have an almost identical moveset? and why is there a dragon outside his boss room in sotfs?   the fact that all of these questions exist leads me to believe that the inclusion of the old dragonslayer wasn't fully thought out and put in as lazy fan service. but that's just my impression.
+original stance:  elab
+predicted stance: ques
+
+we defeated an illusion in ds1, brah.
+original stance:  elab
+predicted stance: othe
+
+this isn't confirmed or anything, its just a popular fan theory. as someone else stated, why does an illusion drop a soul and a ring when we defeat him? the one in anor londo being real would also explain why he never appears in oolacile in the dlc, since he's guarding the princess. there's not really any strong evidence in ds1 to support the theory of him being an illusion, and this theory only seemed to gain popularity after the release of ds2 when people were looking for reasons to justify the existence of the old dragonslayer.  even if it is ornstein in heide's, ds2 never attempts to explain his presence there in any way. outside of the old dragonslayer boss fight there's no mention of him.
+original stance:  disa
+predicted stance: answ
+
+Original tree:  LARGE
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 4201, tree size=4
+chibi bardock
+original stance:  anno
+predicted stance: anno
+
+d'a[url] now frieza will just have to let him live.
+original stance:  elab
+predicted stance: agre
+
+Original tree:  SMALL
+Predicted tree: LARGE
+-------------------------------------------
+Original Post 3412, tree size=32
+aj was in the same league in njpw with anywhere from four to six other guys. as a big match wrestler, he was at best no. 2 behind tanahashi and it's not a lock he was no. 2. and the other three to five guys all worked much harder schedules.      he's nowhere near the best ever.      shawn beats aj on charisma. aj kills shawn on creativity, but shawn never had a period where he worked two years with the kind of guys aj did to bring his game up to that level and open his mind. and he never had so many guys of his own ability to push him to have to improve to even be competitive at the top level. so he was better than a much worse field (with a few exceptions like bret who worked a more realistic and gripping style but wasn't as athletically gifted) but just because of that field, he was never as complete in as many ways as aj had to become or he'd fail.  
+original stance:  anno
+predicted stance: disa
+
+even on shawn's best days he's not touching aj in ring. aj's shit looks real, something no one has ever said about a single shawn michael's move. 
+original stance:  disa
+predicted stance: agre
+
+literally the opposite is true. no one is watching aj spring board or give a clash and thinking "boy that looks real! that's totally what someone would do in a shoot fight!". i mean hooking the arms with the legs alone makes zero sense and is contrived. scm on the other hand is a stiff kick to the face, way more realistic.
+original stance:  disa
+predicted stance: disa
+
+aj works a stiffer style than shawn michaels. 
+original stance:  elab
+predicted stance: disa
+
+[deleted]
+original stance:  nega
+predicted stance: ques
+
+suspension of disbelief is more important than any other aspect of wrestling to me. 
+original stance:  othe
+predicted stance: disa
+
+[deleted]
+original stance:  othe
+predicted stance: ques
+
+yes, absolutely. matches that can make me forget that its all scripted are what i would define as 4.5-5* matches. when i'm watching a guy stomp someone in the corner and its obvious as fuck the whole sound comes from his other leg stomping the ground i will never experience that feeling. when i see someone's hand miss by a mile suspension of disbelief is out the window.   i would take something like ibushi/shibata from last year's g1 over michaels/taker at mania 99/100 times. when wrestling is presented as legitimate and as a sport it is exponentially more interesting to me. when it devolves into hot tags and john cena i have little interest.   the story, the angles etc are all are a far cry from why i watch wrestling. 
+original stance:  elab
+predicted stance: agre
+
+Original tree:  LARGE
+Predicted tree: LARGE
+seen disagree
