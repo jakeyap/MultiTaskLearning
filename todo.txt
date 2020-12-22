@@ -1,28 +1,16 @@
 ===================== EXP NOTES =====================
 
 -------------- Experiments in progress --------------
-ti
-exp31: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=8, ModelD4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=4, EXPOSED=4, stance_class=11, length_class=2. (20h expected)
-exp36: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=8, ModelD3, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
-exp37: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=8, ModelD2, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
-exp38: Adam,epochs=4,lr=0.00001, GPU=4, minibatch=8, ModelD1, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
 
-quadro
-exp43: Adam,epochs=4,lr=0.00001, GPU=2, minibatch=8, ModelD4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
-exp44: Adam,epochs=4,lr=0.00001, GPU=2, minibatch=8, ModelD4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
-exp45: Adam,epochs=4,lr=0.00001, GPU=2, minibatch=8, ModelD4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
-exp46: Adam,epochs=4,lr=0.00001, GPU=2, minibatch=8, ModelD4, weighted stance loss. POST_PER_THREAD=256, POST_LENGTH=8, EXPOSED=4, stance_class=11, length_class=2. (20h expected) 
 ---------------- Experiments planned ----------------
 
-
-
 ===================== TASKS TODO ====================
-run exp39-42 on srq dataset
-
+try maxpool avgpool on the text before feeding into nn to quantify perf speedup
+try using pytorch's instead of huggingface's version of transformers to quantify perf speedup
+carefully split up processed data pkl files and label what has been done with each
+try blindly running each tree as a linear array
+convert the data structure to define virality as immediate subtree size (2 levels down, 3 wide)
 implement logic to do single task training on either task
-try to split into smaller buckets for length
-implement single datapoint test 
-eval - printing
 
 ===================== TASKS DONE ====================
 install tweet tokenizer
@@ -53,5 +41,7 @@ formatted SRQ dataset in the same way
 tokenize SRQ dataset
 implement a file to run tests on SRQ only, using older models
 try weighing length cost function higher
-
+try to split into smaller buckets for length
+implement single datapoint test 
+eval - printing
 try bert large (TOO large to fit into memory. discuss with teammates)
