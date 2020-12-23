@@ -250,7 +250,8 @@ def store_as_sdqc_format(entries, directory, filename):
         count = count + 1
     
     tsvfile.close()
-    
+
+'''
 if __name__ == '__main__':
     FILEDIR  = './../data/coarse_discourse/'
     FILENAME = 'coarse_discourse_dump_reddit.json'
@@ -266,3 +267,4 @@ if __name__ == '__main__':
     plot_raw_statistics(mod_entries)
     clean_posts(mod_entries)
     #store_as_sdqc_format(mod_entries, FILEDIR, tsvname)
+    '''

@@ -1,11 +1,13 @@
 ===================== EXP NOTES =====================
+i guess there are 2 measures of virality
+1. how viral a particular comment is
+2. how viral the entire topic is
 
 -------------- Experiments in progress --------------
 
 ---------------- Experiments planned ----------------
 
 ===================== TASKS TODO ====================
-try maxpool avgpool on the text before feeding into nn to quantify perf speedup
 try using pytorch's instead of huggingface's version of transformers to quantify perf speedup
 carefully split up processed data pkl files and label what has been done with each
 try blindly running each tree as a linear array
@@ -45,3 +47,4 @@ try to split into smaller buckets for length
 implement single datapoint test 
 eval - printing
 try bert large (TOO large to fit into memory. discuss with teammates)
+try maxpool avgpool on the text before feeding into nn to quantify perf speedup

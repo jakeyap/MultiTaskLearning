@@ -149,6 +149,15 @@ def main():
                                            max_post_length=MAX_POST_LENGTH,
                                            exposed_posts=EXPOSED_POSTS,
                                            num_transformers=number)
+    elif MODELNAME.lower()[:6]=='modelf':
+        number = int(MODELNAME[6:])
+        model = my_ModelEn.from_pretrained('bert-base-uncased', 
+                                           stance_num_labels=11,
+                                           length_num_labels=2,
+                                           max_post_num=MAX_POST_PER_THREAD,
+                                           max_post_length=MAX_POST_LENGTH,
+                                           exposed_posts=EXPOSED_POSTS,
+                                           num_transformers=number)
     else:
         logger.info('Exiting, model not found: ' + MODELNAME)
         raise Exception()

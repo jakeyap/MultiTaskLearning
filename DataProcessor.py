@@ -305,12 +305,12 @@ def dataframe_2_dataloader(dataframe,
     posts_index = torch.from_numpy(posts_index)
     orig_length = torch.from_numpy(orig_length)
     if DEBUG:
-        dataset = TensorDataset(posts_index[0:10],
-                                encoded_comments[0:10],
-                                token_type_ids[0:10],
-                                attention_masks[0:10],
-                                orig_length[0:10],
-                                stance_labels[0:10])
+        dataset = TensorDataset(posts_index[0:40],
+                                encoded_comments[0:40],
+                                token_type_ids[0:40],
+                                attention_masks[0:40],
+                                orig_length[0:40],
+                                stance_labels[0:40])
     else:
         dataset = TensorDataset(posts_index,
                                 encoded_comments,

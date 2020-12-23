@@ -242,6 +242,7 @@ def store_as_sdqc_format(thread_tuples, directory, filename):
     
     tsvfile.close()
 
+
 if __name__ == '__main__':
     FILEDIR  = './../data/coarse_discourse/'
     FILENAME = 'coarse_discourse_dump_reddit.json'
