@@ -116,7 +116,7 @@ def main():
                         level = logging.INFO)
     logger = logging.getLogger(__name__)
     
-    directory = './data/coarse_discourse/'
+    directory = './data/coarse_discourse/flattened/'
     test_filename = 'encoded_coarse_discourse_dump_reddit_test_flat_20_256.pkl'
     train_filename = 'encoded_coarse_discourse_dump_reddit_train_flat_20_256.pkl'
     dev_filename = 'encoded_coarse_discourse_dump_reddit_dev_flat_20_256.pkl'

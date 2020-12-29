@@ -363,6 +363,43 @@ def build_trees(json_entries):
             eachtree.calc_all()    
     return main_trees, all_trees_dict
 
+def extract_trees_by_level(list_of_trees):
+    '''
+    Spits out a list of lists of trees
+
+    Parameters
+    ----------
+    list_of_trees : list of root level trees
+
+    Returns
+    -------
+    all_lvl_trees : list of list of trees
+        [[root level trees]
+         [lvl 1 trees]
+         [lvl 2 trees]...]
+
+    '''
+    # list of lists. each list contains entire trees of that level
+    # for example, all_lvl_trees[0] are all trees starting at root
+    # all_lvl_trees[1] are all trees starting at level 1
+    max_depth = -1
+    for tree in list_of_trees:
+        max_depth = max(max_depth, tree.max_depth)
+    
+    print('======== Creating empty lists ========')
+    all_lvl_trees = [list_of_trees,]
+    for i in range(max_depth):
+        all_lvl_trees.append([])
+    print('======== Collecting trees by level ========')
+    for i in range (1, max_depth):
+        print("Collecting level %d's trees" % i)
+        prev_lvl_trees = all_lvl_trees[i-1]
+        this_lvl_trees = all_lvl_trees[i]
+        for tree in prev_lvl_trees:
+            this_lvl_trees.extend(tree.children)
+    return all_lvl_trees
+    
+    
 def profile_dataset_by_lvl(list_of_trees, maxdepth=5):
     ''' 
     plots average stats per level, up to maxdepth. mean,median,mode of the following
@@ -427,7 +464,6 @@ def profile_dataset_by_lvl(list_of_trees, maxdepth=5):
         mode = mode.reshape((4,-1))
         
         combined = np.concatenate((mean, medi, mode), axis=1) # shape=(4,3)
-        print(combined.shape)
         tree_sizes[i, 0:3] = combined[0, 0:3]
         num_childs[i, 0:3] = combined[1, 0:3]
         num_grands[i, 0:3] = combined[2, 0:3]
@@ -441,7 +477,7 @@ def profile_dataset_by_lvl(list_of_trees, maxdepth=5):
     ax3 = axes[3]
     
     ax0.set_title('Stats by level', size=TITLESIZE)
-    ax0.set_ylabel('Tree sizes', size=FONTSIZE)
+    ax0.set_ylabel('Sub-tree sizes', size=FONTSIZE)
     ax0.plot(horz, tree_sizes[:,0], marker='o', label='mean')
     ax0.plot(horz, tree_sizes[:,1], marker='+', label='median')
     ax0.plot(horz, tree_sizes[:,2], marker='x', label='mode')
@@ -507,48 +543,82 @@ def profile_dataset(list_of_trees, title='root'):
     ax6 = axes0[2][0]
     ax7 = axes0[3][0]
     
+    # for controlling plot ranges
+    depth_range = [[-1,45],[-1,14]]
+    child_range = [[-1,45],[-1,41]]
+    grand_range = [[-1,45],[-1,19]]
+    total_range = [[-1,45],[-1,45]]
+    # for controlling histogram binning
+    depth_bins = [23,15]
+    child_bins = [23,21]
+    grand_bins = [23,10]
+    total_bins = [23,23]
     # copy the default color map
     my_cmap = copy.copy(colormap.get_cmap('viridis'))
     # set the NaNs to lowest color
     my_cmap.set_bad(my_cmap.colors[0])
-    
     ax4.set_title('Possible combos at ' + title, size=TITLESIZE)
     ax4.scatter(tree_sizes, max_depths)
     ax4.grid(True)
+    ax4.set_ylim(depth_range[1])
+    ax4.set_xlim(depth_range[0])
     ax4.set_ylabel('Depth', size=FONTSIZE)
+    
     ax5.scatter(tree_sizes, num_kids)
     ax5.grid(True)
+    ax5.set_ylim(child_range[1])
+    ax5.set_xlim(child_range[0])
     ax5.set_ylabel('Num kids', size=FONTSIZE)
+    
     ax6.scatter(tree_sizes, num_grands)
     ax6.grid(True)
+    ax6.set_ylim(grand_range[1])
+    ax6.set_xlim(grand_range[0])
     ax6.set_ylabel('Num grandkids', size=FONTSIZE)
+    
     ax7.scatter(tree_sizes, fam_sizes)
     ax7.grid(True)
+    ax7.set_ylim(total_range[1])
+    ax7.set_xlim(total_range[0])
     ax7.set_ylabel('Num kids + grandkids', size=FONTSIZE)
+    
     ax7.set_xlabel('Convo Tree Size', size=TITLESIZE)
     
     ax0.set_title('2D h.gram of combos at ' + title, size=TITLESIZE)
     data0, xbins0, ybins0, handle0 = ax0.hist2d(tree_sizes, max_depths,
                                                 norm=LogNorm(vmin=1),
-                                                cmap=my_cmap)
+                                                cmap=my_cmap,
+                                                bins=depth_bins,
+                                                range=depth_range)
     plt.colorbar(handle0, ax=ax0, shrink=0.6, pad=0.05)
     ax0.set_ylabel('Depth', size=FONTSIZE)
     ax0.grid(True)
+    
+    ax1.set_ylim([-1,40])
     data1, xbins1, ybins1, handle1 = ax1.hist2d(tree_sizes, num_kids,
                                                 norm=LogNorm(vmin=1),
-                                                cmap=my_cmap)
+                                                cmap=my_cmap,
+                                                bins=child_bins,
+                                                range=child_range)
     plt.colorbar(handle1, ax=ax1, shrink=0.6, pad=0.05)
     ax1.set_ylabel('Num kids', size=FONTSIZE)
     ax1.grid(True)
+    
     data2, xbins2, ybins2, handle2 = ax2.hist2d(tree_sizes, num_grands,
                                                 norm=LogNorm(vmin=1),
-                                                cmap=my_cmap)
+                                                cmap=my_cmap,
+                                                bins=grand_bins,
+                                                range=grand_range)
     plt.colorbar(handle2, ax=ax2, shrink=0.6, pad=0.05)
     ax2.set_ylabel('Num grandkids', size=FONTSIZE)
     ax2.grid(True)
+    
+    ax3.set_ylim([-1,40])
     data3, xbins3, ybins3, handle3 = ax3.hist2d(tree_sizes, fam_sizes,
                                                 norm=LogNorm(vmin=1),
-                                                cmap=my_cmap)
+                                                cmap=my_cmap,
+                                                bins=total_bins,
+                                                range=total_range)
     plt.colorbar(handle3, ax=ax3, shrink=0.6, pad=0.05)
     ax3.set_ylabel('Num kids + grandkids', size=FONTSIZE)
     ax3.grid(True)
@@ -558,6 +628,33 @@ def profile_dataset(list_of_trees, title='root'):
     maximize_figs()
     
     return tree_sizes, max_depths, num_kids, num_grands, fam_sizes
+
+def plot_family_vs_tree_sizes(list_of_trees, title=''):
+    ''' Generates plot of kids + grandkids count vs entire tree size'''
+    fam_sizes = []
+    tree_sizes = []
+    for tree in list_of_trees:
+        fam_sizes.append(tree.num_child + tree.num_grand)
+        tree_sizes.append(tree.tree_size)
+    
+    # copy the default color map
+    my_cmap = copy.copy(colormap.get_cmap('viridis'))
+    # set the NaNs to lowest color
+    my_cmap.set_bad(my_cmap.colors[0])
+    
+    fig, axes = plt.subplots(1,2)
+    ax0 = axes[0]
+    ax1 = axes[1]
+    ax0.scatter(fam_sizes, tree_sizes)
+    ax0.grid(True)
+    data, xbins, ybins, handle = ax1.hist2d(fam_sizes, tree_sizes, norm=LogNorm(), cmap=my_cmap)
+    ax1.grid(True)
+    plt.colorbar(handle, ax=ax1)
+    plt.suptitle('Tree size vs Immediate family size at '+title, size=15)
+    ax0.set_xlabel('Num kids + grandkids', size=13)
+    ax1.set_xlabel('Num kids + grandkids', size=13)
+    ax0.set_ylabel('Tree size', size=13)
+    
 
 def maximize_figs():
     figures = plt.get_fignums()
@@ -573,18 +670,70 @@ def tighten_plots():
         plt.figure(each_figure)
         plt.tight_layout()
 
-def print_random_tree(list_of_trees):
-    number = np.random.randint(0, len(list_of_trees))
-    tree = list_of_trees[number]
-    tree.print_depth()
+def print_tree(list_of_trees, number=-1, thing_to_print='depth'):
+    if number == -1:
+        number = np.random.randint(0, len(list_of_trees))
+        tree = list_of_trees[number]
+    else:
+        tree = list_of_trees[number]
+    if thing_to_print=='depth':
+        print('Printing depth of nodes')
+        tree.print_depth()
+    if thing_to_print=='max_depth':
+        print('Printing max of subtrees')
+        tree.print_max_depth()
+    if thing_to_print=='labels':
+        print('Printing labels')
+        tree.print_labels()
+    if thing_to_print=='text':
+        print('Printing text in tree')
+        tree.print_text()
+
+def pack_into_tsv_files(breadth=3, depth=1):
+    '''
+    Packs trees into TSV files in the same format as before, where posts are
+    separated by ' ||||| ' in the text file.. 
+    Elements in each tsv line follow this format
+    
+    root ||||| post-1 ||||| 
+    
+    Returns
+    -------
+    None.
+
+    '''
+    # TODO: build into TSV files
+    
+    return
+
+def encode_and_tokenize_tsv():
+    '''
+    Encodes and tokenizes tsv files
+
+    Returns
+    -------
+    None.
+
+    '''
+    # TODO: implement this
+    return
 
 if __name__ == '__main__':
     
     FILEDIR  = './../data/coarse_discourse/'
     FILENAME = 'coarse_discourse_dump_reddit.json'
-    ''' ======= 2020 Dec 28, used this block to process, store trees ======= '''
-    '''
+    trainset = reload_trees(FILEDIR + 'full_trees/full_trees_train.pkl')
+    devset = reload_trees(FILEDIR + 'full_trees/full_trees_dev.pkl')
+    testset = reload_trees(FILEDIR + 'full_trees/full_trees_test.pkl')
     
+    fullset = []
+    fullset.extend(trainset)
+    fullset.extend(devset)
+    fullset.extend(testset)
+    
+    all_lvl_trees = extract_trees_by_level(fullset)
+    ''' ======= 2020 Dec 28, code here to convert text to trees, store in pkl files ======= '''
+    '''
     entries = extract_jsonfile(FILEDIR, FILENAME)
     #entries = entries [0:300] # try a subset first
     time1 = time.time()
@@ -601,16 +750,12 @@ if __name__ == '__main__':
     seconds = (time2-time1) % 60
     print('%d minutes %2d seconds' % (minutes, seconds))
     '''
-    trainset = reload_trees(FILEDIR + 'full_trees/full_trees_train.pkl')
-    devset = reload_trees(FILEDIR + 'full_trees/full_trees_dev.pkl')
-    testset = reload_trees(FILEDIR + 'full_trees/full_trees_test.pkl')
     
-    fullset = []
-    fullset.extend(trainset)
-    fullset.extend(devset)
-    fullset.extend(testset)
-    all_lvl_trees, stats_dict = profile_dataset_by_lvl(fullset,5)
+    ''' ======= 2020 Dec 28, code here to plot mean, median, mode ======= ''' 
+    ''' all_lvl_trees_v2, stats_dict = profile_dataset_by_lvl(fullset,5) '''
     
+    ''' ======= 2020 Dec 28, code here to plot tree stats per level ======= '''
+    '''
     root_trees = all_lvl_trees[0]
     lvl1_trees = all_lvl_trees[1]
     lvl2_trees = all_lvl_trees[2]
@@ -622,6 +767,61 @@ if __name__ == '__main__':
     lvl2_data = profile_dataset(lvl2_trees, 'lvl2')
     lvl3_data = profile_dataset(lvl3_trees, 'lvl3')
     lvl4_data = profile_dataset(lvl4_trees, 'lvl4')
-    
-    
     maximize_figs()
+    tighten_plots()
+    '''
+    ''' ======= 2020 Dec 29, code here to count posts for different truncation strategy ======= '''
+    '''
+    counts = []
+    for each_list in all_lvl_trees:
+        count = 0
+        for tree in each_list:
+            count += 1
+        counts.append(count)
+    # count what i have left after pruning [deleted] or missing posts
+    print('counts: ' + str(counts))
+    total_posts = sum(counts)
+    print('sum:  %d ' % total_posts)
+    
+    root_trees = all_lvl_trees[0]
+    sizes = []
+    filt_root = []
+    filt_lvl1a = []
+    filt_lvl1b = []
+    filt_lvl1c = []
+    filt_lvl2a = []
+    filt_lvl2b = []
+    filt_lvl2c = []
+    for tree in root_trees:
+        filt_root.append(tree)
+        sizes.append(tree.tree_size)
+        for child in tree.children[:4]:
+            filt_lvl1a.append(child)
+            for grand in child.children[:1]:
+                filt_lvl2a.append(grand)
+        
+        if len(tree.children)>=4:
+            sizes.append(tree.tree_size)
+            for child in tree.children[4:8]:
+                filt_lvl1b.append(child)
+                for grand in child.children[:1]:
+                    filt_lvl2b.append(grand)
+        
+        if len(tree.children)>=8:
+            sizes.append(tree.tree_size)
+            for child in tree.children[8:12]:
+                filt_lvl1c.append(child)
+                for grand in child.children[:1]:
+                    filt_lvl2c.append(grand)
+                
+    print('head:  \t \t \t%5d' % len(filt_root))
+    print('lvl1: %5d \t%5d \t%5d' % (len(filt_lvl1a), len(filt_lvl1b), len(filt_lvl1c)))
+    print('lvl2: %5d \t%5d \t%5d' % (len(filt_lvl2a), len(filt_lvl2b), len(filt_lvl2c)))
+    
+    print('sizes median %2d mean %.2f std %.2f' % (np.median(sizes), np.average(sizes), np.std(sizes)))
+    
+    plot_family_vs_tree_sizes(all_lvl_trees[0], 'root')
+    plot_family_vs_tree_sizes(all_lvl_trees[1], 'lvl1')
+    plot_family_vs_tree_sizes(all_lvl_trees[2], 'lvl2')
+    maximize_figs()
+    '''

@@ -107,11 +107,11 @@ def reload_modelEn(model_filename,
         model.load_state_dict(state_dict)       # Stuff state into model
     return model
 
-def reload_train_dataframe(train_filename = './data/coarse_discourse/encoded_coarse_discourse_dump_reddit_train_flat_20_256.pkl'):
+def reload_train_dataframe(train_filename = './data/coarse_discourse/flattened/encoded_coarse_discourse_dump_reddit_train_flat_20_256.pkl'):
     train_dataframe = DataProcessor.load_from_pkl(train_filename)   # Grab test data pickle file, put into a dataframe
     return train_dataframe
 
-def reload_test_dataframe(test_filename = './data/coarse_discourse/encoded_coarse_discourse_dump_reddit_test_flat_20_256.pkl'):
+def reload_test_dataframe(test_filename = './data/coarse_discourse/flattened/encoded_coarse_discourse_dump_reddit_test_flat_20_256.pkl'):
     test_dataframe = DataProcessor.load_from_pkl(test_filename)     # Grab test data pickle file, put into a dataframe
     return test_dataframe
 
@@ -677,7 +677,7 @@ if __name__ =='__main__':
     
     model.eval()
     model.cuda()
-    test_dataframe = DataProcessor.load_from_pkl('./data/combined/encoded_shuffled_test_4_256.pkl')
+    test_dataframe = DataProcessor.load_from_pkl('./data/coarse_discourse/encoded_coarse_discourse_dump_reddit_test_flat_20_256.pkl')
     
     run_until_find_pattern(model, test_dataframe, count=20, pattern='deny',old_models=True, MAX_POST_PER_THREAD=4)
     
