@@ -19,31 +19,35 @@ lvl9    132
 lvl10   85
 lvl11   4
 
-
 ========================================================================================================================
 ====================================================  Approach 3  ======================================================
 ====================== For each of the examples in this section, only take 1 grandchild per child ======================
-
-After pruning (width=3, depth=2) there are 42708 posts left. 47.7% of data is retained. Breakdown is as follows
+Strategy 1 in code
+After pruning (width=3, depth=2) stride size=3
+0 strides=3, 42708 (47.7%) of data is retained.
+1 strides=3, 56260 (62.8%) of data is retained. 
+2 strides=3, 62092 (69.3%) of data is retained.  
+Breakdown is as follows
 root    9201
-lvl1    23053
-lvl2    10454
+lvl1a   23053   lvl1b   10423   lvl1c   4751
+lvl2a   10454   lvl2b   3129    lvl2c   1081
 
-After pruning (width=4, depth=2) there are 42708 posts left. 54.3% of data is retained. Breakdown is as follows
-root    9201
-lvl1    27570
-lvl2    11883
 
-After pruning (width=4, depth=2, 1 horz stride=4 @ lvl1), 67.7% of data is retained. Breakdown is as follows
-root    9201
-lvl1a   27570   lvl1b   9420
-lvl2a   11883   lvl2b   2522
-
-After pruning (width=4, depth=2, 2 horz strides=4 @ lvl1), 71.6% of data is retained. Breakdown is as follows
+Strategy 2 in code
+After pruning (width=4, depth=2), stride size=4
+0 strides=4, 48654 (54.3%) of data is retained.
+1 strides=4, 60596 (67.7%) of data is retained. 
+2 strides=4, 65069 (71.6%) of data is retained.  
+Breakdown is as follows
 root    9201
 lvl1a   27570   lvl1b   9420    lvl1c   3742
 lvl2a   11883   lvl2b   2522    lvl2c   731
-
+Fam sizes median  5 mean 6.85 std 5.98
+Tree sizes median  7 mean 9.72 std 7.61
 ========================================================================================================================
 ====================================================  Approach 4  ======================================================
+For each tree, randomly pick 3 child per cycle. Each child brings 1 grandchild along.
+Fam 
+
+
 

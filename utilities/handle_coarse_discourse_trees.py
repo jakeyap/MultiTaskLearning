@@ -641,13 +641,21 @@ def plot_family_vs_tree_sizes(list_of_trees, title=''):
     my_cmap = copy.copy(colormap.get_cmap('viridis'))
     # set the NaNs to lowest color
     my_cmap.set_bad(my_cmap.colors[0])
+    total_range = [[-1,45],[-1,45]]
+    total_bins = [23,23]
     
     fig, axes = plt.subplots(1,2)
     ax0 = axes[0]
     ax1 = axes[1]
     ax0.scatter(fam_sizes, tree_sizes)
+    ax0.set_xlim(total_range[0])
+    ax0.set_ylim(total_range[1])
     ax0.grid(True)
-    data, xbins, ybins, handle = ax1.hist2d(fam_sizes, tree_sizes, norm=LogNorm(), cmap=my_cmap)
+    data, xbins, ybins, handle = ax1.hist2d(fam_sizes, tree_sizes, 
+                                            norm=LogNorm(), 
+                                            cmap=my_cmap,
+                                            bins=total_bins,
+                                            range=total_range)
     ax1.grid(True)
     plt.colorbar(handle, ax=ax1)
     plt.suptitle('Tree size vs Immediate family size at '+title, size=15)
@@ -718,6 +726,223 @@ def encode_and_tokenize_tsv():
     # TODO: implement this
     return
 
+def plot_stats_till_level4(all_lvl_trees):
+    ''' ======= 2020 Dec 28, code here to plot tree stats per level ======= '''
+    root_trees = all_lvl_trees[0]
+    lvl1_trees = all_lvl_trees[1]
+    lvl2_trees = all_lvl_trees[2]
+    lvl3_trees = all_lvl_trees[3]
+    lvl4_trees = all_lvl_trees[4]
+    
+    lvl0_data = profile_dataset(root_trees, 'root')
+    lvl1_data = profile_dataset(lvl1_trees, 'lvl1')
+    lvl2_data = profile_dataset(lvl2_trees, 'lvl2')
+    lvl3_data = profile_dataset(lvl3_trees, 'lvl3')
+    lvl4_data = profile_dataset(lvl4_trees, 'lvl4')
+    maximize_figs()
+    tighten_plots()
+
+def plot_family_vs_tree_sizes_multiple(all_lvl_trees):
+    ''' ======= 2020 Dec 29, code to plot correlation btwn fam size and tree size ======='''
+    plot_family_vs_tree_sizes(all_lvl_trees[0], 'root')
+    plot_family_vs_tree_sizes(all_lvl_trees[1], 'lvl1')
+    plot_family_vs_tree_sizes(all_lvl_trees[2], 'lvl2')
+    maximize_figs()
+
+def count_posts_wo_truncation(all_lvl_trees):
+    ''' ======= 2020 Dec 29, code to count posts for various truncation strategies ======= '''
+    counts = []
+    label_counts = [0,0,0,0, 0,0,0,0, 0,0]
+    for each_list in all_lvl_trees:
+        count = 0
+        for tree in each_list:
+            count += 1
+            label_counts[tree.label_int] += 1
+        counts.append(count)
+    # count what i have left after pruning [deleted] or missing posts
+    print('counts: ' + str(counts))
+    total_posts = sum(counts)
+    print('sum:  %d ' % total_posts)
+    print('labels: ')
+    for i in range(len(label_counts)):
+        print(map_int_2_label(i)[:5] + '\t' + str(label_counts[i]))
+    
+def count_posts_by_truncation_1(all_lvl_trees):
+    ''' ======= 2020 Dec 29, code to count posts for various truncation strategies ======= '''
+    print('--- Truncation strategy 1 ---')
+    root_trees = all_lvl_trees[0]
+    tree_sizes = []
+    fam_sizes = []
+    label_counts = [0,0,0,0, 0,0,0,0, 0,0]
+    filt_root = []
+    filt_lvl1a = []
+    filt_lvl1b = []
+    filt_lvl1c = []
+    filt_lvl2a = []
+    filt_lvl2b = []
+    filt_lvl2c = []
+    for tree in root_trees:
+        filt_root.append(tree)
+        tree_sizes.append(tree.tree_size)
+        fam_sizes.append(tree.num_child + tree.num_grand)
+        label_counts[tree.label_int] += 1
+        for child in tree.children[:3]:
+            filt_lvl1a.append(child)
+            label_counts[child.label_int] += 1
+            for grand in child.children[:1]:
+                filt_lvl2a.append(grand)
+                label_counts[grand.label_int] += 1
+        
+        if len(tree.children)>=3:
+            #tree_sizes.append(tree.tree_size)
+            #fam_sizes.append(tree.num_child + tree.num_grand)
+            #label_counts[tree.label_int] += 1
+            for child in tree.children[3:6]:
+                filt_lvl1b.append(child)
+                label_counts[child.label_int] += 1
+                for grand in child.children[:1]:
+                    filt_lvl2b.append(grand)
+                    label_counts[grand.label_int] += 1
+        
+        if len(tree.children)>=6:
+            #tree_sizes.append(tree.tree_size)
+            #fam_sizes.append(tree.num_child + tree.num_grand)
+            #label_counts[tree.label_int] += 1
+            for child in tree.children[6:9]:
+                filt_lvl1c.append(child)
+                label_counts[child.label_int] += 1
+                for grand in child.children[:1]:
+                    filt_lvl2c.append(grand)
+                    label_counts[grand.label_int] += 1
+                
+    print('head: %5d' % len(filt_root))
+    print('lvl1: %5d \t%5d \t%5d' % (len(filt_lvl1a), len(filt_lvl1b), len(filt_lvl1c)))
+    print('lvl2: %5d \t%5d \t%5d' % (len(filt_lvl2a), len(filt_lvl2b), len(filt_lvl2c)))
+    print('labels: ')
+    for i in range(len(label_counts)):
+        print(map_int_2_label(i)[:5] + '\t' + str(label_counts[i]))
+    print('fam sizes median %2d mean %.2f std %.2f' % (np.median(fam_sizes), np.average(fam_sizes), np.std(fam_sizes)))
+    print('tree sizes median %2d mean %.2f std %.2f' % (np.median(tree_sizes), np.average(tree_sizes), np.std(tree_sizes)))
+    print('-----------------------------')
+
+def count_posts_by_truncation_2(all_lvl_trees):
+    ''' ======= 2020 Dec 29, code to count posts for various truncation strategies ======= '''
+    print('--- Truncation strategy 2 ---')
+    root_trees = all_lvl_trees[0]
+    tree_sizes = []
+    fam_sizes = []
+    label_counts = [0,0,0,0, 0,0,0,0, 0,0]
+    filt_root = []
+    filt_lvl1a = []
+    filt_lvl1b = []
+    filt_lvl1c = []
+    filt_lvl2a = []
+    filt_lvl2b = []
+    filt_lvl2c = []
+    for tree in root_trees:
+        filt_root.append(tree)
+        tree_sizes.append(tree.tree_size)
+        fam_sizes.append(tree.num_child + tree.num_grand)
+        label_counts[tree.label_int] += 1
+        for child in tree.children[:4]:
+            filt_lvl1a.append(child)
+            label_counts[child.label_int] += 1
+            for grand in child.children[:1]:
+                filt_lvl2a.append(grand)
+                label_counts[grand.label_int] += 1
+        
+        if len(tree.children)>=4:
+            #tree_sizes.append(tree.tree_size)
+            #fam_sizes.append(tree.num_child + tree.num_grand)
+            #label_counts[tree.label_int] += 1
+            for child in tree.children[4:8]:
+                filt_lvl1b.append(child)
+                label_counts[child.label_int] += 1
+                for grand in child.children[:1]:
+                    filt_lvl2b.append(grand)
+                    label_counts[grand.label_int] += 1
+        
+        if len(tree.children)>=8:
+            #tree_sizes.append(tree.tree_size)
+            #fam_sizes.append(tree.num_child + tree.num_grand)
+            #label_counts[tree.label_int] += 1
+            for child in tree.children[8:12]:
+                filt_lvl1c.append(child)
+                label_counts[child.label_int] += 1
+                for grand in child.children[:1]:
+                    filt_lvl2c.append(grand)
+                    label_counts[grand.label_int] += 1
+                
+    print('head: %5d' % len(filt_root))
+    print('lvl1: %5d \t%5d \t%5d' % (len(filt_lvl1a), len(filt_lvl1b), len(filt_lvl1c)))
+    print('lvl2: %5d \t%5d \t%5d' % (len(filt_lvl2a), len(filt_lvl2b), len(filt_lvl2c)))
+    print('labels: ')
+    for i in range(len(label_counts)):
+        print(map_int_2_label(i)[:5] + '\t' + str(label_counts[i]))
+    print('fam sizes median %2d mean %.2f std %.2f' % (np.median(fam_sizes), np.average(fam_sizes), np.std(fam_sizes)))
+    print('tree sizes median %2d mean %.2f std %.2f' % (np.median(tree_sizes), np.average(tree_sizes), np.std(tree_sizes)))
+    print('-----------------------------')
+
+def count_posts_by_truncation_3(all_lvl_trees):
+    ''' ======= 2020 Dec 29, code to count posts for various truncation strategies ======= '''
+    print('--- Truncation strategy 4 ---')
+    root_trees = all_lvl_trees[0]
+    tree_sizes = []
+    fam_sizes = []
+    label_counts = [0,0,0,0, 0,0,0,0, 0,0]
+    filt_root = []
+    filt_lvl1a = []
+    filt_lvl1b = []
+    filt_lvl1c = []
+    filt_lvl2a = []
+    filt_lvl2b = []
+    filt_lvl2c = []
+    for tree in root_trees:
+        if tree.num_child >= 4:
+            filt_root.append(tree)
+            tree_sizes.append(tree.tree_size)
+            fam_sizes.append(tree.num_child + tree.num_grand)
+            label_counts[tree.label_int] += 1
+            for child in tree.children[:4]:
+                filt_lvl1a.append(child)
+                label_counts[child.label_int] += 1
+                for grand in child.children[:1]:
+                    filt_lvl2a.append(grand)
+                    label_counts[grand.label_int] += 1
+            '''
+            if len(tree.children)>=4:
+                tree_sizes.append(tree.tree_size)
+                fam_sizes.append(tree.num_child + tree.num_grand)
+                label_counts[tree.label_int] += 1
+                for child in tree.children[4:8]:
+                    filt_lvl1b.append(child)
+                    label_counts[child.label_int] += 1
+                    for grand in child.children[:1]:
+                        filt_lvl2b.append(grand)
+                        label_counts[grand.label_int] += 1
+            
+            if len(tree.children)>=8:
+                tree_sizes.append(tree.tree_size)
+                fam_sizes.append(tree.num_child + tree.num_grand)
+                label_counts[tree.label_int] += 1
+                for child in tree.children[8:12]:
+                    filt_lvl1c.append(child)
+                    label_counts[child.label_int] += 1
+                    for grand in child.children[:1]:
+                        filt_lvl2c.append(grand)
+                        label_counts[grand.label_int] += 1
+            '''
+    print('head: %5d' % len(filt_root))
+    print('lvl1: %5d \t%5d \t%5d' % (len(filt_lvl1a), len(filt_lvl1b), len(filt_lvl1c)))
+    print('lvl2: %5d \t%5d \t%5d' % (len(filt_lvl2a), len(filt_lvl2b), len(filt_lvl2c)))
+    print('labels: ')
+    for i in range(len(label_counts)):
+        print(map_int_2_label(i)[:5] + '\t' + str(label_counts[i]))
+    print('fam sizes median %2d mean %.2f std %.2f' % (np.median(fam_sizes), np.average(fam_sizes), np.std(fam_sizes)))
+    print('tree sizes median %2d mean %.2f std %.2f' % (np.median(tree_sizes), np.average(tree_sizes), np.std(tree_sizes)))
+    print('-----------------------------')
+
+
 if __name__ == '__main__':
     
     FILEDIR  = './../data/coarse_discourse/'
@@ -752,76 +977,20 @@ if __name__ == '__main__':
     '''
     
     ''' ======= 2020 Dec 28, code here to plot mean, median, mode ======= ''' 
-    ''' all_lvl_trees_v2, stats_dict = profile_dataset_by_lvl(fullset,5) '''
+    # all_lvl_trees_v2, stats_dict = profile_dataset_by_lvl(fullset,5)
     
     ''' ======= 2020 Dec 28, code here to plot tree stats per level ======= '''
-    '''
-    root_trees = all_lvl_trees[0]
-    lvl1_trees = all_lvl_trees[1]
-    lvl2_trees = all_lvl_trees[2]
-    lvl3_trees = all_lvl_trees[3]
-    lvl4_trees = all_lvl_trees[4]
+    # plot_stats_till_level4(all_lvl_trees)
     
-    lvl0_data = profile_dataset(root_trees, 'root')
-    lvl1_data = profile_dataset(lvl1_trees, 'lvl1')
-    lvl2_data = profile_dataset(lvl2_trees, 'lvl2')
-    lvl3_data = profile_dataset(lvl3_trees, 'lvl3')
-    lvl4_data = profile_dataset(lvl4_trees, 'lvl4')
-    maximize_figs()
-    tighten_plots()
-    '''
-    ''' ======= 2020 Dec 29, code here to count posts for different truncation strategy ======= '''
-    '''
-    counts = []
-    for each_list in all_lvl_trees:
-        count = 0
-        for tree in each_list:
-            count += 1
-        counts.append(count)
-    # count what i have left after pruning [deleted] or missing posts
-    print('counts: ' + str(counts))
-    total_posts = sum(counts)
-    print('sum:  %d ' % total_posts)
+    ''' ======= 2020 Dec 29, code to plot correlation btwn fam size and tree size ======='''
+    # plot_family_vs_tree_sizes_multiple(all_lvl_trees)
     
-    root_trees = all_lvl_trees[0]
-    sizes = []
-    filt_root = []
-    filt_lvl1a = []
-    filt_lvl1b = []
-    filt_lvl1c = []
-    filt_lvl2a = []
-    filt_lvl2b = []
-    filt_lvl2c = []
-    for tree in root_trees:
-        filt_root.append(tree)
-        sizes.append(tree.tree_size)
-        for child in tree.children[:4]:
-            filt_lvl1a.append(child)
-            for grand in child.children[:1]:
-                filt_lvl2a.append(grand)
-        
-        if len(tree.children)>=4:
-            sizes.append(tree.tree_size)
-            for child in tree.children[4:8]:
-                filt_lvl1b.append(child)
-                for grand in child.children[:1]:
-                    filt_lvl2b.append(grand)
-        
-        if len(tree.children)>=8:
-            sizes.append(tree.tree_size)
-            for child in tree.children[8:12]:
-                filt_lvl1c.append(child)
-                for grand in child.children[:1]:
-                    filt_lvl2c.append(grand)
-                
-    print('head:  \t \t \t%5d' % len(filt_root))
-    print('lvl1: %5d \t%5d \t%5d' % (len(filt_lvl1a), len(filt_lvl1b), len(filt_lvl1c)))
-    print('lvl2: %5d \t%5d \t%5d' % (len(filt_lvl2a), len(filt_lvl2b), len(filt_lvl2c)))
+    ''' ======= 2020 Dec 29, code to count posts for various truncation strategies ======= '''
+    count_posts_wo_truncation(all_lvl_trees)
+    count_posts_by_truncation_1(all_lvl_trees)
+    count_posts_by_truncation_2(all_lvl_trees)
+    #count_posts_by_truncation_3(all_lvl_trees)
     
-    print('sizes median %2d mean %.2f std %.2f' % (np.median(sizes), np.average(sizes), np.std(sizes)))
     
-    plot_family_vs_tree_sizes(all_lvl_trees[0], 'root')
-    plot_family_vs_tree_sizes(all_lvl_trees[1], 'lvl1')
-    plot_family_vs_tree_sizes(all_lvl_trees[2], 'lvl2')
-    maximize_figs()
-    '''
+    
+    
