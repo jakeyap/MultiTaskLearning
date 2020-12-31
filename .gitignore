@@ -56,9 +56,11 @@ Temporary Items
 .spyproject/*
 __pycache__/*
 utilities/__pycache__/*
-*.pkl
 .ipynb_checkpoints/*
 
 # log files and model files
 log_files/*
 saved_models/*
+
+# dont synch data binaries to keep things small and fast
+*.pkl
