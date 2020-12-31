@@ -1,6 +1,13 @@
 The 3 full_trees_XXX.pkl files here contain the conversations in tree object forms.
 They are not tokenized/encoded yet
 
+encoded_dict.pkl stores encoded data as a big dictionary. The max length of each sentence is 512. Shorter sentences are padded
+    Each key is a post ID. 
+    Each value is another dictionary, where the keys are 
+    'input_ids'
+    'token_type_ids'
+    'attention_mask'
+
 The median tree size in this dataset is 7. 
 It is smaller than previous value of 8 because the [deleted] posts are pruned.
 

@@ -15,6 +15,10 @@ import copy
 import matplotlib.pyplot as plt
 import matplotlib.cm as colormap
 from matplotlib.colors import LogNorm
+from transformers import BertTokenizer
+
+default_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+default_tokenizer.add_tokens(['[deleted]', '[URL]','[empty]'])
 
 def map_label_2_int(label):
     label_arr = ['question',
@@ -697,34 +701,36 @@ def print_tree(list_of_trees, number=-1, thing_to_print='depth'):
         print('Printing text in tree')
         tree.print_text()
 
-def pack_into_tsv_files(breadth=3, depth=1):
+def encode_and_tokenize_2_dict(all_lvl_trees, token_len=512, 
+                               tokenizer=None,
+                               file='./../data/coarse_discourse/full_trees/encoded_dict.pkl'):
+    ''' 
+    encodes and tokenizes all posts in the list of list of trees 
+    stores encoded results in a dictionary, where keys are post IDs
+    returns the dictionary
     '''
-    Packs trees into TSV files in the same format as before, where posts are
-    separated by ' ||||| ' in the text file.. 
-    Elements in each tsv line follow this format
+    global_dict = {}
     
-    root ||||| post-1 ||||| 
+    if tokenizer is None:
+        tokenizer = default_tokenizer
     
-    Returns
-    -------
-    None.
-
-    '''
-    # TODO: build into TSV files
-    
-    return
-
-def encode_and_tokenize_tsv():
-    '''
-    Encodes and tokenizes tsv files
-
-    Returns
-    -------
-    None.
-
-    '''
-    # TODO: implement this
-    return
+    counter = 0
+    for each_lvl_trees in all_lvl_trees:
+        print('encoding trees at level %d ' % counter)
+        for tree in each_lvl_trees:
+            post_id = tree.post_id
+            tokens = tokenizer.tokenize(tree.body)
+            encoded = tokenizer.__call__(text=tokens,
+                                         padding='max_length',
+                                         truncation=True,
+                                         is_split_into_words=True,
+                                         max_length=token_len,
+                                         return_tensors='pt')
+            
+            global_dict[post_id] = encoded
+        counter += 1
+    torch.save(global_dict, file)
+    return global_dict
 
 def plot_stats_till_level4(all_lvl_trees):
     ''' ======= 2020 Dec 28, code here to plot tree stats per level ======= '''
@@ -944,6 +950,7 @@ def count_posts_by_truncation_3(all_lvl_trees):
 
 
 if __name__ == '__main__':
+    time1 = time.time()
     
     FILEDIR  = './../data/coarse_discourse/'
     FILENAME = 'coarse_discourse_dump_reddit.json'
@@ -961,7 +968,7 @@ if __name__ == '__main__':
     '''
     entries = extract_jsonfile(FILEDIR, FILENAME)
     #entries = entries [0:300] # try a subset first
-    time1 = time.time()
+    
     print('======= Building trees =======')
     main_trees, all_trees = build_trees(entries)
     print('======= Splitting data =======')
@@ -970,10 +977,6 @@ if __name__ == '__main__':
     save_trees(train_set, FILEDIR+'full_trees_train.pkl')
     save_trees(dev_set, FILEDIR+'full_trees_dev.pkl')
     save_trees(test_set, FILEDIR+'full_trees_test.pkl')
-    time2 = time.time()
-    minutes = (time2-time1) // 60
-    seconds = (time2-time1) % 60
-    print('%d minutes %2d seconds' % (minutes, seconds))
     '''
     
     ''' ======= 2020 Dec 28, code here to plot mean, median, mode ======= ''' 
@@ -986,11 +989,17 @@ if __name__ == '__main__':
     # plot_family_vs_tree_sizes_multiple(all_lvl_trees)
     
     ''' ======= 2020 Dec 29, code to count posts for various truncation strategies ======= '''
-    count_posts_wo_truncation(all_lvl_trees)
-    count_posts_by_truncation_1(all_lvl_trees)
-    count_posts_by_truncation_2(all_lvl_trees)
+    # count_posts_wo_truncation(all_lvl_trees)
+    # count_posts_by_truncation_1(all_lvl_trees)
+    # count_posts_by_truncation_2(all_lvl_trees)
     #count_posts_by_truncation_3(all_lvl_trees)
     
+    ''' ======= 2020 Dec 31, encoded and tokenize, store into file ======= '''
     
+    global_dict = encode_and_tokenize_2_dict(all_lvl_trees, 512)
     
+    time2 = time.time()
+    minutes = (time2-time1) // 60
+    seconds = (time2-time1) % 60
+    print('%d minutes %2d seconds' % (minutes, seconds))
     
