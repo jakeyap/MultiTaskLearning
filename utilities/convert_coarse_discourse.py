@@ -31,7 +31,7 @@ import json
 import numpy as np
 import scipy.stats
 import matplotlib.pyplot as plt
-from preprocessor_functions import remove_urls, remove_spaces, post_isempty
+from utilities.preprocessor_functions import remove_urls, remove_spaces, post_isempty
 
 def extract_jsonfile(directory, filename):
     '''
@@ -251,11 +251,11 @@ def store_as_sdqc_format(entries, directory, filename):
     
     tsvfile.close()
 
-'''
+
 if __name__ == '__main__':
     FILEDIR  = './../data/coarse_discourse/'
     FILENAME = 'coarse_discourse_dump_reddit.json'
-    
+    '''
     tsvname = FILENAME.replace('.json', '.tsv')
     old_entries = extract_jsonfile(FILEDIR, FILENAME)
     mod_entries = extract_jsonfile(FILEDIR, FILENAME)

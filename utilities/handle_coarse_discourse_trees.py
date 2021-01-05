@@ -9,8 +9,8 @@ import time
 import numpy as np
 from scipy import stats 
 import torch
-from preprocessor_functions import remove_urls, remove_spaces, post_isempty
-from convert_coarse_discourse import extract_jsonfile
+from utilities.preprocessor_functions import remove_urls, remove_spaces, post_isempty
+from utilities.convert_coarse_discourse import extract_jsonfile
 import copy
 import matplotlib.pyplot as plt
 import matplotlib.cm as colormap
@@ -951,7 +951,7 @@ def count_posts_by_truncation_3(all_lvl_trees):
 
 if __name__ == '__main__':
     time1 = time.time()
-    
+    """ 
     FILEDIR  = './../data/coarse_discourse/'
     FILENAME = 'coarse_discourse_dump_reddit.json'
     trainset = reload_trees(FILEDIR + 'full_trees/full_trees_train.pkl')
@@ -997,9 +997,8 @@ if __name__ == '__main__':
     ''' ======= 2020 Dec 31, encoded and tokenize, store into file ======= '''
     
     global_dict = encode_and_tokenize_2_dict(all_lvl_trees, 512)
-    
+    """ 
     time2 = time.time()
     minutes = (time2-time1) // 60
     seconds = (time2-time1) % 60
     print('%d minutes %2d seconds' % (minutes, seconds))
-    
