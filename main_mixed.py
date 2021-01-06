@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Sep 11 17:32:49 2020
-This is similar to main.py, but is for training with deeper trees in reddit data
+Created on Wed Jan  6 15:49:56 2021
+This file is for training on tree structured data.
+The data is inside ./data/coarse_discourse/full_trees/
+
 @author: jakeyap
 """
+
 import torch
 import torch.optim as optim
 
-import DataProcessor
+import TreeDataProcessor
 import multitask_helper_functions as helper
-from classifier_models import my_ModelDn, my_ModelEn
 from classifier_models_v2 import alt_ModelEn
 
 import logging, sys, argparse
@@ -117,16 +119,16 @@ def main():
                         level = logging.INFO)
     logger = logging.getLogger(__name__)
     
-    directory = './data/coarse_discourse/flattened/'
-    test_filename = 'encoded_coarse_discourse_dump_reddit_test_flat_20_256.pkl'
-    train_filename = 'encoded_coarse_discourse_dump_reddit_train_flat_20_256.pkl'
-    dev_filename = 'encoded_coarse_discourse_dump_reddit_dev_flat_20_256.pkl'
+    directory = './data/coarse_discourse/full_trees/'
+    test_filename = 'full_trees_test.pkl'
+    trng_filename = 'full_trees_train.pkl'
+    eval_filename = 'full_trees_dev.pkl'
     
     if DEBUG:
         logger.info('Debugging with a very small dev set')
-        test_filename = 'encoded_coarse_discourse_dump_reddit_dev_flat_20_256.pkl'
-        train_filename = 'encoded_coarse_discourse_dump_reddit_dev_flat_20_256.pkl'
-        dev_filename = 'encoded_coarse_discourse_dump_reddit_dev_flat_20_256.pkl'
+        test_filename = 'full_trees_dev.pkl'
+        trng_filename = 'full_trees_dev.pkl'
+        eval_filename = 'full_trees_dev.pkl'
     
     gpu = torch.device("cuda")
     n_gpu = torch.cuda.device_count()
@@ -134,22 +136,10 @@ def main():
     
     if MODELNAME.lower()[:6]=='modeld':
         number = int(MODELNAME[6:])
-        model = my_ModelDn.from_pretrained('bert-base-uncased', 
-                                           stance_num_labels=11,
-                                           length_num_labels=2,
-                                           max_post_num=MAX_POST_PER_THREAD,
-                                           max_post_length=MAX_POST_LENGTH,
-                                           exposed_posts=EXPOSED_POSTS,
-                                           num_transformers=number)
+        print('not implemented')
     elif MODELNAME.lower()[:6]=='modele':
         number = int(MODELNAME[6:])
-        model = my_ModelEn.from_pretrained('bert-base-uncased', 
-                                           stance_num_labels=11,
-                                           length_num_labels=2,
-                                           max_post_num=MAX_POST_PER_THREAD,
-                                           max_post_length=MAX_POST_LENGTH,
-                                           exposed_posts=EXPOSED_POSTS,
-                                           num_transformers=number)
+        print('not implemented')
     elif MODELNAME.lower()[:-1]=='alt_modele':
         number = int(MODELNAME[6:])
         model = alt_ModelEn.from_pretrained('bert-base-uncased', 
@@ -166,7 +156,7 @@ def main():
     # bert base large is too large to fit into GPU RAM. discuss with team
     '''
     # Resize model vocab
-    model.resize_token_embeddings(len(DataProcessor.default_tokenizer))
+    model.resize_token_embeddings(len(TreeDataProcessor.default_tokenizer))
     
     # Move model into GPU
     model.to(gpu)
@@ -196,10 +186,10 @@ def main():
     if WEIGHTED_STANCE:
         # increase the weights for disagreement and -ve reaction
         weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 10.0, 10.0, 1.0, 1.0, 1.0]).to(gpu)
-        ''' FOR EXP 43-46 ONLY '''
-        weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 10.0, 1.0, 10.0, 10.0, 1.0, 1.0, 1.0]).to(gpu)
-        ''' FOR EXP 47-50 ONLY '''
-        weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 20.0, 1.0, 10.0, 10.0, 1.0, 1.0, 1.0]).to(gpu)
+        #''' FOR EXP 43-46 ONLY '''
+        #weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 10.0, 1.0, 10.0, 10.0, 1.0, 1.0, 1.0]).to(gpu)
+        #''' FOR EXP 47-50 ONLY '''
+        #weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 20.0, 1.0, 10.0, 10.0, 1.0, 1.0, 1.0]).to(gpu)
         stance_loss_fn = torch.nn.CrossEntropyLoss(weight=weights, reduction='mean')
     else:
         stance_loss_fn = torch.nn.CrossEntropyLoss(reduction='mean')
@@ -220,31 +210,27 @@ def main():
     if DOUBLESTEP:
         logger.info('DOUBLESTEPPING LENGTH')
     
-    # Load the test and training data
-    logger.info('====== Loading data ========')
-    logger.info('Opening training data: ' + train_filename)
-    logger.info('Opening dev data: ' + dev_filename)
-    logger.info('Opening test data: ' + test_filename)
-    test_dataframe = DataProcessor.load_from_pkl(directory + test_filename)
-    dev_dataframe = DataProcessor.load_from_pkl(directory + dev_filename)
-    train_dataframe = DataProcessor.load_from_pkl(directory + train_filename)
+    # Load data into dataframes
+    logger.info('====== Loading dataframes ========')
+    df_test, df_eval, df_trng = TreeDataProcessor.get_df_strat_1()
     
-    logger.info('Converting pickle data into dataloaders')
-    train_dataloader = DataProcessor.dataframe_2_dataloader(train_dataframe,
-                                                            batchsize=BATCH_SIZE_TRAIN,
-                                                            randomize=True,
-                                                            DEBUG=DEBUG,
-                                                            num_workers=4)
-    test_dataloader = DataProcessor.dataframe_2_dataloader(test_dataframe,
-                                                           batchsize=BATCH_SIZE_TEST,
-                                                           randomize=False,
-                                                           DEBUG=DEBUG,
-                                                           num_workers=4)
-    dev_dataloader = DataProcessor.dataframe_2_dataloader(dev_dataframe,
-                                                          batchsize=BATCH_SIZE_TRAIN,
-                                                          randomize=False,
-                                                          DEBUG=DEBUG,
-                                                          num_workers=4)
+    # Pack dataframes into dataloaders
+    logger.info('Converting dataframes into dataloaders')
+    trng_dl = TreeDataProcessor.dataframe_2_dataloader(df_trng,
+                                                       batchsize=BATCH_SIZE_TRAIN,
+                                                       randomize=True,
+                                                       DEBUG=DEBUG,
+                                                       num_workers=4*n_gpu)
+    test_dl = TreeDataProcessor.dataframe_2_dataloader(df_test,
+                                                       batchsize=BATCH_SIZE_TEST,
+                                                       randomize=False,
+                                                       DEBUG=DEBUG,
+                                                       num_workers=4*n_gpu)
+    eval_dl = TreeDataProcessor.dataframe_2_dataloader(df_eval,
+                                                       batchsize=BATCH_SIZE_TEST,
+                                                       randomize=False,
+                                                       DEBUG=DEBUG,
+                                                       num_workers=4*n_gpu)
     
     def train(epochs):    
         best_f1_score = 0   # For tracking best model on dev set so far
@@ -260,12 +246,29 @@ def main():
         
         for epoch_counter in range(epochs):
             model.train()       # Set network into training mode to enable dropout
-            for batch_idx, minibatch in enumerate(train_dataloader):
+            for batch_idx, minibatch in enumerate(trng_dl):
                 if batch_idx % LOG_INTERVAL == 0:
                     logger.info(('\tEPOCH: %3d\tMiniBatch: %4d' % (epoch_counter, batch_idx)))
                 # get the features from dataloader
                 # posts_index = minibatch[0]
-                
+                ''' {
+                post_index, 
+                input_ids, 
+                token_type_ids, 
+                attention_masks, 
+                labels_array, 
+                tree_size, 
+                fam_size}.'''
+    
+                post_index = minibatch[0]
+                input_ids = minibatch[1]
+                token_type_ids = minibatch[2]
+                attention_masks = minibatch[3]
+                labels_array = minibatch[4]
+                tree_size = minibatch[5]
+                fam_size = minibatch[6]
+                # TODO REACHED HERE
+    
                 encoded_comments = minibatch[1] # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
                 token_type_ids = minibatch[2]   # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
                 attention_masks = minibatch[3]  # shape = (n, 20xMAX_POST_LENGTH), will be truncated inside model
@@ -332,7 +335,7 @@ def main():
                 train_length_losses.append(loss2)   # archive the loss
                 
                 # Store the horizontal counter for minibatches seen
-                train_horz_index.append(epoch_counter * len(train_dataloader) + batch_idx)
+                train_horz_index.append(epoch_counter * len(trng_dl) + batch_idx)
             
             # after epoch, run test on dev set
             test_results = test(mode='dev')
@@ -372,9 +375,9 @@ def main():
         length_labels_arr = torch.zeros(size=(1,1),dtype=torch.int64)
         
         if mode=='test':
-            dataloader = test_dataloader
+            dataloader = test_dl
         elif mode=='dev':
-            dataloader = dev_dataloader
+            dataloader = eval_dl
         
         with torch.no_grad():
             for batch_idx, minibatch in enumerate(dataloader):

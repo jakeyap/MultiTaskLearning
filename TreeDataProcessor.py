@@ -40,7 +40,7 @@ def reload_encoded_data(file='./data/coarse_discourse/full_trees/encoded_dict.pk
     return torch.load(file)
 
 def loadfile(filename):
-    print('Loading ' + filename)
+    logger.info('Loading ' + filename)
     return torch.load(filename)
 
 def get_encoded_text_dict():
@@ -51,8 +51,9 @@ def get_encoded_text_dict():
     return loadfile('./data/coarse_discourse/full_trees/encoded_dict.pkl')
 
 def get_trees_test_set():
-    ''' Returns list of RedditTree objects (test set) '''
+    '''  Returns list of RedditTree objects (test set) '''
     return loadfile('./data/coarse_discourse/full_trees/full_trees_test.pkl')
+
 
 def get_trees_dev_set():
     ''' Returns list of RedditTree objects (dev set) '''
@@ -71,55 +72,55 @@ def trees_2_df_approach_3(max_post_len, max_num_child, num_stride, root_trees, e
     
     Parameters
     ----------
-    max_post_len : int. How many tokens to keep
-    max_num_child : int. How many kids to take
-    num_stride : int. How many groups of kids to take
-    root_trees : list of root trees
-    encoded_data : dict containing key-value-pairs of IDs and encoded data
+    max_post_len : int. 
+        How many tokens to keep per post
+    max_num_child : int. 
+        How many kids to take per root post in 1 stride
+    num_stride : int. 
+        How many groups of kids to take
+    root_trees : list 
+        each element is a root tree
+    encoded_data : dictionary 
+        key-value-pairs of IDs and encoded data
     
     Returns
     -------
     dataframe with columns (post_id, input_ids, token_type_ids, attention_masks, labels_array, tree_size, fam_size)
     '''
-    # TODO
-    # get all trees
-    # for each tree, build a list or itself, kids + grandkids
-    # clone the encoded tensors over
-    # 
     
-    post_per_eg = max_num_child * 2 + 1 # 1 root, N kids, N grandkids
-    tensor_len = post_per_eg * max_post_len
+    post_per_eg = max_num_child * 2 + 1     # num of posts = 1 root + n kids + n grandkids
+    tensor_len = post_per_eg * max_post_len # tensor len = (num of posts) x (max len per post)
     
-    list_of_post_ids  = []
-    list_of_input_ids = []
-    list_of_type_ids  = []
-    list_of_att_masks = []
-    stance_arr_labels = []
-    list_of_len_label = []
-    list_of_fam_label = []
+    list_of_post_ids  = []  # for storing all post ids of roots
+    list_of_input_ids = []  # for storing all encoded input_ids
+    list_of_type_ids  = []  # for storing all encoded token_type_ids
+    list_of_att_masks = []  # for storing all attention_masks
+    stance_arr_labels = []  # for storing all stance labels
+    list_of_len_label = []  # for storing all tree size labels
+    list_of_fam_label = []  # for storing all immediate family size labels
     
     for tree in root_trees:
         for i in range(num_stride):
-            example = [tree]    # list to store 1 example temporarily. element0 is root. 
+            example = [tree]                        # list to store 1 example. element0 is root. 
             
-            start = max_num_child * i
-            end = max_num_child * (i+1)
+            start = max_num_child * i               # start index for horz striding
+            end = max_num_child * (i+1)             # end index for horz striding
             
-            for kid in tree.children[start : end]:
-                example.append(kid)
-                if len(kid.children) != 0:
-                    grand = kid.children[0]
-                    example.append(grand)
-                else:
-                    example.append('')
+            for kid in tree.children[start : end]:  # within a stride window
+                example.append(kid)                 # store child in window
+                if len(kid.children) != 0:          # if child has child, 
+                    grand = kid.children[0]         # find grandkid
+                    example.append(grand)           # store grandkid
+                else:                               # if child is childless
+                    example.append('')              # store empty grandkid
             
-            # a list of posts constructed. get encoded data
+            # For storing example's details across posts
             input_ids  = torch.zeros((1, tensor_len))
             token_types= torch.zeros((1, tensor_len))
             att_masks  = torch.zeros((1, tensor_len))
             stance_labels = torch.ones((1, post_per_eg)) * -1
             
-            print(example)
+            # for every post in example, extract impt data, store in tensors
             for j in range (len(example)):
                 post = example[j]
                 if post != '':
@@ -129,11 +130,6 @@ def trees_2_df_approach_3(max_post_len, max_num_child, num_stride, root_trees, e
                     token_type= enc_dict['token_type_ids'].reshape((1,-1))
                     att_mask  = enc_dict['attention_mask'].reshape((1,-1))
                     
-                    print('post id  '+post_id)
-                    print('input id '+str(input_id.shape))
-                    print('token_ty '+str(token_type.shape))
-                    print('att mask '+str(att_mask.shape))
-                    
                     start = max_post_len * j
                     end = max_post_len * (j+1)
                     input_ids  [0,start:end] = input_id  [0,:max_post_len].detach().clone()
@@ -141,6 +137,7 @@ def trees_2_df_approach_3(max_post_len, max_num_child, num_stride, root_trees, e
                     att_masks  [0,start:end] = att_mask  [0,:max_post_len].detach().clone()
                     stance_labels[0,j] = post.label_int
             
+            # store root's postid, all tensors into global list
             root = example[0]
             list_of_post_ids.append(root.post_id)
             list_of_input_ids.append(input_ids)
@@ -149,7 +146,8 @@ def trees_2_df_approach_3(max_post_len, max_num_child, num_stride, root_trees, e
             stance_arr_labels.append(stance_labels)
             list_of_len_label.append(root.tree_size)
             list_of_fam_label.append(root.num_child + root.num_grand)
-            
+    
+    # convert lists into dataframe
     df = pd.DataFrame()
     df.insert(0, 'post_id', list_of_post_ids)
     df.insert(1, 'input_ids', list_of_input_ids)
@@ -165,192 +163,171 @@ def build_trees_approach_4(max_post_len, max_num_child, encoded_data):
     # TODO
     return
 
-def assemble_tree_strat3(max_post_len, max_num_posts):
-    ''' returns the tree as built with strategy 3 '''
-    # TODO
-    return
-
-
-def tokenize_encode_thread(thread, max_post_length, max_post_per_thread):
-    '''
-    Tokenizes and encodes a thread.
+def get_df_strat_1(max_post_len=512,
+                   strides=2):
+    """
+    Gets trees encoded form, in dataframe format.
 
     Parameters
     ----------
-    thread : list of strings
-        each string is a reddit or twitter post 
-    max_post_length : int
-        maximum number of tokens per post to procecss
-    max_post_per_thread : int
-        number of posts per threads to work on
+    max_post_len : int, optional
+        How many bert tokens to use per post. The default is 512.
+    strides : int, optional
+        How many horz strides to take. The default is 2.
 
     Returns
     -------
-    encoded_posts : list with length==max_post_per_thread
-        Each element is a tensor. Matches a post after tokenizing/encoding
-    token_type_ids : list with length==max_post_per_thread
-        Each element is a tensor. Matches a post after tokenizing/encoding
-    attention_masks : list with length==max_post_per_thread
-        Each element is a tensor. Matches a post after tokenizing/encoding
-
-    '''
-    #encoded_posts = []
-    #token_type_ids = []
-    #attention_masks = []
-    counter = 0
-    #encoded_dict = tokenize_encode_post(thread[counter], max_post_length)
-    encoded_dict=None
-    encoded_posts = encoded_dict['input_ids']
-    token_type_ids = encoded_dict['token_type_ids']
-    attention_masks = encoded_dict['attention_mask']
+    df_test : pandas dataframe 
+        contains encoded tree info
+    df_eval : pandas dataframe
+        contains encoded tree info
+    df_trng : pandas dataframe
+        contains encoded tree info
+    """
+    trees_test = get_trees_test_set()
+    trees_eval = get_trees_dev_set()
+    trees_trng = get_trees_train_set()
     
-    counter = 1
-    while (counter < max_post_per_thread):
-        try:
-            #encoded_dict = tokenize_encode_post(thread[counter], max_post_length)
-            encoded_dict = None
-            temp_encoded_post = encoded_dict['input_ids']
-            temp_token_type_ids = encoded_dict['token_type_ids']
-            temp_attention_masks = encoded_dict['attention_mask']
-            encoded_posts = torch.cat((encoded_posts, temp_encoded_post), dim=1)
-            token_type_ids = torch.cat((token_type_ids, temp_token_type_ids), dim=1)
-            attention_masks = torch.cat((attention_masks, temp_attention_masks), dim=1)
-            
-        except IndexError:
-            encoded_posts = torch.cat((encoded_posts, torch.zeros(size=(1, max_post_length),dtype=torch.int64)), dim=1)
-            token_type_ids = torch.cat((token_type_ids, torch.zeros(size=(1, max_post_length),dtype=torch.int64)), dim=1)
-            attention_masks = torch.cat((attention_masks, torch.zeros(size=(1, max_post_length),dtype=torch.int64)), dim=1)
-        counter = counter + 1
-    return encoded_posts, token_type_ids, attention_masks
-
-def tokenize_encode_dataframe(dataframe, max_post_length, max_post_per_thread):
-    logging.info('Tokenizing & encoding started.')
-    logging.info('\tPosts per thread: %d' % max_post_per_thread)
-    logging.info('\tMax tokens per post: %d' % max_post_length)
+    encoded_data = get_encoded_text_dict()  # bert tokenizer encoded data
+    df_test = trees_2_df_approach_3(max_post_len=max_post_len, 
+                                    max_num_child=3, 
+                                    num_stride=strides, 
+                                    root_trees=trees_test, 
+                                    encoded_data=encoded_data)
     
-    list_of_encoded_comments = []
-    list_of_token_type_ids = []
-    list_of_attention_masks = []
-    list_of_labels_array = []
+    df_eval = trees_2_df_approach_3(max_post_len=max_post_len, 
+                                    max_num_child=3, 
+                                    num_stride=strides, 
+                                    root_trees=trees_eval, 
+                                    encoded_data=encoded_data)
     
-    for i in range(len(dataframe)):
-        if i % 100 == 0:
-            print('Processing line %d' % i)
-        thread = dataframe.text[i]
-        temp = tokenize_encode_thread(thread=thread, 
-                                      max_post_length = max_post_length, 
-                                      max_post_per_thread = max_post_per_thread)
-        list_of_encoded_comments.append(temp[0])
-        list_of_token_type_ids.append(temp[1])
-        list_of_attention_masks.append(temp[2])
-        
-        labels_list = dataframe.labels_list[i]
-        labels_arr  = convert_label_list_2_tensor(labels_list=labels_list, 
-                                                  max_post_per_thread=max_post_per_thread)
-        list_of_labels_array.append(labels_arr)
+    df_trng = trees_2_df_approach_3(max_post_len=max_post_len, 
+                                    max_num_child=3, 
+                                    num_stride=strides, 
+                                    root_trees=trees_trng, 
+                                    encoded_data=encoded_data)
     
-    width = dataframe.shape[1]
-    dataframe.insert(width+0, 'encoded_comments', list_of_encoded_comments)
-    dataframe.insert(width+1, 'token_type_ids', list_of_token_type_ids)
-    dataframe.insert(width+2, 'attention_masks', list_of_attention_masks)
-    dataframe.insert(width+3, 'labels_array', list_of_labels_array)
-    return dataframe
+    return df_test, df_eval, df_trng
 
-def convert_label_list_2_tensor(labels_list, max_post_per_thread):
-    '''
-    Takes a list of text labels and converts into a tensor.
-    If there are less entries than the stiuplated rows, -1 is entered
-    eg. ['1', '2', '3'] becomes [1 ,2, 3, -1]
-    Parameters
-    ----------
-    label_list : list of text labels
-        type labels for each thread.
-    max_post_per_thread : int
-        maximum length per thread to look at
-
-    Returns
-    -------
-    labels_tensor : TYPE
-        DESCRIPTION.
-
-    '''
-    labels_tensor = -1 * torch.ones(size=(1,max_post_per_thread))
-    counter = 0
-    for eachlabel in labels_list:
-        if counter >= max_post_per_thread:
-            break
-        else:
-            labels_tensor[0,counter] = int(eachlabel)
-        counter = counter + 1
-    return labels_tensor
-
-
-def dataframe_2_dataloader(dataframe, 
-                           batchsize=64,
-                           randomize=False,
-                           DEBUG=False,
-                           num_workers=0):
-    '''
-    
+def get_df_strat_2(max_post_len=512,
+                   strides=2):
+    """
+    Gets trees encoded form, in dataframe format.
 
     Parameters
     ----------
-    dataframe : pandas dataframe with these columns 
-        {orig_length,
-        labels_list,
-        text,
-        encoded_comments,
-        token_type_ids,
-        attention_masks}
-    batchsize : int, minibatch size inside dataloaders. Defaults to 64.
-    randomize : boolean flag to shuffle data or not. Defaults to False.
-    DEBUG : boolean flag for debugging purposes. Defaults to False. Unused
-    num_workers : int, number of cores for loading data. Defaults to 0.
+    max_post_len : int, optional
+        How many bert tokens to use per post. The default is 512.
+    strides : int, optional
+        How many horz strides to take. The default is 2.
 
     Returns
     -------
-    dataloader : pytorch dataloader type
-        Each dataloader is packed into the following tuple
-            {index in original data,
-            tensor of encoded_comments, 
-            tensor of token_typed_ids,
-            tensor of attention_masks,
-            original true length label
-            tensor of true stance labels}
-    '''
-    posts_index     = dataframe.index.values
-    posts_index     = posts_index.reshape((-1,1))
+    df_test : pandas dataframe 
+        contains encoded tree info
+    df_eval : pandas dataframe
+        contains encoded tree info
+    df_trng : pandas dataframe
+        contains encoded tree info
+    """
+    trees_test = get_trees_test_set()
+    trees_eval = get_trees_dev_set()
+    trees_trng = get_trees_train_set()
     
-    encoded_comments = dataframe['encoded_comments'].values.tolist()
-    encoded_comments = torch.stack(encoded_comments, dim=0).squeeze(1)
+    encoded_data = get_encoded_text_dict()  # bert tokenizer encoded data
+    df_test = trees_2_df_approach_3(max_post_len=max_post_len, 
+                                    max_num_child=4, 
+                                    num_stride=strides,
+                                    root_trees=trees_test, 
+                                    encoded_data=encoded_data)
     
-    token_type_ids  = dataframe['token_type_ids'].values.tolist()
-    token_type_ids  = torch.stack(token_type_ids, dim=0).squeeze(1)
+    df_eval = trees_2_df_approach_3(max_post_len=max_post_len, 
+                                    max_num_child=4, 
+                                    num_stride=strides, 
+                                    root_trees=trees_eval, 
+                                    encoded_data=encoded_data)
     
-    attention_masks = dataframe['attention_masks'].values.tolist()
-    attention_masks = torch.stack(attention_masks, dim=0).squeeze(1)
+    df_trng = trees_2_df_approach_3(max_post_len=max_post_len, 
+                                    max_num_child=4, 
+                                    num_stride=strides, 
+                                    root_trees=trees_trng, 
+                                    encoded_data=encoded_data)
     
-    orig_length     = dataframe['orig_length'].values.reshape((-1,1))
+    return df_test, df_eval, df_trng
+
+def df_2_dataloader(df, 
+                    batchsize=64,
+                    randomize=False,
+                    DEBUG=False,
+                    num_workers=0):
+    """
+    Converts dataframe into dataloaders
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        {post_id, input_ids, token_type_ids, attention_masks, labels_array, tree_size, fam_size}.
+    batchsize : int, optional
+        minibatch size inside dataloaders. The default is 64.
+    randomize : bool, optional
+        flag to shuffle data or not. The default is False.
+    DEBUG : bool, optional
+        flag for debugging purposes. The default is False.
+    num_workers : int, optional
+        number of cores for loading data. The default is 0.
+
+    Returns
+    -------
+    dataloader : pytorch dataloader object
+        tuple with {post_index, input_ids, token_type_ids, attention_masks, labels_array, tree_size, fam_size}.
+        index means index in the original dataframe
+    """
     
-    stance_labels   = dataframe['labels_array'].tolist()
-    stance_labels   = torch.stack(stance_labels, dim=0).squeeze(1)
-        
-    posts_index = torch.from_numpy(posts_index)
-    orig_length = torch.from_numpy(orig_length)
+    post_id = df.post_id.values                 # non numerical data cant be used in tensors. 
+    post_id = post_id.reshape((-1,1))           # use index instead
+    
+    post_index = df.index.values                # numpy array. shape=(N,)
+    post_index = torch.tensor(post_index)       # tensor, shape=(N,)
+    post_index = post_index.reshape((-1,1))     # tensor, shape=(N,1)
+    
+    input_ids = df.input_ids.values.tolist()    # list, len=N. each element is a tensor, shape=(1,X).
+    input_ids = torch.stack(input_ids, dim=0)   # tensor, shape=(N,1,X). X=num_posts x num_tokens
+    input_ids = input_ids.squeeze(1)            # tensor, shape=(N,X)
+    
+    token_type_ids = df.token_type_ids.values.tolist()      # list, len=N
+    token_type_ids = torch.stack(token_type_ids, dim=0)     # tensor, shape=(N,1,X)
+    token_type_ids = token_type_ids.squeeze(1)              # tensor, shape=(N,X)
+    
+    attention_masks = df.attention_masks.values.tolist()    # list, len=N
+    attention_masks = torch.stack(attention_masks, dim=0)   # tensor, shape=(N,1,X)
+    attention_masks = attention_masks.squeeze(1)            # tensor, shape=(N,X)
+    
+    stance_labels = df.labels_array.values.tolist()         # list, len=N
+    stance_labels = torch.stack(stance_labels, dim=0)       # tensor, shape=(N,1,num_posts)
+    stance_labels = stance_labels.squeeze(1)                # tensor, shape=(N,num_posts)
+    
+    tree_size = torch.tensor(df.tree_size)                  # tensor, shape=(N,)
+    tree_size = tree_size.reshape((-1,1))                   # tensor, shape=(N,1)
+    
+    fam_size = torch.tensor(df.fam_size)                    # tensor, shape=(N,)
+    fam_size = fam_size.reshape((-1,1))                     # tensor, shape=(N,1)
+    
     if DEBUG:
-        dataset = TensorDataset(posts_index[0:40],
-                                encoded_comments[0:40],
+        dataset = TensorDataset(post_index[0:40],
+                                input_ids[0:40],
                                 token_type_ids[0:40],
                                 attention_masks[0:40],
-                                orig_length[0:40],
-                                stance_labels[0:40])
+                                stance_labels[0:40],
+                                tree_size[0:40],
+                                fam_size[0:40])
     else:
-        dataset = TensorDataset(posts_index,
-                                encoded_comments,
+        dataset = TensorDataset(post_index,
+                                input_ids,
                                 token_type_ids,
                                 attention_masks,
-                                orig_length,
-                                stance_labels)
+                                stance_labels,
+                                tree_size,
+                                fam_size)
     if (randomize):
         sampler = RandomSampler(dataset)
     else:
@@ -370,6 +347,7 @@ if __name__ == '__main__':
     MAX_POST_LENGTH = 256
     # DIRECTORY = './data/combined/'
     DIRECTORY = './data/coarse_discourse/'
+    '''
     trees_test = get_trees_test_set()
     encoded_data = get_encoded_text_dict()
     
@@ -378,6 +356,12 @@ if __name__ == '__main__':
                                num_stride = 2, 
                                root_trees = trees_test, 
                                encoded_data = encoded_data)
+    '''
+    df_test, df_eval, df_trng = get_df_strat_1()
+    dl_test = df_2_dataloader(df_test,16,False,False,4)
+    dl_eval = df_2_dataloader(df_eval,16,False,False,4)
+    dl_trng = df_2_dataloader(df_trng,16,False,False,4)
+    
     time2 = time.time()
     minutes = (time2-time1) // 60
     seconds = (time2-time1) % 60
