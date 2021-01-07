@@ -4,15 +4,13 @@ i guess there are 2 measures of virality
 2. how viral the entire topic is
 
 -------------- Experiments in progress --------------
-
+running a debug session to check full flow
 ---------------- Experiments planned ----------------
 
 ===================== TASKS TODO ====================
-try using pytorch's instead of huggingface's version of transformers to quantify perf speedup
-carefully split up processed data pkl files and label what has been done with each
 try blindly running each tree as a linear array
-try running with depth up to 2, breath up to 3
-
+try running with depth up to 2, breath up to 4
+start a new spreadsheet to keep track of experiments
 implement logic to do single task training on either task
 
 ===================== TASKS DONE ====================
@@ -50,3 +48,6 @@ eval - printing
 try bert large (TOO large to fit into memory. discuss with teammates)
 try maxpool avgpool on the text before feeding into nn to quantify perf speedup
 convert the data structure to define virality as immediate subtree size (2 levels down, 3 wide)
+carefully split up processed data pkl files and label what has been done with each
+try using pytorch's instead of huggingface's version of transformers to quantify perf speedup
+try running with depth up to 2, breath up to 3

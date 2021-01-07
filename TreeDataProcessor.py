@@ -105,47 +105,48 @@ def trees_2_df_approach_3(max_post_len, max_num_child, num_stride, root_trees, e
             
             start = max_num_child * i               # start index for horz striding
             end = max_num_child * (i+1)             # end index for horz striding
-            
-            for kid in tree.children[start : end]:  # within a stride window
-                example.append(kid)                 # store child in window
-                if len(kid.children) != 0:          # if child has child, 
-                    grand = kid.children[0]         # find grandkid
-                    example.append(grand)           # store grandkid
-                else:                               # if child is childless
-                    example.append('')              # store empty grandkid
-            
-            # For storing example's details across posts
-            input_ids  = torch.zeros((1, tensor_len), dtype=torch.long)
-            token_types= torch.zeros((1, tensor_len), dtype=torch.long)
-            att_masks  = torch.zeros((1, tensor_len), dtype=torch.long)
-            stance_labels = torch.ones((1, post_per_eg)) * -1
-            
-            # for every post in example, extract impt data, store in tensors
-            for j in range (len(example)):
-                post = example[j]
-                if post != '':
-                    post_id = post.post_id
-                    enc_dict  = encoded_data[post_id]
-                    input_id  = enc_dict['input_ids'].reshape((1,-1))
-                    token_type= enc_dict['token_type_ids'].reshape((1,-1))
-                    att_mask  = enc_dict['attention_mask'].reshape((1,-1))
-                    
-                    start = max_post_len * j
-                    end = max_post_len * (j+1)
-                    input_ids  [0,start:end] = input_id  [0,:max_post_len].detach().clone()
-                    token_types[0,start:end] = token_type[0,:max_post_len].detach().clone()
-                    att_masks  [0,start:end] = att_mask  [0,:max_post_len].detach().clone()
-                    stance_labels[0,j] = post.label_int
-            
-            # store root's postid, all tensors into global list
-            root = example[0]
-            list_of_post_ids.append(root.post_id)
-            list_of_input_ids.append(input_ids)
-            list_of_type_ids.append(token_types)
-            list_of_att_masks.append(att_masks)
-            stance_arr_labels.append(stance_labels)
-            list_of_len_label.append(root.tree_size)
-            list_of_fam_label.append(root.num_child + root.num_grand)
+            num_child = tree.num_child
+            if num_child > (i * max_num_child):     # only enter the code to stride if the tree still has kids
+                for kid in tree.children[start : end]:  # within a stride window
+                    example.append(kid)                 # store child in window
+                    if len(kid.children) != 0:          # if child has child, 
+                        grand = kid.children[0]         # find grandkid
+                        example.append(grand)           # store grandkid
+                    else:                               # if child is childless
+                        example.append('')              # store empty grandkid
+                
+                # For storing example's details across posts
+                input_ids  = torch.zeros((1, tensor_len), dtype=torch.long)
+                token_types= torch.zeros((1, tensor_len), dtype=torch.long)
+                att_masks  = torch.zeros((1, tensor_len), dtype=torch.long)
+                stance_labels = torch.ones((1, post_per_eg)) * -1
+                
+                # for every post in example, extract impt data, store in tensors
+                for j in range (len(example)):
+                    post = example[j]
+                    if post != '':
+                        post_id = post.post_id
+                        enc_dict  = encoded_data[post_id]
+                        input_id  = enc_dict['input_ids'].reshape((1,-1))
+                        token_type= enc_dict['token_type_ids'].reshape((1,-1))
+                        att_mask  = enc_dict['attention_mask'].reshape((1,-1))
+                        
+                        start = max_post_len * j
+                        end = max_post_len * (j+1)
+                        input_ids  [0,start:end] = input_id  [0,:max_post_len].detach().clone()
+                        token_types[0,start:end] = token_type[0,:max_post_len].detach().clone()
+                        att_masks  [0,start:end] = att_mask  [0,:max_post_len].detach().clone()
+                        stance_labels[0,j] = post.label_int
+                
+                # store root's postid, all tensors into global list
+                root = example[0]
+                list_of_post_ids.append(root.post_id)
+                list_of_input_ids.append(input_ids)
+                list_of_type_ids.append(token_types)
+                list_of_att_masks.append(att_masks)
+                stance_arr_labels.append(stance_labels)
+                list_of_len_label.append(root.tree_size)
+                list_of_fam_label.append(root.num_child + root.num_grand)
     
     # convert lists into dataframe
     df = pd.DataFrame()
@@ -364,11 +365,14 @@ if __name__ == '__main__':
                                root_trees = trees_test, 
                                encoded_data = encoded_data)
     '''
-    df_test, df_eval, df_trng = get_df_strat_1()
-    dl_test = df_2_dataloader(df_test,16,False,False,4)
-    dl_eval = df_2_dataloader(df_eval,16,False,False,4)
-    dl_trng = df_2_dataloader(df_trng,16,False,False,4)
+    df_test, df_eval, df_trng = get_df_strat_1(max_post_len=256,strides=2)
+    dl_test = df_2_dataloader(df_test,batchsize=16,randomize=False,DEBUG=False,num_workers=4)
+    dl_eval = df_2_dataloader(df_eval,batchsize=16,randomize=False,DEBUG=False,num_workers=4)
+    dl_trng = df_2_dataloader(df_trng,batchsize=16,randomize=False,DEBUG=False,num_workers=4)
     
+    print(len(df_test))
+    print(len(df_eval))
+    print(len(df_trng))
     time2 = time.time()
     minutes = (time2-time1) // 60
     seconds = (time2-time1) % 60
