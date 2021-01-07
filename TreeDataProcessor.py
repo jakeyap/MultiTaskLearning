@@ -115,9 +115,9 @@ def trees_2_df_approach_3(max_post_len, max_num_child, num_stride, root_trees, e
                     example.append('')              # store empty grandkid
             
             # For storing example's details across posts
-            input_ids  = torch.zeros((1, tensor_len))
-            token_types= torch.zeros((1, tensor_len))
-            att_masks  = torch.zeros((1, tensor_len))
+            input_ids  = torch.zeros((1, tensor_len), dtype=torch.long)
+            token_types= torch.zeros((1, tensor_len), dtype=torch.long)
+            att_masks  = torch.zeros((1, tensor_len), dtype=torch.long)
             stance_labels = torch.ones((1, post_per_eg)) * -1
             
             # for every post in example, extract impt data, store in tensors
@@ -164,7 +164,8 @@ def build_trees_approach_4(max_post_len, max_num_child, encoded_data):
     return
 
 def get_df_strat_1(max_post_len=512,
-                   strides=2):
+                   strides=2,
+                   DEBUG=False):
     """
     Gets trees encoded form, in dataframe format.
 
@@ -174,7 +175,8 @@ def get_df_strat_1(max_post_len=512,
         How many bert tokens to use per post. The default is 512.
     strides : int, optional
         How many horz strides to take. The default is 2.
-
+    DEBUG : bool, optional
+        If True, return only dev set
     Returns
     -------
     df_test : pandas dataframe 
@@ -184,9 +186,14 @@ def get_df_strat_1(max_post_len=512,
     df_trng : pandas dataframe
         contains encoded tree info
     """
-    trees_test = get_trees_test_set()
-    trees_eval = get_trees_dev_set()
-    trees_trng = get_trees_train_set()
+    if DEBUG:
+        trees_test = get_trees_dev_set()
+        trees_eval = get_trees_dev_set()
+        trees_trng = get_trees_dev_set()
+    else:
+        trees_test = get_trees_test_set()
+        trees_eval = get_trees_dev_set()
+        trees_trng = get_trees_train_set()
     
     encoded_data = get_encoded_text_dict()  # bert tokenizer encoded data
     df_test = trees_2_df_approach_3(max_post_len=max_post_len, 
@@ -313,13 +320,13 @@ def df_2_dataloader(df,
     fam_size = fam_size.reshape((-1,1))                     # tensor, shape=(N,1)
     
     if DEBUG:
-        dataset = TensorDataset(post_index[0:40],
-                                input_ids[0:40],
-                                token_type_ids[0:40],
-                                attention_masks[0:40],
-                                stance_labels[0:40],
-                                tree_size[0:40],
-                                fam_size[0:40])
+        dataset = TensorDataset(post_index[0:20],
+                                input_ids[0:20],
+                                token_type_ids[0:20],
+                                attention_masks[0:20],
+                                stance_labels[0:20],
+                                tree_size[0:20],
+                                fam_size[0:20])
     else:
         dataset = TensorDataset(post_index,
                                 input_ids,

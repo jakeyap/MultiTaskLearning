@@ -96,5 +96,87 @@ class alt_ModelEn(BertPreTrainedModel):
             stance_logits = self.stance_classifier(hiddens) # (n, B, num of stance classes)
             return stance_logits
         else:
-            print('task is ' +task+ '. Must be "stance", "length".')
+            print('task is "' +task+ '". Must be "stance", "length".')
+            raise Exception
+            
+
+class alt_ModelFn(BertPreTrainedModel):
+    # For the Coarse Discourse original 10 stance
+    # exposed posts means how many to check for length prediction
+    # for handling strategy 1, (1 root + 3 child + 3 grandkids) for stance prediction
+    # check 1 root + 3 child for length prediction
+    
+    def __init__(self, config, max_post_length=256, num_transformers=1):
+        super(alt_ModelFn, self).__init__(config)
+        self.length_num_labels = 2
+        self.stance_num_labels = 11 # 10 class + isempty
+        self.max_post_length = max_post_length
+        self.num_transformers = num_transformers
+
+        self.bert = BertModel(config)
+        self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
+        
+        # a single self attention layer
+        single_tf_layer = nn.TransformerEncoderLayer(d_model=config.hidden_size, 
+                                                     nhead=8, 
+                                                     dropout=config.hidden_dropout_prob)
+        
+        # create transformer blocks. the single layer is cloned internally
+        self.transformer_stance = nn.TransformerEncoder(single_tf_layer,
+                                                        num_layers=num_transformers)
+        
+        self.transformer_length = nn.TransformerEncoder(single_tf_layer,
+                                                        num_layers=num_transformers)
+        
+        self.max_post_length = max_post_length
+        self.pooler = BertHierarchyPooler(config)
+        
+        self.length_classifier = nn.Linear(4 * config.hidden_size, self.length_num_labels)
+        self.stance_classifier = nn.Linear(config.hidden_size, self.stance_num_labels)
+        # for initializing all weights
+        self.apply(self._init_weights)
+        #self.init_weights()
+
+    def forward(self, input_ids, token_type_ids, attention_masks, task):
+        # input_ids, token_type_ids, attention_masks dimensions are all (n, A x 7),
+        # where n=minibatch_size, A=max_post_length
+        idx = self.max_post_length
+        
+        # Reshape the vectors, then pass into BERT. 
+        # Each sequence_outputn is a post. Dimension is (n, A, hidden_size). n=minibatch_size, A=max_post_length
+        # Stick them together to become (n, Ax7, hidden_size)
+        sequence_output0, _ = self.bert(input_ids[:,0*idx:1*idx], token_type_ids[:,0*idx:1*idx], attention_masks[:,0*idx:1*idx])
+        sequence_output = sequence_output0
+        for i in range(1, 7):
+            sequence_outputn, _ = self.bert(input_ids[:,i*idx:(i+1)*idx], 
+                                            token_type_ids[:,i*idx:(i+1)*idx], 
+                                            attention_masks[:,i*idx:(i+1)*idx])
+            sequence_output = torch.cat((sequence_output, sequence_outputn), dim=1)
+        
+        # the attention mask size must be (n, 1, 1, length) where n is minibatch
+        # attention_masks = attention_masks.unsqueeze(1).unsqueeze(2)
+        
+        ''' Try just pooling the CLS labels '''
+        cls_positions = self.pooler(sequence_output,        # shape=(n,7,num_hiddens) where n=minibatch
+                                    self.max_post_length, 
+                                    7)
+        
+        stance_logits = None
+        length_logits = None
+        
+        if (task=='length'):                    # for length prediction task
+            hiddens = cls_positions[:, (0,1,3,5), :]        # shape = (n,4,num_hiddens) pick the root and kids only
+            hiddens = self.transformer_length(hiddens)      # shape = (n,4,num_hiddens)
+            
+            mb_size = hiddens.shape[0]                      # find n, minibatch size
+            hiddens = hiddens.reshape(mb_size,-1)           # reshape before passing into neural net (n, 4 x num_hidden)
+            length_logits = self.length_classifier(hiddens) # (n, num of length classes)
+            return length_logits
+        
+        elif (task=='stance'):                  # for stance classification task
+            hiddens =self.transformer_stance(cls_positions) # shape = (n,7,num_hiddens)
+            stance_logits = self.stance_classifier(hiddens) # (n, 7, num of stance classes)
+            return stance_logits
+        else:
+            print('task is "' +task+ '". Must be "stance", "length".')
             raise Exception

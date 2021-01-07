@@ -9,6 +9,7 @@ import torch
 from sklearn.metrics import precision_recall_fscore_support as f1_help
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
+import numpy as np
 
 import logging
 
@@ -365,11 +366,11 @@ def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro,
 
     Parameters
     ----------
-    precisions : tuple of length 5
-    recalls : tuple of length 5
-    f1scores : tuple of length 5
-    supports : tuple of length 5
-    f1_scores_macro : tuple of length 5
+    precisions : tuple of length 5 or 11
+    recalls : tuple of length 5 or 11
+    f1scores : tuple of length 5 or 11
+    supports : tuple of length 5 or 11
+    f1_scores_macro : tuple of length 5 or 11
     incl_empty : boolean to decide whether to include isempty label. default is True
     coarse_disc : boolean. Default is false
         if true, do the full 10 classes of coarse discourse dataset + isEmpty
@@ -397,7 +398,8 @@ def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro,
             string +='Other       \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[10],recalls[10],f1scores[10],supports[10])
             
             string +='\n'
-            string +='F1-macro\t%1.4f' % f1_scores_macro
+            string +='F1-macro\t%1.4f\n' % f1_scores_macro
+            string +='Excl empty\t%1.4f' % np.average(f1scores[1:])
         else:
             string = 'Labels      \t\tPrecision\tRecall\t\tF1 score\tSupport\n'
             string +='Question    \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
@@ -422,7 +424,8 @@ def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro,
             string +='Query  \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[3],recalls[3],f1scores[3],supports[3])
             string +='Comment\t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[4],recalls[4],f1scores[4],supports[4])
             string +='\n'
-            string +='F1-macro\t%1.4f' % f1_scores_macro
+            string +='F1-macro\t%1.4f\n' % f1_scores_macro
+            string +='Excl empty\t%1.4f' % np.average(f1scores[1:])
         else:
             string = 'Labels \t\tPrecision\tRecall\t\tF1 score\tSupport\n'
             string +='Deny   \t\t%1.4f    \t%1.4f \t\t%1.4f   \t%d\n' % (precisions[0],recalls[0],f1scores[0],supports[0])
