@@ -187,8 +187,8 @@ def main():
     if WEIGHTED_STANCE:
         # increase the weights for disagreement and -ve reaction
         weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 10.0, 10.0, 1.0, 1.0, 1.0]).to(gpu)
-        #''' FOR EXP 43-46 ONLY '''
-        #weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 10.0, 1.0, 10.0, 10.0, 1.0, 1.0, 1.0]).to(gpu)
+        #''' FOR EXP 5-8 ONLY. REVERSE PUNISH EMPTY, QUESTION, ANSWER'''
+        weights = torch.tensor([0.1, 0.1, 0.1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]).to(gpu)
         #''' FOR EXP 47-50 ONLY '''
         #weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 20.0, 1.0, 10.0, 10.0, 1.0, 1.0, 1.0]).to(gpu)
         stance_loss_fn = torch.nn.CrossEntropyLoss(weight=weights, reduction='mean')
@@ -572,7 +572,7 @@ def main():
     minutes = remain // 60
     seconds = remain % 60
     
-    print('Time taken: %dh %dm %2ds' % (hours, minutes, seconds))
+    logger.info('Time taken: %dh %dm %2ds' % (hours, minutes, seconds))
 
 if __name__ == '__main__':
     main()
