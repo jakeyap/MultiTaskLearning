@@ -13,7 +13,7 @@ import torch.optim as optim
 
 import TreeDataProcessor
 import multitask_helper_functions as helper
-from classifier_models_v2 import alt_ModelEn, alt_ModelFn
+from classifier_models_v2 import alt_ModelFn, alt_ModelGn
 from utilities.handle_coarse_discourse_trees import RedditTree
 
 import logging, sys, argparse
@@ -78,10 +78,7 @@ def main():
     LEARNING_RATE = args.LEARNING_RATE                  # learning rate
     MOMENTUM = args.MOMENTUM                            # momentum for SGD
     MAX_POST_LENGTH = args.MAX_POST_LENGTH              # num of tokens per post 
-    ''' this part is a bit different from before. it is dependent on the model
-    MAX_POST_PER_THREAD = args.MAX_POST_PER_THREAD      # num of posts to inspect per thread for stance
-    EXPOSED_POSTS = args.EXPOSED_POSTS                  # num of posts to inspect per thread for length
-    '''
+    
     STRIDES = args.STRIDES                              # number of groups of kids to inspect per root
     THREAD_LENGTH_DIVIDER = args.THREAD_LENGTH_DIVIDER  # how to split the dataset for binary cls
     OPTIM_NAME = args.OPTIMIZER                         # ADAM, SGD or RMSProp
@@ -120,18 +117,7 @@ def main():
                         handlers=handlers,
                         level = logging.INFO)
     logger = logging.getLogger(__name__)
-    '''
-    directory = './data/coarse_discourse/full_trees/'
-    test_filename = directory+'full_trees_test.pkl'
-    trng_filename = directory+'full_trees_train.pkl'
-    eval_filename = directory+'full_trees_dev.pkl'
     
-    if DEBUG:
-        logger.info('Debugging with a very small dev set')
-        test_filename = directory+'full_trees_dev.pkl'
-        trng_filename = directory+'full_trees_dev.pkl'
-        eval_filename = directory+'full_trees_dev.pkl'
-    '''
     gpu = torch.device("cuda")
     n_gpu = torch.cuda.device_count()
     torch.cuda.empty_cache()
@@ -141,14 +127,10 @@ def main():
         model = alt_ModelFn.from_pretrained('bert-base-uncased', 
                                             max_post_length=MAX_POST_LENGTH,
                                             num_transformers=number)
-    elif MODELNAME.lower()[:-1]=='alt_modele':
+    elif MODELNAME.lower()[:-1]=='alt_modelg':
         number = int(MODELNAME[-1])
-        model = alt_ModelEn.from_pretrained('bert-base-uncased', 
-                                            stance_num_labels=11,
-                                            length_num_labels=2,
-                                            max_post_num=7,
+        model = alt_ModelGn.from_pretrained('bert-base-uncased',
                                             max_post_length=MAX_POST_LENGTH,
-                                            exposed_posts=4,
                                             num_transformers=number)
     else:
         logger.info('Exiting, model not found: ' + MODELNAME)
@@ -161,9 +143,6 @@ def main():
     
     # Move model into GPU
     model.to(gpu)
-    logger.info('Running on %d GPUs' % n_gpu)
-    #if n_gpu > 1:
-    model = torch.nn.DataParallel(model)
     
     # Define the optimizers. 
     if OPTIM_NAME=='SGD':            # Use SGD
@@ -179,10 +158,23 @@ def main():
             length_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE * 3)
         else:
             length_optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    elif OPTIM_NAME=='ADAM_V':
+        stance_optimizer = optim.Adam([{'params' : model.bert.parameters()},
+                                       {'params' : model.transformer_stance.parameters(), 'lr' : LEARNING_RATE},
+                                       {'params' : model.stance_classifier.parameters(), 'lr' : LEARNING_RATE}], 
+                                      lr=1e-5)
+        length_optimizer = optim.Adam([{'params' : model.bert.parameters()},
+                                       {'params' : model.transformer_length.parameters(), 'lr' : LEARNING_RATE},
+                                       {'params' : model.length_classifier.parameters(), 'lr' : LEARNING_RATE}], 
+                                      lr=1e-5)
     else:
         logger.info('Exiting. No such optimizer '+OPTIM_NAME)
         raise Exception()
-        
+    
+    logger.info('Running on %d GPUs' % n_gpu)
+    #if n_gpu > 1:
+    model = torch.nn.DataParallel(model)
+    
     # Set up loss functions. Use averaging to calculate a value
     if WEIGHTED_STANCE:
         # increase the weights for disagreement and -ve reaction
@@ -201,8 +193,6 @@ def main():
     logger.info('LEARNING_RATE: %1.6f' % LEARNING_RATE)
     logger.info('MOMENTUM: %1.6f' % MOMENTUM)
     logger.info('MAX_POST_LENGTH: %d' % MAX_POST_LENGTH)
-    #logger.info('MAX_POST_PER_THREAD: %d' % MAX_POST_PER_THREAD)
-    #logger.info('EXPOSED_POSTS: %d' % EXPOSED_POSTS)
     logger.info('THREAD_LENGTH_DIVIDER: %d' % THREAD_LENGTH_DIVIDER)
     
     logger.info('===== Other settings ======')

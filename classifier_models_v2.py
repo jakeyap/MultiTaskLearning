@@ -99,7 +99,6 @@ class alt_ModelEn(BertPreTrainedModel):
             print('task is "' +task+ '". Must be "stance", "length".')
             raise Exception
             
-
 class alt_ModelFn(BertPreTrainedModel):
     # For the Coarse Discourse original 10 stance
     # exposed posts means how many to check for length prediction
@@ -160,6 +159,132 @@ class alt_ModelFn(BertPreTrainedModel):
         cls_positions = self.pooler(sequence_output,        # shape=(n,7,num_hiddens) where n=minibatch
                                     self.max_post_length, 
                                     7)
+        
+        stance_logits = None
+        length_logits = None
+        
+        if (task=='length'):                    # for length prediction task
+            hiddens = cls_positions[:, (0,1,3,5), :]        # shape = (n,4,num_hiddens) pick the root and kids only
+            hiddens = self.transformer_length(hiddens)      # shape = (n,4,num_hiddens)
+            
+            mb_size = hiddens.shape[0]                      # find n, minibatch size
+            hiddens = hiddens.reshape(mb_size,-1)           # reshape before passing into neural net (n, 4 x num_hidden)
+            length_logits = self.length_classifier(hiddens) # (n, num of length classes)
+            return length_logits
+        
+        elif (task=='stance'):                  # for stance classification task
+            hiddens =self.transformer_stance(cls_positions) # shape = (n,7,num_hiddens)
+            stance_logits = self.stance_classifier(hiddens) # (n, 7, num of stance classes)
+            return stance_logits
+        else:
+            print('task is "' +task+ '". Must be "stance", "length".')
+            raise Exception
+            
+class alt_ModelGn(BertPreTrainedModel):
+    # For the Coarse Discourse original 10 stance
+    # exposed posts means how many to check for length prediction
+    # for handling strategy 1, (1 root + 3 child + 3 grandkids) for stance prediction
+    # check 1 root + 3 child for length prediction
+    
+    # instead of taking the CLS token only, use maxpool of all encoded tokens
+    
+    def __init__(self, config, max_post_length=256, num_transformers=1):
+        super(alt_ModelGn, self).__init__(config)
+        self.length_num_labels = 2
+        self.stance_num_labels = 11 # 10 class + isempty
+        self.max_post_length = max_post_length
+        self.num_transformers = num_transformers
+
+        self.bert = BertModel(config)
+        self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
+        
+        # a single self attention layer
+        single_tf_layer = nn.TransformerEncoderLayer(d_model=config.hidden_size, 
+                                                     nhead=8, 
+                                                     dropout=config.hidden_dropout_prob)
+        
+        # create transformer blocks. the single layer is cloned internally
+        self.transformer_stance = nn.TransformerEncoder(single_tf_layer,
+                                                        num_layers=num_transformers)
+        
+        self.transformer_length = nn.TransformerEncoder(single_tf_layer,
+                                                        num_layers=num_transformers)
+        
+        self.max_post_length = max_post_length
+        
+        # self.pooler = BertHierarchyPooler(config)
+        self.pooler = nn.MaxPool1d(max_post_length)
+        
+        self.length_classifier = nn.Linear(4 * config.hidden_size, self.length_num_labels)
+        self.stance_classifier = nn.Linear(config.hidden_size, self.stance_num_labels)
+        # for initializing all weights
+        self.apply(self._init_weights)
+        #self.init_weights()
+
+    def forward(self, input_ids, token_type_ids, attention_masks, task):
+        # input_ids, token_type_ids, attention_masks dimensions are all (n, A x 7),
+        # where n=minibatch_size, A=max_post_length
+        idx = self.max_post_length
+        
+        # Reshape the vectors, then pass into BERT. 
+        # Each sequence_outputn is a post. Dimension is (n, A, hidden_size). n=minibatch_size, A=max_post_length
+        # Stick them together to become (n, Ax7, hidden_size)
+        '''
+        sequence_output0, _ = self.bert(input_ids[:,0*idx:1*idx], token_type_ids[:,0*idx:1*idx], attention_masks[:,0*idx:1*idx])
+        sequence_output = sequence_output0
+        for i in range(1, 7):
+            sequence_outputn, _ = self.bert(input_ids[:,i*idx:(i+1)*idx], 
+                                            token_type_ids[:,i*idx:(i+1)*idx], 
+                                            attention_masks[:,i*idx:(i+1)*idx])
+            sequence_output = torch.cat((sequence_output, sequence_outputn), dim=1)
+        '''
+        sequence_output0, _ = self.bert(input_ids[:,0*idx:1*idx], token_type_ids[:,0*idx:1*idx], attention_masks[:,0*idx:1*idx])
+        sequence_output1, _ = self.bert(input_ids[:,1*idx:2*idx], token_type_ids[:,1*idx:2*idx], attention_masks[:,1*idx:2*idx])
+        sequence_output2, _ = self.bert(input_ids[:,2*idx:3*idx], token_type_ids[:,2*idx:3*idx], attention_masks[:,2*idx:3*idx])
+        sequence_output3, _ = self.bert(input_ids[:,3*idx:4*idx], token_type_ids[:,3*idx:4*idx], attention_masks[:,3*idx:4*idx])
+        sequence_output4, _ = self.bert(input_ids[:,4*idx:5*idx], token_type_ids[:,4*idx:5*idx], attention_masks[:,4*idx:5*idx])
+        sequence_output5, _ = self.bert(input_ids[:,5*idx:6*idx], token_type_ids[:,5*idx:6*idx], attention_masks[:,5*idx:6*idx])
+        sequence_output6, _ = self.bert(input_ids[:,6*idx:7*idx], token_type_ids[:,6*idx:7*idx], attention_masks[:,6*idx:7*idx])
+        
+        # the attention mask size must be (n, 1, 1, length) where n is minibatch
+        # attention_masks = attention_masks.unsqueeze(1).unsqueeze(2)
+        post_length = self.max_post_length
+        hidden_size = sequence_output0.shape[-1]
+        mb_size = sequence_output0.shape[0]
+        
+        # reshape each post into new shape [n, 768, max_post_len]
+        sequence_output0 = sequence_output0.reshape([mb_size, hidden_size, post_length])
+        sequence_output1 = sequence_output1.reshape([mb_size, hidden_size, post_length])
+        sequence_output2 = sequence_output2.reshape([mb_size, hidden_size, post_length])
+        sequence_output3 = sequence_output3.reshape([mb_size, hidden_size, post_length])
+        sequence_output4 = sequence_output4.reshape([mb_size, hidden_size, post_length])
+        sequence_output5 = sequence_output5.reshape([mb_size, hidden_size, post_length])
+        sequence_output6 = sequence_output6.reshape([mb_size, hidden_size, post_length])
+        
+        # after pooling, shape is now [n, 768, 1]
+        pooled0 = self.pooler(sequence_output0)
+        pooled1 = self.pooler(sequence_output1)
+        pooled2 = self.pooler(sequence_output2)
+        pooled3 = self.pooler(sequence_output3)
+        pooled4 = self.pooler(sequence_output4)
+        pooled5 = self.pooler(sequence_output5)
+        pooled6 = self.pooler(sequence_output6)
+        
+        ''' Try just pooling the CLS labels '''
+        '''
+        cls_positions = self.pooler(sequence_output,        # shape=(n,7,num_hiddens) where n=minibatch
+                                    self.max_post_length, 
+                                    7)'''
+        # shape is (n, 7 x max_post_len, hidden_size)
+        
+        
+        pooled_outputs = torch.cat((pooled0, pooled1,   # shape is now (n, hidden_size, 7)
+                                    pooled2, pooled3,
+                                    pooled4, pooled5, 
+                                    pooled6), dim=2) 
+        
+        pooled_outputs = pooled_outputs.reshape((mb_size, 7, hidden_size))  # reshape into (n,7,num_hiddens)
+        cls_positions = pooled_outputs
         
         stance_logits = None
         length_logits = None
