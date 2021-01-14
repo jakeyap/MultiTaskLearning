@@ -40,12 +40,6 @@ def main():
                             type=float,         help="momentum term for SGD.")
         parser.add_argument("--MAX_POST_LENGTH",    default=256,    type=int,
                             help="Max input sequence length after BERT tokenizer")
-        '''
-        parser.add_argument("--MAX_POST_PER_THREAD",    default=4,    type=int,
-                            help="Max number of posts per thread to look at for stance prediction")
-        parser.add_argument("--EXPOSED_POSTS",          default=4,    type=int,
-                            help="Max num of posts per thread to look at for length prediction")
-        '''
         parser.add_argument("--STRIDES",        default=1,    type=int,
                             help="Number of horz strides of kids to check")
         parser.add_argument("--THREAD_LENGTH_DIVIDER",   default=9,

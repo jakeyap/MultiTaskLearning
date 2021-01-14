@@ -160,6 +160,9 @@ class alt_ModelFn(BertPreTrainedModel):
                                     self.max_post_length, 
                                     7)
         
+        # apply dropout. forgot about this previously. 2021 jan 14
+        cls_positions = self.dropout(cls_positions)
+        
         stance_logits = None
         length_logits = None
         
@@ -282,6 +285,9 @@ class alt_ModelGn(BertPreTrainedModel):
                                     pooled2, pooled3,
                                     pooled4, pooled5, 
                                     pooled6), dim=2) 
+        
+        # apply dropout. forgot about this previously. 2021 jan 14
+        pooled_outputs = self.dropout(pooled_outputs)
         
         pooled_outputs = pooled_outputs.reshape((mb_size, 7, hidden_size))  # reshape into (n,7,num_hiddens)
         cls_positions = pooled_outputs
