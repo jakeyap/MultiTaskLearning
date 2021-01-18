@@ -10,6 +10,7 @@ The data is inside ./data/coarse_discourse/full_trees/
 
 import torch
 import torch.optim as optim
+import numpy as np
 
 import TreeDataProcessor
 import multitask_helper_functions as helper
@@ -20,6 +21,8 @@ import logging, sys, argparse
 import time
 import matplotlib.pyplot as plt
 
+torch.manual_seed(0)
+np.random.seed(0)
 
 def main():
     '''======== DEFAULT HYPERPARAMETERS ========'''
@@ -174,7 +177,7 @@ def main():
         # increase the weights for disagreement and -ve reaction
         weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 10.0, 10.0, 1.0, 1.0, 1.0]).to(gpu)
         #''' FOR EXP 5-8 ONLY. REVERSE PUNISH EMPTY, QUESTION, ANSWER'''
-        weights = torch.tensor([0.1, 0.1, 0.1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]).to(gpu)
+        # weights = torch.tensor([0.1, 0.1, 0.1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]).to(gpu)
         #''' FOR EXP 47-50 ONLY '''
         #weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 20.0, 1.0, 10.0, 10.0, 1.0, 1.0, 1.0]).to(gpu)
         stance_loss_fn = torch.nn.CrossEntropyLoss(weight=weights, reduction='mean')

@@ -3,18 +3,28 @@
 """
 Created on Tue Jan 12 16:51:55 2021
 This file contains the logic to run tests on SRQ dataset
-but it is only for the wider models
+but it is only for the wider models.
+
+It is built on tests_on_srq_mixed.py, but stacks an extra MLP at the end to 
+learn the 11 to 5 mapping instead of hardcoding. Train using just 1 epoch
 @author: jakeyap
 """
 
 import DataProcessor
 import multitask_helper_functions as helper
-from classifier_models_v2 import alt_ModelFn
+from classifier_models_v2 import alt_ModelFn, final_mapping_layer
+
 import torch
+import torch.optim as optim
+import numpy as np
+
 import matplotlib.pyplot as plt
 
 import logging, sys, argparse
 import time
+
+torch.manual_seed(0)
+np.random.seed(0)
 
 def main():
     start_time = time.time()
@@ -32,6 +42,11 @@ def main():
                             help='Minibatch size')
         parser.add_argument('--BATCH_SIZE_TEST',default=2,  type=int,
                             help='Minibatch size')
+        
+        parser.add_argument("--N_EPOCHS",       default=1,
+                            type=int,           help="Num of training epochs")
+        parser.add_argument("--LEARNING_RATE",  default=0.0005,
+                            type=float,         help="learning rate for Adam.")
         parser.add_argument('--LOG_INTERVAL',   default=1,  type=int,
                             help='Num of minibatches before printing')
         
@@ -45,6 +60,10 @@ def main():
         parser.add_argument('--MAP_OPTION', default=1, type=int,
                             help="Hard coded mapping options from coarse disc to SDQC labels")
         
+        parser.add_argument('--TRAIN_PCT', default=10, type=int,
+                            help="Percentage of dataset to train on")
+        parser.add_argument('--DO_TRAIN', action='store_true',
+                            help="To learn a mapping from coarse disc to SDQC labels")
         
         args = parser.parse_args()
         MODELDIR = args.MODELDIR                # directory of old model
@@ -54,16 +73,22 @@ def main():
         
         BATCH_SIZE_TRAIN =args.BATCH_SIZE_TRAIN # minibatch size (test)
         BATCH_SIZE_TEST = args.BATCH_SIZE_TEST  # minibatch size (test)
+        N_EPOCHS = args.N_EPOCHS                # number of training epochs
+        LEARNING_RATE = args.LEARNING_RATE      # learning rate
         LOG_INTERVAL = args.LOG_INTERVAL        # how often to print
         
         MAX_POST_LENGTH = args.MAX_POST_LENGTH
         MAX_POST_PER_THREAD = args.MAX_POST_PER_THREAD
         DEBUG = args.DEBUG                      # debug flag
         MAP_OPTION = args.MAP_OPTION            # how to map from Coarse disc labels to SDQC labels
+        TRAIN_PCT = args.TRAIN_PCT              # Percentage of dataset to train on
+        DO_TRAIN = args.DO_TRAIN                # boolean to decide to train or not
         
-    logfile_name = './log_files/test_srq_'+MODELFILE[:-4]+'.log'    # save the log
-    plotfile_name ='./log_files/plot_srq_'+MODELFILE[:-4]+'.png'    # save the log
-    results_name = './log_files/'+MODELFILE[:-4]+'_predict.txt'     # save the log
+        ADDONFILE = MODELFILE.replace('.bin','_addon.bin')  # filename of final mapping layer
+        
+    logfile_name = './log_files/test_srq_'+MODELFILE[:-4]+'_addon.log'  # save the log
+    plotfile_name ='./log_files/plot_srq_'+MODELFILE[:-4]+'_addon.png'  # save the log
+    results_name = './log_files/'+MODELFILE[:-4]+'_addon_predict.txt'   # save the log
     results_file = open(results_name,'w')
     
     file_handler = logging.FileHandler(filename=logfile_name)       # for saving into a log file
@@ -73,24 +98,63 @@ def main():
                         datefmt= '%m/%d/%Y %H:%M:%S', handlers=handlers, level=logging.INFO)
     
     logger = logging.getLogger(__name__)
+    
+    logger.info('======== '+MODELFILE+' =========')
+    logger.info('===== Hyperparameters ======')
+    logger.info('BATCH_SIZE_TRAIN: %d' % BATCH_SIZE_TRAIN)
+    logger.info('LEARNING_RATE: %1.6f' % LEARNING_RATE)
+    logger.info('N_EPOCHS: %d ' % N_EPOCHS)
+    
+    logger.info('====== Loading dataframes ========')
     logger.info('Getting test data from %s' % DATADIR+DATAFILE)
     dataframe = DataProcessor.load_from_pkl(DATADIR+DATAFILE)       # get test data as dataframe
-    print(len(dataframe))
+    
     if DEBUG:
         dataframe = dataframe[0:20]
-    dataloader = DataProcessor.dataframe_2_dataloader(dataframe,    # pack data into dataloader
-                                                      batchsize=BATCH_SIZE_TEST,
-                                                      randomize=False,
-                                                      DEBUG=DEBUG,
-                                                      num_workers=5)
+    
+    datalen = len(dataframe)
+    logger.info(datalen)
+    trng_idx = []
+    test_idx = []
+    for i in range (datalen):
+        if i % 100 < TRAIN_PCT:
+            trng_idx.append(i)
+        else:
+            test_idx.append(i)
+    
+    test_df = dataframe[test_idx]
+    trng_df = dataframe[trng_idx]
+    
+    
+    logger.info('Converting dataframes into dataloaders')
+    test_dl = DataProcessor.dataframe_2_dataloader(test_df,     # pack data into dataloader
+                                                   batchsize=BATCH_SIZE_TEST,
+                                                   randomize=False,
+                                                   num_workers=5)
+    
+    trng_dl = DataProcessor.dataframe_2_dataloader(trng_df,     # pack data into dataloader
+                                                   batchsize=BATCH_SIZE_TRAIN,
+                                                   randomize=True,
+                                                   num_workers=5)
+    
     
     logger.info('Test file is '+MODELFILE)
     logger.info('Getting model ready')
     model = get_model(MODELDIR, MODELFILE, 
                       max_post_num=MAX_POST_PER_THREAD,
                       max_post_len=MAX_POST_LENGTH)
+    addon = get_addon(MODELDIR, ADDONFILE)
+    model.cuda()
+    addon.cuda()
     
-    results =  test(model, dataloader, LOG_INTERVAL, -1, 
+    # TODO : finish this function that trains the mapping at final layer
+    if DO_TRAIN:
+        loss_fn = torch.nn.CrossEntropyLoss(reduction='mean')
+        optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+        
+        torch.save(addon.state_dict(), MODELDIR+ADDONFILE)  # save the trained mapping
+        
+    results =  test(model, test_dl, LOG_INTERVAL, -1, 
                     num_post=MAX_POST_PER_THREAD, 
                     post_length=MAX_POST_LENGTH)
     stance_pred = results[0]    # shape is (NA,)
@@ -159,6 +223,10 @@ def main():
         results_file.write(str(int(stance_true[i].item())) + ','+ 
                            str(int(stance_pred[i].item())) + '\n')
     return stance_pred, stance_true
+
+def train(model, dataloader, log_interval, index=-1, num_post=4, post_length=256):
+    #TODO: implement training on 10% of SRQ
+    return
 
 
 def test(model, dataloader, log_interval, index=-1, num_post=4, post_length=256):
@@ -258,6 +326,18 @@ def get_model(modeldir, modelfile,
     model.load_state_dict(temp)         # stuff state into model
     model = model.module                # get back the non parallel model
     return model
+
+def get_addon(addondir, addonfile):
+    ''' Returns the last layer that does mapping from 11 classes to 5 classes'''
+    logger = logging.getLogger(__name__)
+    addon = final_mapping_layer()
+    try:
+        temp = torch.load(addondir+addonfile)  # load the best model
+        logger.info('Final mapping found: ' + addonfile)
+        addon.load_state_dict(temp)
+    except Exception:
+        logger.info('Final mapping layer not found: '+ addonfile+'. Using random init mapping scheme model. ')
+    return addon
 
 def map_coarse_discourse_2_sdqc_labels(input_tensor, option=1):
     '''

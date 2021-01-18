@@ -17,6 +17,16 @@ from classifier_models import BertHierarchyPooler # for pulling out the [CLS] em
 
 # TODO create a model that scans the appropriate kids for length task
 
+class final_mapping_layer(nn.Module):
+    def __init__(self):
+        self.linear1 = nn.Linear(11,5)
+    
+    def forward(self,x):
+        x = self.linear1(x)
+        x = nn.functional.sigmoid(x)
+        return x
+    
+
 class alt_ModelEn(BertPreTrainedModel):
     # For the Coarse Discourse original 10 stance
     # exposed posts means how many to check for length prediction
