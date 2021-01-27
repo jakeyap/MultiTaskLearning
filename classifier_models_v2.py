@@ -18,12 +18,32 @@ from classifier_models import BertHierarchyPooler # for pulling out the [CLS] em
 # TODO create a model that scans the appropriate kids for length task
 
 class final_mapping_layer(nn.Module):
-    def __init__(self):
+    def __init__(self,init=True):
+        super(final_mapping_layer, self).__init__()
         self.linear1 = nn.Linear(11,5)
+        #self.linear2 = nn.Linear(5,5)
+        if init:
+            with torch.no_grad():
+                weight = self.linear1.weight
+                bias = self.linear1.bias
+                weight[0,0] += 10
+                weight[3,1] += 10
+                weight[4,2] += 10
+                weight[4,3] += 10
+                weight[2,4] += 10
+                weight[2,5] += 10
+                weight[1,6] += 10
+                weight[1,7] += 10
+                weight[2,8] += 10
+                weight[4,9] += 10
+                weight[4,10] += 10
+                weight = weight / 10
+                bias = bias / 10
     
     def forward(self,x):
         x = self.linear1(x)
-        x = nn.functional.sigmoid(x)
+        # x = torch.sigmoid(x)
+        #x = self.linear2(x)
         return x
     
 

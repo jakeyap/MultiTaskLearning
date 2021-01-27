@@ -1,3 +1,5 @@
+Check whether there is a bug in post length passing among the model and testbench
+
 ===================== EXP NOTES =====================
 i guess there are 2 measures of virality
 1. how viral a particular comment is

@@ -5,11 +5,13 @@ Created on Tue Jan 12 16:51:55 2021
 This file contains the logic to run tests on SRQ dataset
 but it is only for the wider models
 @author: jakeyap
+
+There seems to be a bug wrt to the number of tokens to handle
 """
 
 import DataProcessor
 import multitask_helper_functions as helper
-from classifier_models_v2 import alt_ModelFn
+from classifier_models_v2 import alt_ModelFn, alt_ModelGn
 import torch
 import matplotlib.pyplot as plt
 
@@ -244,6 +246,11 @@ def get_model(modeldir, modelfile,
     if 'alt_modelf'==modelfile.lower()[0:10]:
         number = int(modelfile[10])
         model = alt_ModelFn.from_pretrained('bert-base-uncased',
+                                            max_post_length=max_post_len,
+                                            num_transformers=number)
+    elif 'alt_modelg'==modelfile.lower()[0:10]:
+        number = int(modelfile[10])
+        model = alt_ModelGn.from_pretrained('bert-base-uncased',
                                             max_post_length=max_post_len,
                                             num_transformers=number)
     else:

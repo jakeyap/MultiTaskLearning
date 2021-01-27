@@ -355,15 +355,17 @@ if __name__ == '__main__':
     
     
     ''' Stuff for 20201103 - tokenize flattend reddit threads '''
-    MAX_POST_PER_THREAD = 20
-    MAX_POST_LENGTH = 256
+    MAX_POST_PER_THREAD = 4
+    MAX_POST_LENGTH = 128
     # DIRECTORY = './data/combined/'
-    DIRECTORY = './data/coarse_discourse/'
+    # DIRECTORY = './data/coarse_discourse/'
+    DIRECTORY = './data/srq/'
     #filenames = ['shuffled_dev', 'shuffled_test', 'shuffled_train', 
     #             'combined_dev', 'combined_test', 'combined_train']
-    filenames = ['coarse_discourse_dump_reddit_test_flat', 
-                 'coarse_discourse_dump_reddit_dev_flat',
-                 'coarse_discourse_dump_reddit_train_flat']
+    #filenames = ['coarse_discourse_dump_reddit_test_flat', 
+    #             'coarse_discourse_dump_reddit_dev_flat',
+    #             'coarse_discourse_dump_reddit_train_flat']
+    filenames = ['stance_dataset_processed']
     
     time1 = time.time()
     for each_filename in filenames:

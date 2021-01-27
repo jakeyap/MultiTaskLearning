@@ -370,7 +370,7 @@ def stance_f1_msg(precisions, recalls, f1scores, supports, f1_scores_macro,
     recalls : tuple of length 5 or 11
     f1scores : tuple of length 5 or 11
     supports : tuple of length 5 or 11
-    f1_scores_macro : tuple of length 5 or 11
+    f1_scores_macro : macro f1 score
     incl_empty : boolean to decide whether to include isempty label. default is True
     coarse_disc : boolean. Default is false
         if true, do the full 10 classes of coarse discourse dataset + isEmpty
