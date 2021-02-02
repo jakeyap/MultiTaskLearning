@@ -139,8 +139,8 @@ def main():
                                                    randomize=False,
                                                    num_workers=5)
     eval_dl = DataProcessor.dataframe_2_dataloader(eval_df,     # pack data into dataloader
-                                                   batchsize=BATCH_SIZE_TRAIN,
-                                                   randomize=True,
+                                                   batchsize=BATCH_SIZE_TEST,
+                                                   randomize=False,
                                                    num_workers=5)
     trng_dl = DataProcessor.dataframe_2_dataloader(trng_df,     # pack data into dataloader
                                                    batchsize=BATCH_SIZE_TRAIN,
@@ -159,7 +159,8 @@ def main():
     if DO_TRAIN:
         addon = final_mapping_layer()
         addon.cuda()
-        weights = torch.tensor([1.0, 1.0, 1.0, 10.0, 1.0]).to('cuda')
+        #weights = torch.tensor([0.1, 0.1, 0.1, 1.0, 0.1]).to('cuda')
+        weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0]).to('cuda')
         loss_fn = torch.nn.CrossEntropyLoss(weight=weights, reduction='mean')
         optimizer = optim.Adam(addon.parameters(), lr=LEARNING_RATE)
         filename = MODELDIR + ADDONFILE
@@ -291,8 +292,10 @@ def train(model, mappinglayer, trng_dl, eval_dl, epochs, log_interval, loss_fn, 
     for epoch in range(epochs):
         model.eval()            # set main model into test mode
         mappinglayer.train()    # set mapping layer into training mode
+        weights_list = []
         
         for batch_id, minibatch in enumerate(trng_dl):
+            weights_list.append(mappinglayer.linear1.weight.clone())
             if batch_id % log_interval == 0:
                 logger.info(('\tEPOCH: %3d\tMiniBatch: %4d' % (epoch, batch_id)))
             encoded_comments = minibatch[1]
@@ -322,16 +325,16 @@ def train(model, mappinglayer, trng_dl, eval_dl, epochs, log_interval, loss_fn, 
             encoded_comments = encoded_comments.to(gpu)
             token_type_ids = token_type_ids.to(gpu)
             attention_masks = attention_masks.to(gpu)
-            
-            # get the stance prediction logits
-            stance_logits = model(input_ids = encoded_comments,         # shape (n,7,B) where 
-                                  token_type_ids = token_type_ids,      # n: minibatch
-                                  attention_masks = attention_masks,    # 7: num posts per thread
-                                  task='stance')                        # B: num of stance classes 
-            
-            # only calculate losses based on root post and 1 reply
-            stance_labels = stance_labels[:, :2]    # orig shape=(n,7). new=(n,2)
-            stance_logits = stance_logits[:, :2, :] # orig shape=(n,7,11). new=(n,2,11)
+            with torch.no_grad():
+                # get the stance prediction logits
+                stance_logits = model(input_ids = encoded_comments,         # shape (n,7,B) where 
+                                      token_type_ids = token_type_ids,      # n: minibatch
+                                      attention_masks = attention_masks,    # 7: num posts per thread
+                                      task='stance')                        # B: num of stance classes 
+                
+                # only calculate losses based on root post and 1 reply
+                stance_labels = stance_labels[:, :2]    # orig shape=(n,7). new=(n,2)
+                stance_logits = stance_logits[:, :2, :] # orig shape=(n,7,11). new=(n,2,11)
             mapped_logits = mappinglayer(stance_logits)
             
             # calculate the stance loss
@@ -350,6 +353,7 @@ def train(model, mappinglayer, trng_dl, eval_dl, epochs, log_interval, loss_fn, 
                 loss_horz.append(len(loss_horz))
         
         mappinglayer.eval() # change the layer back to eval mode
+        
         # after 1 epoch, measure the f1 score on eval set
         results = test(model=model, 
                        mappinglayer=mappinglayer, 
@@ -391,6 +395,9 @@ def train(model, mappinglayer, trng_dl, eval_dl, epochs, log_interval, loss_fn, 
         if f1_score > best_f1:
             best_f1 = f1_score
             torch.save(mappinglayer.state_dict(), filename)  # save the trained mapping
+    
+    weights_list.append(mappinglayer.linear1.weight)
+    torch.save(weights_list, './log_files/weights_backup.pkl')
     
     # reload best mapping function
     state = torch.load(filename)
@@ -585,5 +592,22 @@ def map_coarse_discourse_2_sdqc_labels(input_tensor, option=1):
             
     return output_tensor
 
+def plot_weights():
+    weights_list = torch.load('./log_files/weights_backup.pkl')
+    datalen = len(weights_list)
+    
+    arr1 = np.zeros((datalen, 5, 11))
+    for i in range(datalen):
+        arr1[i,:,:] = weights_list[i].cpu().detach().numpy()
+    
+    fig, ax = plt.subplots(4,10, sharex=True)
+    for i in range(1,5):
+        for j in range(1,11):
+            axis = ax[i-1][j-1]
+            axis.plot(arr1[:,i,j])
+            axis.grid(True)
+
+            
 if __name__ == '__main__':
     ans = main()
+    

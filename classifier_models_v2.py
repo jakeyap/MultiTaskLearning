@@ -38,7 +38,9 @@ class final_mapping_layer(nn.Module):
                 weight[4,9] += 10
                 weight[4,10] += 10
                 weight = weight / 10
+                self.linear1.weight[:,:] = weight[:,:]
                 bias = bias / 10
+                self.linear1.bias[:] = bias[:]
     
     def forward(self,x):
         x = self.linear1(x)
