@@ -14,7 +14,7 @@ import numpy as np
 
 import TreeDataProcessor
 import multitask_helper_functions as helper
-from classifier_models_v2 import alt_ModelFn, alt_ModelGn
+from classifier_models_v2 import alt_ModelFn, alt_ModelGn, SelfAdjDiceLoss
 from utilities.handle_coarse_discourse_trees import RedditTree
 
 import logging, sys, argparse
@@ -180,10 +180,13 @@ def main():
         weights = torch.tensor([0.1, 0.1, 0.1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]).to(gpu)
         #''' FOR EXP 47-50 ONLY '''
         #weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 20.0, 1.0, 10.0, 10.0, 1.0, 1.0, 1.0]).to(gpu)
-        stance_loss_fn = torch.nn.CrossEntropyLoss(weight=weights, reduction='mean')
+        #stance_loss_fn = torch.nn.CrossEntropyLoss(weight=weights, reduction='mean')
+        stance_loss_fn = SelfAdjDiceLoss(reduction='mean')
     else:
-        stance_loss_fn = torch.nn.CrossEntropyLoss(reduction='mean')
-    length_loss_fn = torch.nn.CrossEntropyLoss(reduction='mean')
+        #stance_loss_fn = torch.nn.CrossEntropyLoss(reduction='mean')
+        stance_loss_fn = SelfAdjDiceLoss(reduction='mean')
+    #length_loss_fn = torch.nn.CrossEntropyLoss(reduction='mean')
+    length_loss_fn = SelfAdjDiceLoss(reduction='mean')
     logger.info('======== '+MODELNAME+' =========')
     logger.info('===== Hyperparameters ======')
     logger.info('BATCH_SIZE_TRAIN: %d' % BATCH_SIZE_TRAIN)

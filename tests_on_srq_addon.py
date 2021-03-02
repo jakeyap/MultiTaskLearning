@@ -12,7 +12,7 @@ learn the 11 to 5 mapping instead of hardcoding. Train using just 1 epoch
 
 import DataProcessor
 import multitask_helper_functions as helper
-from classifier_models_v2 import alt_ModelFn, final_mapping_layer
+from classifier_models_v2 import alt_ModelFn, final_mapping_layer, SelfAdjDiceLoss
 
 import torch
 import torch.optim as optim
@@ -161,20 +161,22 @@ def main():
         addon.cuda()
         #weights = torch.tensor([0.1, 0.1, 0.1, 1.0, 0.1]).to('cuda')
         weights = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0]).to('cuda')
-        loss_fn = torch.nn.CrossEntropyLoss(weight=weights, reduction='mean')
+        #loss_fn = torch.nn.CrossEntropyLoss(weight=weights, reduction='mean')
+        loss_fn = SelfAdjDiceLoss(reduction='mean')
         optimizer = optim.Adam(addon.parameters(), lr=LEARNING_RATE)
         filename = MODELDIR + ADDONFILE
-        train(model=model, mappinglayer=addon, 
-              trng_dl=trng_dl, 
-              eval_dl=eval_dl,
-              epochs=N_EPOCHS,
-              log_interval=LOG_INTERVAL, 
-              loss_fn=loss_fn,
-              optimizer=optimizer,
-              num_post=MAX_POST_PER_THREAD, 
-              post_length=MAX_POST_LENGTH,
-              filename=filename,
-              plotfile=plotfile0)
+        weights_list = train(model=model, mappinglayer=addon, 
+                             trng_dl=trng_dl, 
+                             eval_dl=eval_dl,
+                             epochs=N_EPOCHS,
+                             log_interval=LOG_INTERVAL, 
+                             loss_fn=loss_fn,
+                             optimizer=optimizer,
+                             num_post=MAX_POST_PER_THREAD, 
+                             post_length=MAX_POST_LENGTH,
+                             filename=filename,
+                             plotfile=plotfile0)
+        torch.save(weights_list, './log_files/weights_addon_'+MODELFILE[:-4]+'.pkl')
     
     addon = get_addon(MODELDIR, ADDONFILE)
     addon.cuda()
@@ -289,13 +291,12 @@ def train(model, mappinglayer, trng_dl, eval_dl, epochs, log_interval, loss_fn, 
     gpu = torch.device("cuda")
     cpu = torch.device("cpu")
     
+    weights_list = []
     for epoch in range(epochs):
         model.eval()            # set main model into test mode
         mappinglayer.train()    # set mapping layer into training mode
-        weights_list = []
-        
+        weights_list.append(mappinglayer.linear1.weight.clone())
         for batch_id, minibatch in enumerate(trng_dl):
-            weights_list.append(mappinglayer.linear1.weight.clone())
             if batch_id % log_interval == 0:
                 logger.info(('\tEPOCH: %3d\tMiniBatch: %4d' % (epoch, batch_id)))
             encoded_comments = minibatch[1]
@@ -397,7 +398,7 @@ def train(model, mappinglayer, trng_dl, eval_dl, epochs, log_interval, loss_fn, 
             torch.save(mappinglayer.state_dict(), filename)  # save the trained mapping
     
     weights_list.append(mappinglayer.linear1.weight)
-    torch.save(weights_list, './log_files/weights_backup.pkl')
+    #torch.save(weights_list, './log_files/weights_backup.pkl')
     
     # reload best mapping function
     state = torch.load(filename)
@@ -410,7 +411,7 @@ def train(model, mappinglayer, trng_dl, eval_dl, epochs, log_interval, loss_fn, 
     ax1.plot(f1_horz, f1_scores)
     ax1.grid(True)
     fig.savefig(plotfile)
-    return
+    return weights_list
 
 
 def test(model, mappinglayer, dataloader, log_interval, num_post=4, post_length=128):
@@ -592,10 +593,10 @@ def map_coarse_discourse_2_sdqc_labels(input_tensor, option=1):
             
     return output_tensor
 
-def plot_weights():
-    weights_list = torch.load('./log_files/weights_backup.pkl')
+def plot_weights(filename='./log_files/weights_backup.pkl'):
+    weights_list = torch.load(filename)
     datalen = len(weights_list)
-    
+    print(datalen)
     arr1 = np.zeros((datalen, 5, 11))
     for i in range(datalen):
         arr1[i,:,:] = weights_list[i].cpu().detach().numpy()
